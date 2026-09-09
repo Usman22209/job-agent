@@ -1,0 +1,26 @@
+
+USMAN SHAFIQ
+Email: usman.shafiq@gmail.com | Phone: +92 300 1234567 | Location: Lahore, Pakistan
+Headline: Senior Full Stack & AI Solutions Architect
+
+PROFESSIONAL SUMMARY
+Results-driven software architect with 6+ years of experience specializing in React Native, Next.js, TypeScript, and autonomous AI agents. Architected scalable systems serving millions of users with 99.9% uptime.
+
+TECHNICAL SKILLS
+Languages: TypeScript, JavaScript, Python, SQL
+Frameworks: React Native, React, Next.js, Node.js, Express, Tailwind CSS
+Cloud & Databases: PostgreSQL, Supabase, Firebase, Redis, Docker, AWS
+AI & ML: Gemini API, OpenAI, Prompt Engineering, Agentic Workflows
+
+EXPERIENCE
+Lead Mobile & AI Engineer | LifeLink Systems | 2022 - Present
+- Architected mission-critical React Native mobile application with real-time biometric and location tracking.
+- Designed autonomous background synchronization pipelines reducing battery consumption by 35%.
+- Integrated AI agents for real-time risk classification and predictive alerting.
+
+Senior Full Stack Developer | CZone Tech | 2020 - 2022
+- Led full-stack development of enterprise web portals using Next.js, Node.js, and PostgreSQL.
+- Implemented automated CI/CD deployment pipelines improving team delivery speed by 50%.
+
+EDUCATION
+Bachelor of Science in Computer Science | UET Lahore | 2016 - 2020

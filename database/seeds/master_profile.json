@@ -1,0 +1,138 @@
+{
+  "full_name": "USMAN SHAFIQ",
+  "email": "usman.shafiq@gmail.com",
+  "phone": "+92 300 1234567",
+  "location": "Lahore, Pakistan",
+  "headline": "Senior Full Stack & AI Solutions Architect",
+  "summary": "Results-driven software architect with 6+ years of experience specializing in React Native, Next.js, TypeScript, and autonomous AI agents. Architected scalable systems serving millions of users with 99.9% uptime.",
+  "skills": [
+    {
+      "name": "TypeScript",
+      "level": "Advanced"
+    },
+    {
+      "name": "JavaScript",
+      "level": "Advanced"
+    },
+    {
+      "name": "Python",
+      "level": "Advanced"
+    },
+    {
+      "name": "SQL",
+      "level": "Advanced"
+    },
+    {
+      "name": "React Native",
+      "level": "Advanced"
+    },
+    {
+      "name": "React",
+      "level": "Advanced"
+    },
+    {
+      "name": "Next.js",
+      "level": "Advanced"
+    },
+    {
+      "name": "Node.js",
+      "level": "Advanced"
+    },
+    {
+      "name": "Express",
+      "level": "Advanced"
+    },
+    {
+      "name": "Tailwind CSS",
+      "level": "Advanced"
+    },
+    {
+      "name": "PostgreSQL",
+      "level": "Advanced"
+    },
+    {
+      "name": "Supabase",
+      "level": "Advanced"
+    },
+    {
+      "name": "Firebase",
+      "level": "Advanced"
+    },
+    {
+      "name": "Redis",
+      "level": "Advanced"
+    },
+    {
+      "name": "Docker",
+      "level": "Advanced"
+    },
+    {
+      "name": "AWS",
+      "level": "Advanced"
+    },
+    {
+      "name": "Gemini API",
+      "level": "Advanced"
+    },
+    {
+      "name": "OpenAI",
+      "level": "Advanced"
+    },
+    {
+      "name": "Prompt Engineering",
+      "level": "Advanced"
+    },
+    {
+      "name": "Agentic Workflows",
+      "level": "Advanced"
+    }
+  ],
+  "experience": [
+    {
+      "company": "LifeLink Systems",
+      "position": "Lead Mobile & AI Engineer",
+      "location": "",
+      "start_date": "2022",
+      "end_date": "Present",
+      "current": true,
+      "description": "",
+      "bullet_points": [
+        "Architected mission-critical React Native mobile application with real-time biometric and location tracking.",
+        "Designed autonomous background synchronization pipelines reducing battery consumption by 35%.",
+        "Integrated AI agents for real-time risk classification and predictive alerting."
+      ]
+    },
+    {
+      "company": "CZone Tech",
+      "position": "Senior Full Stack Developer",
+      "location": "",
+      "start_date": "2020",
+      "end_date": "2022",
+      "current": false,
+      "description": "",
+      "bullet_points": [
+        "Led full-stack development of enterprise web portals using Next.js, Node.js, and PostgreSQL.",
+        "Implemented automated CI/CD deployment pipelines improving team delivery speed by 50%."
+      ]
+    }
+  ],
+  "projects": [],
+  "education": [
+    {
+      "degree": "Bachelor of Science in Computer Science",
+      "institution": "UET Lahore",
+      "graduation_year": "2020"
+    }
+  ],
+  "preferences": {
+    "target_roles": [],
+    "remote": false,
+    "target_locations": []
+  },
+  "qa_vault": {
+    "work_authorization": "",
+    "sponsorship_required": ""
+  },
+  "master_resume_url": "/uploads/resume_1788949049193_Usman_Shafiq_CV.txt",
+  "master_resume_filename": "Usman_Shafiq_CV.txt"
+}
