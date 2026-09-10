@@ -1,138 +1,202 @@
 {
-  "full_name": "USMAN SHAFIQ",
-  "email": "usman.shafiq@gmail.com",
-  "phone": "+92 300 1234567",
-  "location": "Lahore, Pakistan",
-  "headline": "Senior Full Stack & AI Solutions Architect",
-  "summary": "Results-driven software architect with 6+ years of experience specializing in React Native, Next.js, TypeScript, and autonomous AI agents. Architected scalable systems serving millions of users with 99.9% uptime.",
+  "full_name": "Talha Sadiq",
+  "email": "talhasadiq320@gmail.com",
+  "phone": "+92 345 6601101",
+  "location": "Pakistan (Open to Remote Worldwide)",
+  "headline": "AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering",
+  "summary": "Full Stack Developer with 8 years of production experience in React Native, Node.js, and React, now expanding into AI engineering and automation. Hands-on with Claude Code, Cursor AI, OpenAI API, TensorFlow, and Model Context Protocol (MCP) integrations for AI-assisted development and on-device inference. Background spans REST API architecture, microservices, and cloud deployment across AWS, Azure, and Firebase, with a focus on LLM applications, AI agents, and workflow automation for production systems.",
   "skills": [
-    {
-      "name": "TypeScript",
-      "level": "Advanced"
-    },
-    {
-      "name": "JavaScript",
-      "level": "Advanced"
-    },
-    {
-      "name": "Python",
-      "level": "Advanced"
-    },
-    {
-      "name": "SQL",
-      "level": "Advanced"
-    },
-    {
-      "name": "React Native",
-      "level": "Advanced"
-    },
-    {
-      "name": "React",
-      "level": "Advanced"
-    },
-    {
-      "name": "Next.js",
-      "level": "Advanced"
-    },
-    {
-      "name": "Node.js",
-      "level": "Advanced"
-    },
-    {
-      "name": "Express",
-      "level": "Advanced"
-    },
-    {
-      "name": "Tailwind CSS",
-      "level": "Advanced"
-    },
-    {
-      "name": "PostgreSQL",
-      "level": "Advanced"
-    },
-    {
-      "name": "Supabase",
-      "level": "Advanced"
-    },
-    {
-      "name": "Firebase",
-      "level": "Advanced"
-    },
-    {
-      "name": "Redis",
-      "level": "Advanced"
-    },
-    {
-      "name": "Docker",
-      "level": "Advanced"
-    },
-    {
-      "name": "AWS",
-      "level": "Advanced"
-    },
-    {
-      "name": "Gemini API",
-      "level": "Advanced"
-    },
-    {
-      "name": "OpenAI",
-      "level": "Advanced"
-    },
-    {
-      "name": "Prompt Engineering",
-      "level": "Advanced"
-    },
-    {
-      "name": "Agentic Workflows",
-      "level": "Advanced"
-    }
+    { "name": "React Native", "level": "Expert" },
+    { "name": "Node.js", "level": "Expert" },
+    { "name": "React", "level": "Expert" },
+    { "name": "TypeScript", "level": "Expert" },
+    { "name": "JavaScript", "level": "Expert" },
+    { "name": "REST APIs", "level": "Expert" },
+    { "name": "Microservices", "level": "Expert" },
+    { "name": "Next.js", "level": "Advanced" },
+    { "name": "FastAPI", "level": "Advanced" },
+    { "name": "Python (Django, FastAPI)", "level": "Advanced" },
+    { "name": "Ruby on Rails", "level": "Advanced" },
+    { "name": "OpenAI API", "level": "Advanced" },
+    { "name": "Gemini API", "level": "Advanced" },
+    { "name": "Model Context Protocol (MCP)", "level": "Advanced" },
+    { "name": "TensorFlow & ONNX Runtime", "level": "Advanced" },
+    { "name": "Claude Code & Cursor AI", "level": "Advanced" },
+    { "name": "Prompt Engineering", "level": "Advanced" },
+    { "name": "AI Workflow Automation (n8n)", "level": "Advanced" },
+    { "name": "Android (Java, Kotlin)", "level": "Advanced" },
+    { "name": "Swift", "level": "Advanced" },
+    { "name": "MongoDB", "level": "Advanced" },
+    { "name": "Firebase & Realm", "level": "Advanced" },
+    { "name": "AWS (CDK, SDK, Cognito)", "level": "Advanced" },
+    { "name": "Azure", "level": "Advanced" },
+    { "name": "GraphQL", "level": "Advanced" },
+    { "name": "Docker", "level": "Intermediate" },
+    { "name": "CI/CD & Fastlane", "level": "Advanced" },
+    { "name": "Socket.IO & WebRTC", "level": "Advanced" },
+    { "name": "Stripe & Twilio", "level": "Advanced" },
+    { "name": "Web3 & Cryptography", "level": "Intermediate" }
   ],
   "experience": [
     {
-      "company": "LifeLink Systems",
-      "position": "Lead Mobile & AI Engineer",
-      "location": "",
-      "start_date": "2022",
+      "company": "Excersys (USA Based)",
+      "position": "Full Stack Developer",
+      "location": "Remote",
+      "start_date": "Jan 2023",
       "end_date": "Present",
       "current": true,
-      "description": "",
+      "description": "Build and maintain production React Native and Node.js applications across fintech, food-tech, and sports-tech products.",
       "bullet_points": [
-        "Architected mission-critical React Native mobile application with real-time biometric and location tracking.",
-        "Designed autonomous background synchronization pipelines reducing battery consumption by 35%.",
-        "Integrated AI agents for real-time risk classification and predictive alerting."
+        "Build and maintain production React Native and Node.js applications across fintech, food-tech, and sports-tech products, serving live users on iOS, Android, and web.",
+        "Use Claude Code, Cursor AI, and MCP integrations in daily development for AI-assisted code generation, debugging, and code review, cutting feature turnaround time.",
+        "Develop a real-time AI mobile platform with OpenAI integration and ONNX Runtime on-device inference for wearable devices, tuning performance on constrained hardware.",
+        "Design REST API and microservices architecture across Node.js, Ruby on Rails, and Python (Django, FastAPI) backends, deployed on AWS, Azure, and Firebase."
       ]
     },
     {
-      "company": "CZone Tech",
-      "position": "Senior Full Stack Developer",
-      "location": "",
-      "start_date": "2020",
-      "end_date": "2022",
+      "company": "Katch (Kuwait Based)",
+      "position": "Full Stack Developer",
+      "location": "Remote",
+      "start_date": "Apr 2022",
+      "end_date": "Dec 2022",
       "current": false,
-      "description": "",
+      "description": "Delivered food delivery platform features.",
       "bullet_points": [
-        "Led full-stack development of enterprise web portals using Next.js, Node.js, and PostgreSQL.",
-        "Implemented automated CI/CD deployment pipelines improving team delivery speed by 50%."
+        "Delivered food delivery platform features in React Native, Node.js, and React, with MongoDB, GraphQL, Socket.IO, and Redux Toolkit powering real-time orders and chat."
+      ]
+    },
+    {
+      "company": "Naseeb Networks (Rozee.pk)",
+      "position": "Senior React Native Developer",
+      "location": "Pakistan",
+      "start_date": "Nov 2020",
+      "end_date": "Mar 2022",
+      "current": false,
+      "description": "Led development of multiple mobile applications.",
+      "bullet_points": [
+        "Led development of Dukan.pk (team of 10), Log.Fish, Deenee, and Ailaaj, covering payments, real-time notifications, and offline-first architecture with Realm and Firebase."
+      ]
+    },
+    {
+      "company": "Digital Tech",
+      "position": "React Native Developer",
+      "location": "Pakistan",
+      "start_date": "Sep 2019",
+      "end_date": "Oct 2020",
+      "current": false,
+      "description": "Developed cross-platform mobile applications.",
+      "bullet_points": [
+        "Developed cross-platform mobile applications in React Native and contributed to architecture decisions and code review."
+      ]
+    },
+    {
+      "company": "Quaid Ventures",
+      "position": "Android Application Developer",
+      "location": "Pakistan",
+      "start_date": "Sep 2018",
+      "end_date": "Aug 2019",
+      "current": false,
+      "description": "Built native Android applications.",
+      "bullet_points": [
+        "Built native Android applications for POS and e-commerce products, including Zash Go and Qareeb Online Store."
       ]
     }
   ],
-  "projects": [],
+  "projects": [
+    {
+      "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+      "technologies": [
+        "React Native",
+        "Node.js",
+        "React",
+        "Ruby on Rails",
+        "Django",
+        "FastAPI",
+        "Azure",
+        "Claude Code",
+        "Cursor AI",
+        "MCP"
+      ],
+      "description": "AI-assisted build of a food-tech supply chain platform for restaurants, cafes, and suppliers in Qatar. Combined React Native, Node.js, and React front ends with Ruby on Rails, Django, and FastAPI microservices on Azure.",
+      "url": "https://kafy.co"
+    },
+    {
+      "title": "Real-Time AI Mobile Platform — Wearables (Excersys)",
+      "technologies": [
+        "Swift",
+        "Kotlin",
+        "OpenAI",
+        "ONNX Runtime",
+        "WebRTC",
+        "Bluetooth LE",
+        "Fastlane"
+      ],
+      "description": "Real-time mobile solution for wearable devices with audio and video streaming, voice-first interaction, and AI-driven features, using OpenAI integration, ONNX Runtime on-device inference, and WebRTC.",
+      "url": ""
+    },
+    {
+      "title": "Liquidus — Crypto Wallet Platform (Excersys)",
+      "technologies": [
+        "React Native",
+        "Node.js",
+        "React",
+        "Web3",
+        "Cryptography",
+        "CI/CD"
+      ],
+      "description": "Secure crypto wallet enabling instant interest earning while keeping full user control of private keys. Built with React Native, Node.js, React, Web3, and encryption.",
+      "url": "https://liquidus.finance"
+    },
+    {
+      "title": "WatchSports — Sports Event Search & Streaming Guide (Excersys)",
+      "technologies": [
+        "React Native",
+        "Node.js",
+        "GraphQL",
+        "AWS Cognito",
+        "TensorFlow"
+      ],
+      "description": "Sports event discovery and connect-to-watch platform spanning professional, college, and esports events with TensorFlow recommendations.",
+      "url": "https://watchsports.app"
+    },
+    {
+      "title": "Dukan.pk — Digitizing Sellers (Rozee.pk)",
+      "technologies": [
+        "React Native",
+        "Realm",
+        "Firebase",
+        "Rabbit MQTT"
+      ],
+      "description": "Web-store platform letting businesses launch an online store in under 30 seconds with automated payment and delivery integrations (led team of 10).",
+      "url": "https://dukan.pk"
+    }
+  ],
   "education": [
     {
-      "degree": "Bachelor of Science in Computer Science",
-      "institution": "UET Lahore",
-      "graduation_year": "2020"
+      "degree": "Bachelor in Computer Science (CGPA 3.20)",
+      "institution": "University of Central Punjab",
+      "graduation_year": "2018"
     }
   ],
   "preferences": {
-    "target_roles": [],
-    "remote": false,
-    "target_locations": []
+    "target_roles": [
+      "Full Stack Developer",
+      "AI Engineer",
+      "React Native Developer",
+      "Mobile Engineer",
+      "Node.js Engineer"
+    ],
+    "remote": true,
+    "target_locations": [
+      "Remote",
+      "Worldwide"
+    ]
   },
   "qa_vault": {
-    "work_authorization": "",
-    "sponsorship_required": ""
-  },
-  "master_resume_url": "/uploads/resume_1788949049193_Usman_Shafiq_CV.txt",
-  "master_resume_filename": "Usman_Shafiq_CV.txt"
+    "work_authorization": "Authorized for international remote contract work",
+    "sponsorship_required": "No for remote contract / Open to US relocation sponsorship",
+    "linkedin": "https://linkedin.com/in/talhagaba",
+    "github": "https://github.com/shtalhagaba",
+    "behance": "https://behance.com/shtalhagaba"
+  }
 }

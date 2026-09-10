@@ -38,8 +38,17 @@ class AgentStore {
   private cronIntervalTimer: NodeJS.Timeout | null = null;
   private cronIntervalMinutes: number = 2;
 
+  // --- Auto-Apply Queue Agent State ---
+  private applyQueue: string[] = [];  // ordered job IDs to process
+  private isAgentRunning: boolean = false;
+  private currentlyProcessingJobId: string | null = null;
+  private agentLog: { jobId: string; jobTitle: string; status: string; message: string; timestamp: string }[] = [];
+  private agentTimer: NodeJS.Timeout | null = null;
+
   constructor() {
     this.profile = this.loadInitialProfile();
+    this.loadPersistedData();
+    this.loadQueueFromDisk();
     this.seedInitialJobs();
     this.startBackgroundCronAgent();
   }
@@ -78,11 +87,28 @@ class AgentStore {
           j.description.toLowerCase().includes(q)
       );
     }
-    return list.sort(
-      (a, b) =>
-        new Date(b.posted_at || b.created_at || 0).getTime() -
-        new Date(a.posted_at || a.created_at || 0).getTime()
+    const appsByJobId = new Map(
+      Array.from(this.applications.values()).map((a) => [a.job_id, a])
     );
+
+    return list
+      .map((j) => {
+        const app = appsByJobId.get(j.id);
+        if (app) {
+          return {
+            ...j,
+            status: app.status === 'APPLIED' ? 'APPLIED' : j.status,
+            application_id: app.id,
+            tailored_resume_pdf_url: app.tailored_resume_pdf_url,
+          };
+        }
+        return j;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.posted_at || b.created_at || 0).getTime() -
+          new Date(a.posted_at || a.created_at || 0).getTime()
+      );
   }
 
   getJobById(id: string): IJob | undefined {
@@ -93,12 +119,16 @@ class AgentStore {
     const normalized = normalizeJob(raw, source);
 
     if (this.dedupSet.has(normalized.dedup_hash || '')) {
-      return { job: normalized, isNew: false };
+      const existing = Array.from(this.jobs.values()).find(
+        (j) => j.dedup_hash === normalized.dedup_hash
+      );
+      return { job: existing || normalized, isNew: false };
     }
 
     this.dedupSet.add(normalized.dedup_hash || '');
     this.jobs.set(normalized.id, normalized);
     this.totalJobsScraped++;
+    this.saveJobsToDisk();
     return { job: normalized, isNew: true };
   }
 
@@ -249,6 +279,7 @@ class AgentStore {
     };
 
     this.applications.set(app.id, app);
+    this.saveApplicationsToDisk();
     return app;
   }
 
@@ -257,6 +288,8 @@ class AgentStore {
     if (!app) throw new Error(`Application ${applicationId} not found`);
 
     const job = app.job || this.jobs.get(app.job_id)!;
+
+    console.log(`[Tailor] Starting resume + cover letter tailoring for "${job.title}" at ${job.company}...`);
     const { tailoredResume, coverLetter } = await tailorResumeAndCoverLetter(job, this.profile);
 
     const filename = `Resume_${this.profile.full_name.replace(/\s+/g, '_')}_${job.company.replace(
@@ -264,16 +297,26 @@ class AgentStore {
       '_'
     )}_${Date.now()}.pdf`;
 
+    console.log(`[Tailor] Generating ATS-optimized PDF: ${filename}`);
     const { filePath, relativeUrl } = await generateResumePdf(tailoredResume, filename);
+
+    // Generate a job-specific email draft using the AI cover letter as the body
+    const emailSubject = `Application for ${job.title} — ${this.profile.full_name}`;
+    const emailBody = `${coverLetter}\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\n${this.profile.full_name}\n${this.profile.email} | ${this.profile.phone}`;
 
     app.tailored_resume_json = tailoredResume;
     app.tailored_resume_pdf_url = relativeUrl;
     (app as any).local_pdf_path = filePath;
     app.cover_letter = coverLetter;
+    app.email_subject = emailSubject;
+    app.email_body = emailBody;
     app.status = 'READY';
     app.updated_at = new Date().toISOString();
 
+    console.log(`[Tailor] ✓ Application ready for "${job.title}" — resume, cover letter, and email draft generated.`);
+
     this.applications.set(applicationId, app);
+    this.saveApplicationsToDisk();
     return app;
   }
 
@@ -284,6 +327,9 @@ class AgentStore {
     const job = app.job || this.jobs.get(app.job_id)!;
     const pdfPath = (app as any).local_pdf_path;
 
+    console.log(`[Email] Preparing personalized email for "${job.title}" at ${job.company}...`);
+    console.log(`[Email] Using ${app.email_subject ? 'tailored' : 'default'} email draft. PDF: ${pdfPath ? 'attached' : 'none'}`);
+
     const res = await sendApplicationEmail(
       job,
       this.profile,
@@ -292,12 +338,27 @@ class AgentStore {
       app.email_body
     );
 
+    // Save the final email content back to the application for UI display
+    app.email_subject = res.subject;
+    app.email_body = res.body;
+
     if (res.success) {
       app.status = 'APPLIED';
       app.email_sent_at = res.timestamp;
       app.email_message_id = res.messageId;
       app.updated_at = new Date().toISOString();
       this.applications.set(applicationId, app);
+
+      const j = this.jobs.get(app.job_id);
+      if (j) {
+        j.status = 'APPLIED';
+        this.jobs.set(app.job_id, j);
+      }
+      this.saveApplicationsToDisk();
+      this.saveJobsToDisk();
+      console.log(`[Email] ✓ Application email sent to ${res.recipient} for "${job.title}" (${res.mode})`);
+    } else {
+      console.error(`[Email] ✗ Failed to send email for "${job.title}": ${res.error}`);
     }
 
     return res;
@@ -310,6 +371,16 @@ class AgentStore {
     app.status = status;
     app.updated_at = new Date().toISOString();
     this.applications.set(id, app);
+
+    if (status === 'APPLIED') {
+      const j = this.jobs.get(app.job_id);
+      if (j) {
+        j.status = 'APPLIED';
+        this.jobs.set(app.job_id, j);
+      }
+    }
+    this.saveApplicationsToDisk();
+    this.saveJobsToDisk();
     return app;
   }
 
@@ -351,26 +422,32 @@ class AgentStore {
         if (emailRes.success) {
           app.status = 'APPLIED';
           job.status = 'APPLIED';
-          message = `Application and tailored PDF resume emailed directly to ${job.contact_email}!`;
+          message = `Application & tailored PDF resume emailed directly to ${job.contact_email}! A copy was BCC'd to ${this.profile.email}.`;
         } else {
-          app.status = 'APPLIED';
-          job.status = 'APPLIED';
-          message = `Application ready and prepared for ${job.contact_email}.`;
+          app.status = 'READY';
+          message = `Email dispatch to ${job.contact_email} reported an issue: ${emailRes.error || 'SMTP check needed'}`;
         }
       } catch (err: any) {
-        app.status = 'APPLIED';
-        job.status = 'APPLIED';
-        message = `Application ready and prepared for ${job.contact_email}.`;
+        console.error('Error in sendEmailForApplication:', err);
+        app.status = 'READY';
+        message = `Email dispatch error: ${err.message}`;
       }
     } else {
-      app.status = 'APPLIED';
-      job.status = 'APPLIED';
-      message = `Tailored resume PDF generated! Opening application page for ${job.company}.`;
+      // Web portal jobs: resume is tailored but user must manually apply
+      app.status = 'READY';
+      job.status = 'MATCHED';
+      message = `Tailored resume PDF generated for ${job.company}. Apply manually at: ${job.application_url || job.url}`;
+      console.log(`[Agent Queue] Web portal job — resume ready, manual apply needed: ${job.application_url || job.url}`);
     }
 
     app.updated_at = new Date().toISOString();
     this.applications.set(app.id, app);
-    this.jobs.set(job.id, { ...job, status: 'APPLIED' });
+    this.jobs.set(job.id, {
+      ...job,
+      status: app.status === 'APPLIED' ? 'APPLIED' : job.status,
+    });
+    this.saveApplicationsToDisk();
+    this.saveJobsToDisk();
 
     return {
       success: true,
@@ -379,6 +456,160 @@ class AgentStore {
       applyUrl: job.application_url || job.url,
       message,
     };
+  }
+
+  // --- Auto-Apply Queue Agent ---
+
+  addToQueue(jobId: string): { success: boolean; queueLength: number; message: string } {
+    const job = this.jobs.get(jobId);
+    if (!job) return { success: false, queueLength: this.applyQueue.length, message: 'Job not found' };
+    if (job.status === 'APPLIED') return { success: false, queueLength: this.applyQueue.length, message: 'Job already applied' };
+    if (this.applyQueue.includes(jobId)) return { success: false, queueLength: this.applyQueue.length, message: 'Job already in queue' };
+
+    this.applyQueue.push(jobId);
+    job.status = 'MATCHED';
+    this.jobs.set(jobId, job);
+    this.saveQueueToDisk();
+    this.saveJobsToDisk();
+    return { success: true, queueLength: this.applyQueue.length, message: `Added "${job.title}" to queue (#${this.applyQueue.length})` };
+  }
+
+  addAllToQueue(): { added: number; skipped: number; queueLength: number } {
+    let added = 0;
+    let skipped = 0;
+    const allJobs = Array.from(this.jobs.values());
+    for (const job of allJobs) {
+      if (job.status === 'APPLIED' || this.applyQueue.includes(job.id)) {
+        skipped++;
+        continue;
+      }
+      this.applyQueue.push(job.id);
+      job.status = 'MATCHED';
+      this.jobs.set(job.id, job);
+      added++;
+    }
+    this.saveQueueToDisk();
+    this.saveJobsToDisk();
+    return { added, skipped, queueLength: this.applyQueue.length };
+  }
+
+  removeFromQueue(jobId: string): { success: boolean; queueLength: number } {
+    const idx = this.applyQueue.indexOf(jobId);
+    if (idx === -1) return { success: false, queueLength: this.applyQueue.length };
+    this.applyQueue.splice(idx, 1);
+
+    // Revert status if it was set to MATCHED just for queue
+    const job = this.jobs.get(jobId);
+    if (job && job.status === 'MATCHED') {
+      job.status = 'DISCOVERED';
+      this.jobs.set(jobId, job);
+      this.saveJobsToDisk();
+    }
+    this.saveQueueToDisk();
+    return { success: true, queueLength: this.applyQueue.length };
+  }
+
+  getQueueStatus(): {
+    isRunning: boolean;
+    queue: string[];
+    currentJobId: string | null;
+    currentJobTitle: string | null;
+    queueLength: number;
+    log: { jobId: string; jobTitle: string; status: string; message: string; timestamp: string }[];
+  } {
+    const currentJob = this.currentlyProcessingJobId ? this.jobs.get(this.currentlyProcessingJobId) : null;
+    return {
+      isRunning: this.isAgentRunning,
+      queue: [...this.applyQueue],
+      currentJobId: this.currentlyProcessingJobId,
+      currentJobTitle: currentJob?.title || null,
+      queueLength: this.applyQueue.length,
+      log: this.agentLog.slice(-20),  // last 20 entries
+    };
+  }
+
+  startAgent(): { success: boolean; message: string } {
+    if (this.isAgentRunning) {
+      return { success: false, message: 'Agent is already running' };
+    }
+    if (this.applyQueue.length === 0) {
+      return { success: false, message: 'Queue is empty. Add jobs to the queue first.' };
+    }
+    this.isAgentRunning = true;
+    console.log(`[Agent Queue] Started. ${this.applyQueue.length} jobs in queue.`);
+    // Kick off the first processing
+    this.processNextInQueue();
+    return { success: true, message: `Agent started. Processing ${this.applyQueue.length} jobs sequentially.` };
+  }
+
+  stopAgent(): { success: boolean; message: string } {
+    const wasRunning = this.isAgentRunning;
+    this.isAgentRunning = false;
+    this.currentlyProcessingJobId = null;
+    if (this.agentTimer) {
+      clearTimeout(this.agentTimer);
+      this.agentTimer = null;
+    }
+    this.saveQueueToDisk();
+    console.log('[Agent Queue] Stopped by user.');
+    return { success: true, message: wasRunning ? 'Agent stopped. Current job will finish but no more will be processed.' : 'Agent is already stopped.' };
+  }
+
+  private async processNextInQueue(): Promise<void> {
+    if (!this.isAgentRunning) {
+      this.currentlyProcessingJobId = null;
+      return;
+    }
+
+    if (this.applyQueue.length === 0) {
+      this.isAgentRunning = false;
+      this.currentlyProcessingJobId = null;
+      console.log('[Agent Queue] All jobs processed. Agent stopped.');
+      return;
+    }
+
+    const jobId = this.applyQueue.shift()!;
+    this.currentlyProcessingJobId = jobId;
+    this.saveQueueToDisk();
+
+    const job = this.jobs.get(jobId);
+    const jobTitle = job?.title || 'Unknown';
+    console.log(`[Agent Queue] Processing: "${jobTitle}" (${jobId})`);
+
+    try {
+      const result = await this.autoApplyToJob(jobId);
+      this.agentLog.push({
+        jobId,
+        jobTitle,
+        status: 'success',
+        message: result.message,
+        timestamp: new Date().toISOString(),
+      });
+      console.log(`[Agent Queue] ✓ Applied: "${jobTitle}" via ${result.method}`);
+    } catch (err: any) {
+      this.agentLog.push({
+        jobId,
+        jobTitle,
+        status: 'error',
+        message: err.message || 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+      console.error(`[Agent Queue] ✗ Failed: "${jobTitle}" — ${err.message}`);
+    }
+
+    this.currentlyProcessingJobId = null;
+
+    // Longer delay 12-20 seconds between jobs to allow proper processing & avoid rate limits
+    if (this.isAgentRunning && this.applyQueue.length > 0) {
+      const delayMs = Math.floor(Math.random() * 8000) + 12000; // 12-20s
+      console.log(`[Agent Queue] Waiting ${(delayMs / 1000).toFixed(1)}s before next job... (${this.applyQueue.length} remaining)`);
+      this.agentTimer = setTimeout(() => {
+        this.processNextInQueue();
+      }, delayMs);
+    } else {
+      this.isAgentRunning = false;
+      console.log('[Agent Queue] Queue complete or agent stopped.');
+    }
   }
 
   // --- Local Cron Agent Pipeline ---
@@ -513,7 +744,97 @@ class AgentStore {
     };
   }
 
-  // --- Initialization ---
+  // --- Persistence & Initialization ---
+  private loadPersistedData() {
+    try {
+      const jobsPath = path.resolve(process.cwd(), 'database/jobs.json');
+      if (fs.existsSync(jobsPath)) {
+        const savedJobs: IJob[] = JSON.parse(fs.readFileSync(jobsPath, 'utf8'));
+        for (const j of savedJobs) {
+          this.jobs.set(j.id, j);
+          if (j.dedup_hash) this.dedupSet.add(j.dedup_hash);
+        }
+        console.log(`[Store Persistence] Loaded ${this.jobs.size} jobs from disk.`);
+      }
+    } catch (e: any) {
+      console.warn('[Store Persistence] Error loading jobs.json:', e.message);
+    }
+
+    try {
+      const appsPath = path.resolve(process.cwd(), 'database/applications.json');
+      if (fs.existsSync(appsPath)) {
+        const savedApps: IApplication[] = JSON.parse(fs.readFileSync(appsPath, 'utf8'));
+        for (const app of savedApps) {
+          this.applications.set(app.id, app);
+          if (app.job) {
+            this.jobs.set(app.job.id, {
+              ...app.job,
+              status: app.status === 'APPLIED' ? 'APPLIED' : (app.job.status || 'MATCHED'),
+            });
+            if (app.job.dedup_hash) this.dedupSet.add(app.job.dedup_hash);
+          } else if (this.jobs.has(app.job_id)) {
+            const j = this.jobs.get(app.job_id)!;
+            if (app.status === 'APPLIED') {
+              j.status = 'APPLIED';
+              this.jobs.set(app.job_id, j);
+            }
+          }
+        }
+        console.log(`[Store Persistence] Loaded ${this.applications.size} applications from disk.`);
+      }
+    } catch (e: any) {
+      console.warn('[Store Persistence] Error loading applications.json:', e.message);
+    }
+  }
+
+  private saveApplicationsToDisk() {
+    try {
+      const dir = path.resolve(process.cwd(), 'database');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const p = path.join(dir, 'applications.json');
+      const apps = Array.from(this.applications.values());
+      fs.writeFileSync(p, JSON.stringify(apps, null, 2), 'utf8');
+    } catch (err: any) {
+      console.warn('[Store Persistence] Failed to persist applications to disk:', err.message);
+    }
+  }
+
+  private saveJobsToDisk() {
+    try {
+      const dir = path.resolve(process.cwd(), 'database');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const p = path.join(dir, 'jobs.json');
+      const jobsList = Array.from(this.jobs.values());
+      fs.writeFileSync(p, JSON.stringify(jobsList, null, 2), 'utf8');
+    } catch (err: any) {
+      console.warn('[Store Persistence] Failed to persist jobs to disk:', err.message);
+    }
+  }
+
+  private saveQueueToDisk() {
+    try {
+      const dir = path.resolve(process.cwd(), 'database');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const p = path.join(dir, 'queue.json');
+      fs.writeFileSync(p, JSON.stringify(this.applyQueue, null, 2), 'utf8');
+    } catch (err: any) {
+      console.warn('[Store Persistence] Failed to persist queue to disk:', err.message);
+    }
+  }
+
+  private loadQueueFromDisk() {
+    try {
+      const queuePath = path.resolve(process.cwd(), 'database/queue.json');
+      if (fs.existsSync(queuePath)) {
+        const saved: string[] = JSON.parse(fs.readFileSync(queuePath, 'utf8'));
+        this.applyQueue = saved.filter((id) => this.jobs.has(id));  // only keep valid job IDs
+        console.log(`[Store Persistence] Loaded ${this.applyQueue.length} queued jobs from disk.`);
+      }
+    } catch (e: any) {
+      console.warn('[Store Persistence] Error loading queue.json:', e.message);
+    }
+  }
+
   private loadInitialProfile(): IMasterProfile {
     try {
       const p = path.resolve(process.cwd(), 'database/seeds/master_profile.json');
@@ -525,32 +846,32 @@ class AgentStore {
     }
 
     return {
-      full_name: 'Usman Shafiq',
-      email: 'usman.shafiq@example.com',
-      phone: '+92 300 0000000',
-      location: 'Lahore, Pakistan (Open to Remote)',
-      headline: 'Lead Mobile & Full-Stack Engineer (React Native, Next.js, AI)',
-      summary: 'Experienced developer specializing in React Native and Next.js platforms with integrated AI agents.',
+      full_name: 'Talha Sadiq',
+      email: 'talhasadiq320@gmail.com',
+      phone: '+92 345 6601101',
+      location: 'Pakistan (Open to Remote Worldwide)',
+      headline: 'AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering',
+      summary: 'Full Stack Developer with 8 years of production experience in React Native, Node.js, and React, now expanding into AI engineering and automation.',
       skills: [
         { name: 'React Native', level: 'Expert' },
-        { name: 'React.js', level: 'Expert' },
-        { name: 'Next.js', level: 'Expert' },
+        { name: 'Node.js', level: 'Expert' },
+        { name: 'React', level: 'Expert' },
         { name: 'TypeScript', level: 'Expert' },
-        { name: 'Supabase', level: 'Advanced' },
-        { name: 'Firebase', level: 'Advanced' },
-        { name: 'AI Agents', level: 'Advanced' },
+        { name: 'Claude Code & Cursor AI', level: 'Advanced' },
+        { name: 'OpenAI & Gemini API', level: 'Advanced' },
+        { name: 'REST APIs & Microservices', level: 'Expert' },
       ],
       experience: [],
       projects: [],
       education: [],
       preferences: {
-        target_roles: ['React Native Developer', 'Next.js Developer'],
+        target_roles: ['Full Stack Developer', 'AI Engineer', 'React Native Developer'],
         remote: true,
         target_locations: ['Remote', 'Worldwide'],
       },
       qa_vault: {
         work_authorization: 'Authorized for international remote contract work',
-        sponsorship_required: 'No for contract / Yes for US relocation',
+        sponsorship_required: 'No for contract / Open to US relocation sponsorship',
       },
     };
   }

@@ -27,7 +27,7 @@ export default function SettingsPage() {
   const [openaiKey, setOpenaiKey] = useState('');
   const [serpapiKey, setSerpapiKey] = useState('');
   const [adzunaId, setAdzunaId] = useState('');
-  const [smtpUser, setSmtpUser] = useState('usman.shafiq@gmail.com');
+  const [smtpUser, setSmtpUser] = useState('talhasadiq320@gmail.com');
 
   useEffect(() => {
     const fetchStatus = async () => {

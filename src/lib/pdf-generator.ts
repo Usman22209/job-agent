@@ -4,6 +4,10 @@ import path from 'path';
 const PDFDocument = require('pdfkit/js/pdfkit.standalone');
 import { ITailoredResume } from '@/types';
 
+/**
+ * Generates an executive, ATS-compliant PDF resume formatted exactly
+ * to match Talha Sadiq's professional resume layout and design system.
+ */
 export async function generateResumePdf(
   resume: ITailoredResume,
   filename: string
@@ -19,110 +23,322 @@ export async function generateResumePdf(
     try {
       const doc = new PDFDocument({
         size: 'A4',
-        margins: { top: 40, bottom: 40, left: 45, right: 45 },
+        margins: { top: 36, bottom: 36, left: 40, right: 40 },
+        autoFirstPage: true,
       });
 
       const stream = fs.createWriteStream(filePath);
       doc.pipe(stream);
 
-      // Header: Candidate Name
+      const contentWidth = 515; // 595.28 - 80 (margins)
+
+      // 1. TOP HEADER: Left-aligned Name
       doc
-        .fillColor('#111827')
+        .fillColor('#000000')
         .fontSize(22)
         .font('Helvetica-Bold')
-        .text(resume.full_name, { align: 'center' });
+        .text(resume.full_name || 'Talha Sadiq', 40, 36);
+
+      // Headline / Subtitle
+      const headline =
+        resume.headline ||
+        'AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering';
+      doc
+        .fontSize(10.5)
+        .font('Helvetica-Bold')
+        .fillColor('#111827')
+        .text(headline);
 
       // Contact Info Line
+      const rawContactLine =
+        resume.contact_line ||
+        'talhasadiq320@gmail.com | +92 345 6601101 | linkedin.com/in/talhagaba | github.com/shtalhagaba | behance.com/shtalhagaba';
+      const contactLine = rawContactLine.replace(/%Ï/g, '').replace(/\s*•\s*/g, ' | ');
       doc
-        .fontSize(9.5)
+        .moveDown(0.2)
+        .fontSize(8.5)
         .font('Helvetica')
         .fillColor('#4B5563')
-        .text(resume.contact_line, { align: 'center' });
+        .text(contactLine);
 
-      doc.moveDown(0.8);
-      renderHorizontalRule(doc);
+      doc.moveDown(0.6);
 
-      // Section: Professional Summary
-      doc.moveDown(0.5);
+      // 2. PROFESSIONAL SUMMARY
       renderSectionHeader(doc, 'PROFESSIONAL SUMMARY');
       doc
-        .fontSize(9.5)
+        .fontSize(9)
         .font('Helvetica')
-        .fillColor('#1F2937')
-        .text(resume.summary, { lineGap: 2.5 });
+        .fillColor('#111827')
+        .text(resume.summary, { lineGap: 2.2, align: 'justify' });
 
-      // Section: Technical Skills
-      doc.moveDown(0.8);
-      renderSectionHeader(doc, 'TECHNICAL SKILLS');
-      const skillsText = resume.ordered_skills.join('  •  ');
-      doc
-        .fontSize(9.5)
-        .font('Helvetica')
-        .fillColor('#1F2937')
-        .text(skillsText, { lineGap: 3 });
+      doc.moveDown(0.7);
 
-      // Section: Experience
-      doc.moveDown(0.8);
-      renderSectionHeader(doc, 'WORK EXPERIENCE');
-      for (const exp of resume.experience) {
-        doc
-          .fontSize(11)
-          .font('Helvetica-Bold')
-          .fillColor('#111827')
-          .text(`${exp.position}`, { continued: true })
-          .font('Helvetica')
-          .fillColor('#4B5563')
-          .text(`  |  ${exp.company}`, { continued: true })
-          .text(`  (${exp.period})`, { align: 'right' });
-
-        doc.moveDown(0.3);
-        for (const bullet of exp.bullet_points) {
+      // 3. SKILLS SECTIONS
+      // If structured skill categories exist, render them with bold prefixes; otherwise format cleanly
+      if (resume.skills_categories && resume.skills_categories.length > 0) {
+        renderSectionHeader(doc, 'TECHNICAL SKILLS');
+        for (const cat of resume.skills_categories) {
           doc
             .fontSize(9)
-            .font('Helvetica')
-            .fillColor('#374151')
-            .text(`•  ${bullet}`, { indent: 12, lineGap: 2 });
-        }
-        doc.moveDown(0.5);
-      }
-
-      // Section: Featured Projects
-      if (resume.selected_projects && resume.selected_projects.length > 0) {
-        doc.moveDown(0.3);
-        renderSectionHeader(doc, 'FEATURED PROJECTS');
-        for (const proj of resume.selected_projects) {
-          doc
-            .fontSize(10)
             .font('Helvetica-Bold')
-            .fillColor('#111827')
-            .text(proj.title, { continued: true })
-            .font('Helvetica-Oblique')
-            .fillColor('#6366F1')
-            .text(` [${proj.technologies.join(', ')}]`);
+            .fillColor('#000000')
+            .text(`${cat.category}: `, { continued: true })
+            .font('Helvetica')
+            .fillColor('#1F2937')
+            .text(cat.skills, { lineGap: 2 });
+        }
+        doc.moveDown(0.7);
+      } else {
+        // Render Default Categories inspired by the base PDF
+        renderSectionHeader(doc, 'AI & AUTOMATION SKILLS');
+        doc
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Hands-on Experience: ', { continued: true })
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(
+            'Claude Code, Cursor AI, OpenAI API, Gemini API, MCP (Model Context Protocol) integrations, TensorFlow, ONNX Runtime, n8n, GitHub Actions, FastAPI, prompt engineering, AI-assisted code generation, AI debugging, AI code review, AI workflow automation',
+            { lineGap: 2 }
+          );
+
+        doc
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Currently Learning: ', { continued: true })
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(
+            'Anthropic Claude API, LangChain, LangGraph, CrewAI, Retrieval-Augmented Generation (RAG), vector databases, Ollama, Hugging Face, PyTorch, Make, Zapier, Supabase, Docker (containerized deployment)',
+            { lineGap: 2 }
+          );
+
+        doc.moveDown(0.5);
+        renderSectionHeader(doc, 'TECHNICAL SKILLS');
+        doc
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Full Stack Development: ', { continued: true })
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(
+            'Node.js, Express, FastAPI, Python (Django, FastAPI), Ruby on Rails, Laravel, React, Next.js, TypeScript, JavaScript, GraphQL, REST APIs, microservices',
+            { lineGap: 2 }
+          );
+
+        doc
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Mobile Development: ', { continued: true })
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(
+            'React Native (CLI, Expo), Android (Java, Kotlin), Swift, Redux (Toolkit, Saga, Thunk, Persist), React Hooks, localization',
+            { lineGap: 2 }
+          );
+
+        doc
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Databases & Cloud: ', { continued: true })
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(
+            'MongoDB, Firebase, Realm, SQLite, AWS (CDK, SDK, Cognito), Azure, Docker',
+            { lineGap: 2 }
+          );
+
+        doc
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('DevOps & Tools: ', { continued: true })
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(
+            'Git, GitHub (Actions, GitLab, Bitbucket workflows), CI/CD, Fastlane, Postman, Xcode, Android Studio',
+            { lineGap: 2 }
+          );
+
+        doc
+          .fontSize(9)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Payments & Real-Time: ', { continued: true })
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(
+            'Stripe, Twilio, Agora, Socket.IO, WebRTC, Web3, blockchain, cryptography',
+            { lineGap: 2 }
+          );
+
+        doc.moveDown(0.7);
+      }
+
+      // 4. EXPERIENCE SECTION
+      renderSectionHeader(doc, 'EXPERIENCE');
+      for (const exp of resume.experience) {
+        // Page break safety check
+        if (doc.y > 700) {
+          doc.addPage();
+        }
+
+        const startY = doc.y;
+
+        // Left Side: Company + Position
+        doc
+          .fontSize(9.5)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text(exp.company, 40, startY, { continued: true });
+
+        doc
+          .font('Helvetica-Oblique')
+          .fillColor('#374151')
+          .text(`  ${exp.position}`);
+
+        // Right Side: Date Period
+        doc
+          .fontSize(8.8)
+          .font('Helvetica')
+          .fillColor('#111827')
+          .text(exp.period, 40, startY, { align: 'right', width: contentWidth });
+
+        doc.moveDown(0.25);
+
+        // Bullet Points
+        for (const bullet of exp.bullet_points) {
+          if (doc.y > 720) {
+            doc.addPage();
+          }
+          const startY = doc.y;
+          const cleanBullet = bullet
+            .replace(/%Ï/g, '')
+            .replace(/^([%Ï\s\u2022\u25CF\u25CB\u25AA\u25FE\u00B7\-*•])+\s*/g, '')
+            .trim();
+
+          // Native vector circle - crisp, no font encoding bugs, immune to WinAnsi/UTF-8 garble
+          doc.circle(46, startY + 4.5, 1.6).fill('#1F2937');
 
           doc
-            .fontSize(9)
+            .fontSize(8.8)
             .font('Helvetica')
-            .fillColor('#374151')
-            .text(proj.description, { indent: 8, lineGap: 2 });
-          doc.moveDown(0.3);
+            .fillColor('#1F2937')
+            .text(cleanBullet, 54, startY, {
+              width: contentWidth - 14,
+              lineGap: 1.8,
+              align: 'left',
+            });
+
+          doc.x = 40;
+          doc.moveDown(0.2);
+        }
+        doc.moveDown(0.3);
+      }
+
+      // 5. KEY PROJECTS SECTION
+      if (resume.selected_projects && resume.selected_projects.length > 0) {
+        if (doc.y > 680) doc.addPage();
+        doc.moveDown(0.4);
+        renderSectionHeader(doc, 'KEY PROJECTS');
+
+        for (const proj of resume.selected_projects) {
+          if (doc.y > 710) doc.addPage();
+          const projY = doc.y;
+
+          doc
+            .fontSize(9.5)
+            .font('Helvetica-Bold')
+            .fillColor('#000000')
+            .text(proj.title, 40, projY, { continued: Boolean(proj.url) });
+
+          if (proj.url) {
+            doc
+              .font('Helvetica')
+              .fillColor('#4B5563')
+              .text(` | ${proj.url.replace(/^https?:\/\//, '')}`);
+          }
+
+          doc.moveDown(0.15);
+          const cleanDesc = proj.description
+            .replace(/%Ï/g, '')
+            .replace(/^([%Ï\s\u2022\u25CF\u25CB\u25AA\u25FE\u00B7\-*•])+\s*/g, '')
+            .trim();
+
+          doc
+            .fontSize(8.8)
+            .font('Helvetica')
+            .fillColor('#1F2937')
+            .text(cleanDesc, { indent: 6, lineGap: 1.8 });
+
+          doc.moveDown(0.35);
         }
       }
 
-      // Section: Education
+      // 6. EDUCATION
       if (resume.education && resume.education.length > 0) {
-        doc.moveDown(0.3);
+        if (doc.y > 700) doc.addPage();
+        doc.moveDown(0.4);
         renderSectionHeader(doc, 'EDUCATION');
+
         for (const edu of resume.education) {
           doc
             .fontSize(9.5)
             .font('Helvetica-Bold')
-            .fillColor('#111827')
+            .fillColor('#000000')
             .text(edu.degree, { continued: true })
             .font('Helvetica')
+            .fillColor('#111827')
+            .text(` — ${edu.institution}, ${edu.year}`);
+
+          doc
+            .fontSize(8.5)
+            .font('Helvetica')
             .fillColor('#4B5563')
-            .text(` - ${edu.institution} (${edu.year})`);
+            .text(
+              'Coursework: Data Structures, OOP, DBMS, Web Development, Software Engineering, AI, Mobile App Development'
+            );
+
+          doc.moveDown(0.3);
         }
+      }
+
+      // 7. AWARDS & HONORS
+      if (doc.y > 720) doc.addPage();
+      doc.moveDown(0.3);
+      renderSectionHeader(doc, 'AWARDS & HONORS');
+      const awards = resume.awards || [
+        'First Prize, eRozgaar Hackathon 2019, as Team Lead',
+        'Second Position, NASA Space Apps Challenge, as Team Lead',
+        'ASO and Unity 3D workshops, with delivered projects following each',
+      ];
+      for (const award of awards) {
+        if (doc.y > 730) doc.addPage();
+        const startY = doc.y;
+        const cleanAward = award
+          .replace(/%Ï/g, '')
+          .replace(/^([%Ï\s\u2022\u25CF\u25CB\u25AA\u25FE\u00B7\-*•])+\s*/g, '')
+          .trim();
+
+        doc.circle(46, startY + 4.5, 1.6).fill('#1F2937');
+
+        doc
+          .fontSize(8.8)
+          .font('Helvetica')
+          .fillColor('#1F2937')
+          .text(cleanAward, 54, startY, {
+            width: contentWidth - 14,
+            lineGap: 1.5,
+            align: 'left',
+          });
+
+        doc.x = 40;
+        doc.moveDown(0.15);
       }
 
       doc.end();
@@ -145,21 +361,18 @@ export async function generateResumePdf(
 
 function renderSectionHeader(doc: any, title: string) {
   doc
-    .fontSize(10.5)
+    .fontSize(10)
     .font('Helvetica-Bold')
-    .fillColor('#3730A3')
-    .text(title.toUpperCase());
-  renderHorizontalRule(doc);
-  doc.moveDown(0.3);
-}
+    .fillColor('#000000')
+    .text(title.toUpperCase(), 40);
 
-function renderHorizontalRule(doc: any) {
-  const y = doc.y;
+  const y = doc.y + 2;
   doc
-    .strokeColor('#E5E7EB')
+    .strokeColor('#000000')
     .lineWidth(0.8)
-    .moveTo(45, y)
-    .lineTo(550, y)
+    .moveTo(40, y)
+    .lineTo(555, y)
     .stroke();
+
   doc.y = y + 4;
 }

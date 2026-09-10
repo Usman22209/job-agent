@@ -126,4 +126,35 @@ export const AgentApi = {
     const res = await apiClient.post('/scheduler', { action: 'setInterval', minutes });
     return res.data;
   },
+
+  // Agent Queue
+  async getAgentStatus() {
+    const res = await apiClient.get('/agent');
+    return res.data;
+  },
+
+  async startAgent() {
+    const res = await apiClient.post('/agent', { action: 'start' });
+    return res.data;
+  },
+
+  async stopAgent() {
+    const res = await apiClient.post('/agent', { action: 'stop' });
+    return res.data;
+  },
+
+  async addToQueue(jobId: string) {
+    const res = await apiClient.post('/agent', { action: 'add', jobId });
+    return res.data;
+  },
+
+  async addAllToQueue() {
+    const res = await apiClient.post('/agent', { action: 'addAll' });
+    return res.data;
+  },
+
+  async removeFromQueue(jobId: string) {
+    const res = await apiClient.post('/agent', { action: 'remove', jobId });
+    return res.data;
+  },
 };

@@ -81,7 +81,8 @@ Respond ONLY in valid JSON matching this schema:
 {
   "tailored_resume": {
     "full_name": "${profile.full_name}",
-    "contact_line": "${profile.email} • ${profile.phone} • ${profile.location}",
+    "headline": "${profile.headline}",
+    "contact_line": "${profile.email} | ${profile.phone} | linkedin.com/in/talhagaba | github.com/shtalhagaba | behance.com/shtalhagaba",
     "summary": "<tailored ATS-targeted summary strictly based on real experience>",
     "ordered_skills": ["<skill1>", "<skill2>", "<skill3>"],
     "experience": [
@@ -96,7 +97,8 @@ Respond ONLY in valid JSON matching this schema:
       {
         "title": "<project title>",
         "technologies": ["<tech1>", "<tech2>"],
-        "description": "<project description>"
+        "description": "<project description>",
+        "url": "<project url if available>"
       }
     ],
     "education": [
@@ -107,7 +109,7 @@ Respond ONLY in valid JSON matching this schema:
       }
     ]
   },
-  "cover_letter": "<Personalized, professional 3-paragraph cover letter for ${job.title} at ${job.company} from Usman Shafiq>"
+  "cover_letter": "<Personalized, professional 3-paragraph cover letter for ${job.title} at ${job.company} from ${profile.full_name}>"
 }
 `;
 }
@@ -207,11 +209,16 @@ function tailorDeterministically(
   const topKeywords =
     prioritizedSkills.slice(0, 4).join(', ') ||
     'React Native, TypeScript, Next.js, and AI automation';
+  const recentExp = profile.experience && profile.experience.length > 0 ? profile.experience[0] : null;
+  const expSnippet = recentExp
+    ? `At ${recentExp.company}, where I served as ${recentExp.position}, I led development across core product initiatives, delivering robust architectures, implementing microservices, and integrating cutting-edge AI workflows.`
+    : `Throughout my 8+ years of production engineering, I have focused on architecting resilient, user-centric software.`;
+
   const coverLetter = `Dear Hiring Team at ${job.company},
 
 I am writing to express my strong interest in the ${job.title} role. With extensive hands-on engineering experience developing scalable mobile and web applications—particularly utilizing ${topKeywords}—I am confident in my ability to make an immediate, positive impact on your product roadmap.
 
-Throughout my career, I have focused on architecting resilient, user-centric software. At LifeLink, I spearheaded cross-platform mobile delivery with React Native and Supabase, maintaining 99.9% uptime for vital services. Additionally, my work in AI automation and modern Next.js platforms enables me to rapidly engineer modern features and maintain rigorous code quality.
+Throughout my career, I have focused on architecting resilient, high-performance software. ${expSnippet} Additionally, my practical work in AI automation, LLM workflows, and modern cloud platforms enables me to rapidly engineer reliable features and maintain rigorous code quality.
 
 ${job.company}'s work resonates strongly with my engineering philosophy. I welcome the opportunity to discuss how my background in ${
     prioritizedSkills[0] || 'software development'
@@ -220,11 +227,11 @@ ${job.company}'s work resonates strongly with my engineering philosophy. I welco
 Sincerely,
 ${profile.full_name}
 ${profile.email} | ${profile.phone}
-${profile.location}`;
+LinkedIn: https://linkedin.com/in/talhagaba | GitHub: https://github.com/shtalhagaba`;
 
   const tailoredResume: ITailoredResume = {
     full_name: profile.full_name,
-    contact_line: `${profile.email} • ${profile.phone} • ${profile.location}`,
+    contact_line: `${profile.email} | ${profile.phone} | linkedin.com/in/talhagaba | github.com/shtalhagaba | behance.com/shtalhagaba`,
     summary,
     ordered_skills: orderedSkills,
     experience,

@@ -100,6 +100,8 @@ export interface IJob {
   dedup_hash?: string;
   created_at?: string;
   match?: IJobMatch;
+  application_id?: string;
+  tailored_resume_pdf_url?: string;
 }
 
 export interface IJobMatch {
@@ -116,9 +118,14 @@ export interface IJobMatch {
 
 export interface ITailoredResume {
   full_name: string;
+  headline?: string;
   contact_line: string;
   summary: string;
   ordered_skills: string[];
+  skills_categories?: {
+    category: string;
+    skills: string;
+  }[];
   experience: {
     company: string;
     position: string;
@@ -129,12 +136,15 @@ export interface ITailoredResume {
     title: string;
     technologies: string[];
     description: string;
+    url?: string;
   }[];
   education: {
     degree: string;
     institution: string;
     year: string;
+    details?: string;
   }[];
+  awards?: string[];
 }
 
 export interface IApplication {

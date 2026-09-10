@@ -1,5 +1,4 @@
-// Google Gemini AI Engine with Cascading Fallbacks & Dynamic Model Discovery
-// (Architected directly from lead-agent for 100% resilient model compatibility)
+import { GoogleGenAI } from '@google/genai';
 
 export interface GeminiInlineData {
   mimeType: string;
@@ -17,67 +16,23 @@ export function cleanJsonOutput(text: string): string {
   return cleaned.trim();
 }
 
-const DEFAULT_CANDIDATE_MODELS = [
+const CANDIDATE_MODELS = [
   'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-exp',
   'gemini-flash-latest',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-latest',
-  'gemini-pro-latest',
+  'gemini-3.5-flash-lite',
+  'gemini-flash-lite-latest',
+  'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite',
+  'gemini-3.6-flash',
 ];
 
-let cachedAvailableModels: string[] | null = null;
-let lastModelFetchTime = 0;
-
-/**
- * Dynamically queries Google AI Studio for all active models supported by the user's API key.
- * This completely prevents 404/400 errors from retired or regionally unavailable models.
- */
 export async function getLiveAvailableModels(apiKey: string): Promise<string[]> {
-  const now = Date.now();
-  if (
-    cachedAvailableModels &&
-    cachedAvailableModels.length > 0 &&
-    now - lastModelFetchTime < 600000 // 10 minute cache
-  ) {
-    return cachedAvailableModels;
-  }
-
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
-    );
-    if (res.ok) {
-      const data = await res.json();
-      if (data.models && Array.isArray(data.models)) {
-        const validModels = data.models
-          .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
-          .map((m: any) => m.name.replace(/^models\//, ''))
-          .sort((a: string, b: string) => {
-            const aIsFlash = a.includes('flash');
-            const bIsFlash = b.includes('flash');
-            if (aIsFlash && !bIsFlash) return -1;
-            if (!aIsFlash && bIsFlash) return 1;
-            return 0;
-          });
-
-        if (validModels.length > 0) {
-          cachedAvailableModels = validModels;
-          lastModelFetchTime = now;
-          return validModels;
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('[Gemini Engine] Could not dynamically query models list, using candidate list', err);
-  }
-
-  return DEFAULT_CANDIDATE_MODELS;
+  return CANDIDATE_MODELS;
 }
 
 /**
- * Cascading Gemini API caller that tries supported models sequentially
+ * Cascading Gemini API caller using the official @google/genai SDK
+ * with automatic model failover and multimodal PDF support.
  */
 export async function callGeminiAPIWithCascade(
   apiKey: string | undefined,
@@ -95,68 +50,52 @@ export async function callGeminiAPIWithCascade(
     throw new Error('MISSING_KEY');
   }
 
-  const fullPrompt = systemPrompt ? `${systemPrompt}\n\nTask:\n${prompt}` : prompt;
-  const availableModels = await getLiveAvailableModels(key);
+  const ai = new GoogleGenAI({ apiKey: key });
   let lastError: any = null;
 
-  for (let i = 0; i < availableModels.length; i++) {
-    const modelName = availableModels[i];
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+  for (let i = 0; i < CANDIDATE_MODELS.length; i++) {
+    const model = CANDIDATE_MODELS[i];
 
     try {
       if (i > 0) {
-        await new Promise((res) => setTimeout(res, 600));
+        await new Promise((res) => setTimeout(res, 500));
       }
 
-      const parts: any[] = [];
+      const contents: any[] = [];
       if (inlineData) {
-        parts.push({
+        contents.push({
           inlineData: {
             mimeType: inlineData.mimeType,
             data: inlineData.data,
           },
         });
       }
-      parts.push({ text: fullPrompt });
+      contents.push(prompt);
 
-      const bodyPayload: any = {
-        contents: [
-          {
-            parts,
-          },
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 8192,
-        },
+      const config: any = {
+        temperature: 0.2,
       };
 
       if (jsonMode) {
-        bodyPayload.generationConfig.responseMimeType = 'application/json';
+        config.responseMimeType = 'application/json';
       }
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bodyPayload),
+      if (systemPrompt) {
+        config.systemInstruction = systemPrompt;
+      }
+
+      const response = await ai.models.generateContent({
+        model,
+        contents,
+        config,
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.warn(`[Gemini Engine - ${modelName}] HTTP ${response.status}:`, errorText);
-        lastError = new Error(`Gemini API [${modelName}] Error: ${response.status}`);
-        continue;
-      }
-
-      const data = await response.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const text = response.text || '';
       if (text) {
-        return { text: cleanJsonOutput(text), modelUsed: modelName };
+        return { text: cleanJsonOutput(text), modelUsed: model };
       }
     } catch (err: any) {
-      console.warn(`[Gemini Engine - ${modelName}] Request failed:`, err.message);
+      console.warn(`[Gemini Engine] Model ${model} notice: ${err.message?.slice(0, 100) || err}. Switching candidate...`);
       lastError = err;
     }
   }

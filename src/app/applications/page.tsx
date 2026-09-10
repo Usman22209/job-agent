@@ -372,7 +372,7 @@ export default function ApplicationsPage() {
                   <input
                     type="text"
                     readOnly
-                    value={selectedApp.email_subject || `Application for ${selectedApp.job?.title} — Usman Shafiq`}
+                    value={selectedApp.email_subject || `Application for ${selectedApp.job?.title} at ${selectedApp.job?.company}`}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold"
                   />
                 </div>

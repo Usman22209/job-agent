@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Activity, 
-  Briefcase, 
+  GitPullRequest, 
   Layers, 
   UserCheck, 
   Settings 
@@ -19,8 +19,8 @@ const NAV_ITEMS = [
   },
   {
     href: '/jobs',
-    label: 'Discovered Jobs',
-    icon: Briefcase,
+    label: 'Queue Board',
+    icon: GitPullRequest,
   },
   {
     href: '/applications',
