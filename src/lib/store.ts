@@ -7,6 +7,8 @@ import {
   IJobMatch, 
   IApplication, 
   ISchedulerStatus, 
+  IAutonomousStatus,
+  AutonomousLoopState,
   ApplicationStatus,
   JobStatus 
 } from '@/types';
@@ -21,6 +23,7 @@ import { evaluateJobMatch } from './matcher';
 import { tailorResumeAndCoverLetter } from './resume-tailor';
 import { generateResumePdf } from './pdf-generator';
 import { sendApplicationEmail } from './email';
+import { browserAutoApply } from './browser-agent';
 
 class AgentStore {
   private profile: IMasterProfile;
@@ -44,6 +47,17 @@ class AgentStore {
   private currentlyProcessingJobId: string | null = null;
   private agentLog: { jobId: string; jobTitle: string; status: string; message: string; timestamp: string }[] = [];
   private agentTimer: NodeJS.Timeout | null = null;
+
+  // --- Autonomous Loop Mode State ---
+  private isAutonomousMode: boolean = true;
+  private autonomousState: AutonomousLoopState = 'IDLE';
+  private dailyApplicationLimit: number = 40;
+  private applicationsToday: number = 0;
+  private lastDayReset: string = new Date().toISOString().slice(0, 10);
+  private autonomousCooldownMinutes: number = 5;
+  private nextAutonomousCycleAt: string | null = null;
+  private autonomousCooldownTimer: NodeJS.Timeout | null = null;
+
 
   constructor() {
     this.profile = this.loadInitialProfile();
@@ -413,7 +427,7 @@ class AgentStore {
 
     // 4. Dispatch Email or Prepare Web Portal
     const hasEmail = Boolean(job.contact_email);
-    const method: 'EMAIL' | 'WEB_PORTAL' = hasEmail ? 'EMAIL' : 'WEB_PORTAL';
+    let method: 'EMAIL' | 'WEB_PORTAL' = hasEmail ? 'EMAIL' : 'WEB_PORTAL';
     let message = '';
 
     if (hasEmail) {
@@ -433,11 +447,38 @@ class AgentStore {
         message = `Email dispatch error: ${err.message}`;
       }
     } else {
-      // Web portal jobs: resume is tailored but user must manually apply
-      app.status = 'READY';
-      job.status = 'MATCHED';
-      message = `Tailored resume PDF generated for ${job.company}. Apply manually at: ${job.application_url || job.url}`;
-      console.log(`[Agent Queue] Web portal job — resume ready, manual apply needed: ${job.application_url || job.url}`);
+      // Web portal jobs: try Playwright browser automation
+      console.log(`[Agent Queue] Web portal job — attempting browser automation for ${job.company}...`);
+      const pdfPath = (app as any).local_pdf_path;
+      try {
+        const browserResult = await browserAutoApply(job, this.profile, pdfPath, app.cover_letter);
+
+        if (browserResult.success) {
+          app.status = 'APPLIED';
+          job.status = 'APPLIED';
+          method = 'WEB_PORTAL';
+          message = browserResult.message;
+          // Store screenshot URL for proof
+          if (browserResult.screenshotUrl) {
+            app.browser_screenshot_url = browserResult.screenshotUrl;
+          }
+          console.log(`[Agent Queue] ✓ Browser auto-applied: "${job.title}" — ${browserResult.formFieldsFilled?.length || 0} fields filled`);
+        } else {
+          // Browser couldn't fully submit — mark as READY for manual action
+          app.status = 'READY';
+          job.status = 'MATCHED';
+          message = browserResult.message;
+          if (browserResult.screenshotUrl) {
+            app.browser_screenshot_url = browserResult.screenshotUrl;
+          }
+          console.log(`[Agent Queue] ⚠ Browser needs manual action: ${browserResult.message}`);
+        }
+      } catch (browserErr: any) {
+        console.error(`[Agent Queue] Browser automation error: ${browserErr.message}`);
+        app.status = 'READY';
+        job.status = 'MATCHED';
+        message = `Browser automation failed: ${browserErr.message}. Apply manually at: ${job.application_url || job.url}`;
+      }
     }
 
     app.updated_at = new Date().toISOString();
@@ -509,6 +550,39 @@ class AgentStore {
     return { success: true, queueLength: this.applyQueue.length };
   }
 
+  moveAppliedToQueue(): { success: boolean; movedCount: number; queueLength: number } {
+    let movedCount = 0;
+    this.jobs.forEach((job, jobId) => {
+      if (job.status === 'APPLIED') {
+        job.status = 'MATCHED';
+        this.jobs.set(jobId, job);
+        if (!this.applyQueue.includes(jobId)) {
+          this.applyQueue.unshift(jobId);
+          movedCount++;
+        }
+      }
+    });
+
+    this.applications.forEach((app, appId) => {
+      if (app.status === 'APPLIED') {
+        app.status = 'READY';
+        this.applications.set(appId, app);
+      }
+    });
+
+    this.saveJobsToDisk();
+    this.saveApplicationsToDisk();
+    this.saveQueueToDisk();
+    console.log(`[Store] Moved ${movedCount} applied jobs back to queue. New queue length: ${this.applyQueue.length}`);
+    return { success: true, movedCount, queueLength: this.applyQueue.length };
+  }
+
+  reloadFromDisk(): void {
+    this.loadPersistedData();
+    this.loadQueueFromDisk();
+    this.loadAutonomousConfigFromDisk();
+  }
+
   getQueueStatus(): {
     isRunning: boolean;
     queue: string[];
@@ -516,6 +590,7 @@ class AgentStore {
     currentJobTitle: string | null;
     queueLength: number;
     log: { jobId: string; jobTitle: string; status: string; message: string; timestamp: string }[];
+    autonomous: IAutonomousStatus;
   } {
     const currentJob = this.currentlyProcessingJobId ? this.jobs.get(this.currentlyProcessingJobId) : null;
     return {
@@ -525,7 +600,94 @@ class AgentStore {
       currentJobTitle: currentJob?.title || null,
       queueLength: this.applyQueue.length,
       log: this.agentLog.slice(-20),  // last 20 entries
+      autonomous: this.getAutonomousStatus(),
     };
+  }
+
+  // --- Autonomous Loop Helpers & Configuration ---
+  private checkDailyLimitReset(): void {
+    const today = new Date().toISOString().slice(0, 10);
+    if (this.lastDayReset !== today) {
+      this.lastDayReset = today;
+      this.applicationsToday = 0;
+      this.saveAutonomousConfigToDisk();
+      console.log(`[Autonomous Loop] Daily application count reset for ${today}.`);
+    }
+  }
+
+  getAutonomousStatus(): IAutonomousStatus {
+    this.checkDailyLimitReset();
+    return {
+      is_autonomous: this.isAutonomousMode,
+      state: this.autonomousState,
+      applications_today: this.applicationsToday,
+      daily_limit: this.dailyApplicationLimit,
+      cooldown_minutes: this.autonomousCooldownMinutes,
+      next_cycle_at: this.nextAutonomousCycleAt,
+    };
+  }
+
+  toggleAutonomousMode(enabled: boolean): IAutonomousStatus {
+    this.isAutonomousMode = enabled;
+    console.log(`[Autonomous Loop] Mode set to: ${enabled ? 'ENABLED' : 'PAUSED'}`);
+    if (!enabled) {
+      if (this.autonomousCooldownTimer) {
+        clearTimeout(this.autonomousCooldownTimer);
+        this.autonomousCooldownTimer = null;
+      }
+      this.nextAutonomousCycleAt = null;
+      if (this.autonomousState === 'COOLDOWN' || this.autonomousState === 'DISCOVERING') {
+        this.autonomousState = 'IDLE';
+      }
+    } else {
+      // If turned ON, start applying if we have queue items or schedule immediate discovery
+      if (!this.isAgentRunning && this.applyQueue.length > 0) {
+        console.log(`[Autonomous Loop] Auto-starting application worker with ${this.applyQueue.length} jobs in queue...`);
+        this.startAgent();
+      } else if (!this.isAgentRunning && this.applyQueue.length === 0 && !this.isSchedulerRunning) {
+        console.log('[Autonomous Loop] Scheduling immediate discovery cycle...');
+        this.scheduleAutonomousCycle(0.05); // ~3 seconds
+      }
+    }
+    this.saveAutonomousConfigToDisk();
+    return this.getAutonomousStatus();
+  }
+
+  setAutonomousConfig(config: { dailyLimit?: number; cooldownMinutes?: number }): IAutonomousStatus {
+    if (typeof config.dailyLimit === 'number' && config.dailyLimit > 0) {
+      this.dailyApplicationLimit = config.dailyLimit;
+    }
+    if (typeof config.cooldownMinutes === 'number' && config.cooldownMinutes > 0) {
+      this.autonomousCooldownMinutes = config.cooldownMinutes;
+    }
+    this.saveAutonomousConfigToDisk();
+    return this.getAutonomousStatus();
+  }
+
+  private scheduleAutonomousCycle(delayMinutes?: number): void {
+    if (!this.isAutonomousMode) return;
+    if (this.autonomousCooldownTimer) {
+      clearTimeout(this.autonomousCooldownTimer);
+      this.autonomousCooldownTimer = null;
+    }
+    const waitMinutes = delayMinutes ?? this.autonomousCooldownMinutes;
+    const waitMs = Math.max(1000, Math.round(waitMinutes * 60 * 1000));
+    this.autonomousState = 'COOLDOWN';
+    this.nextAutonomousCycleAt = new Date(Date.now() + waitMs).toISOString();
+    console.log(`[Autonomous Loop] Cooldown active. Next discovery cycle scheduled at ${this.nextAutonomousCycleAt} (${waitMinutes}m)`);
+
+    this.autonomousCooldownTimer = setTimeout(async () => {
+      this.autonomousCooldownTimer = null;
+      this.nextAutonomousCycleAt = null;
+      if (!this.isAutonomousMode) return;
+      console.log('[Autonomous Loop] Cooldown elapsed. Starting autonomous job discovery & tailoring...');
+      try {
+        await this.executeLocalAgentPipeline();
+      } catch (err: any) {
+        console.error('[Autonomous Loop] Cycle execution error:', err.message);
+        this.scheduleAutonomousCycle();
+      }
+    }, waitMs);
   }
 
   startAgent(): { success: boolean; message: string } {
@@ -536,6 +698,9 @@ class AgentStore {
       return { success: false, message: 'Queue is empty. Add jobs to the queue first.' };
     }
     this.isAgentRunning = true;
+    if (this.isAutonomousMode) {
+      this.autonomousState = 'APPLYING';
+    }
     console.log(`[Agent Queue] Started. ${this.applyQueue.length} jobs in queue.`);
     // Kick off the first processing
     this.processNextInQueue();
@@ -550,6 +715,12 @@ class AgentStore {
       clearTimeout(this.agentTimer);
       this.agentTimer = null;
     }
+    if (this.autonomousCooldownTimer) {
+      clearTimeout(this.autonomousCooldownTimer);
+      this.autonomousCooldownTimer = null;
+    }
+    this.nextAutonomousCycleAt = null;
+    this.autonomousState = 'IDLE';
     this.saveQueueToDisk();
     console.log('[Agent Queue] Stopped by user.');
     return { success: true, message: wasRunning ? 'Agent stopped. Current job will finish but no more will be processed.' : 'Agent is already stopped.' };
@@ -561,15 +732,37 @@ class AgentStore {
       return;
     }
 
+    this.checkDailyLimitReset();
+
     if (this.applyQueue.length === 0) {
       this.isAgentRunning = false;
       this.currentlyProcessingJobId = null;
-      console.log('[Agent Queue] All jobs processed. Agent stopped.');
+      console.log('[Agent Queue] All jobs in queue processed.');
+
+      if (this.isAutonomousMode) {
+        console.log(`[Autonomous Loop] Queue emptied! Entering ${this.autonomousCooldownMinutes}m cooldown before next discovery pass.`);
+        this.scheduleAutonomousCycle();
+      } else {
+        this.autonomousState = 'IDLE';
+      }
+      return;
+    }
+
+    if (this.applicationsToday >= this.dailyApplicationLimit) {
+      console.log(`[Autonomous Loop] Daily application limit reached (${this.dailyApplicationLimit}). Pausing applications until tomorrow.`);
+      this.isAgentRunning = false;
+      this.currentlyProcessingJobId = null;
+      if (this.isAutonomousMode) {
+        this.scheduleAutonomousCycle(60); // Check again in 60 minutes
+      }
       return;
     }
 
     const jobId = this.applyQueue.shift()!;
     this.currentlyProcessingJobId = jobId;
+    if (this.isAutonomousMode) {
+      this.autonomousState = 'APPLYING';
+    }
     this.saveQueueToDisk();
 
     const job = this.jobs.get(jobId);
@@ -578,14 +771,23 @@ class AgentStore {
 
     try {
       const result = await this.autoApplyToJob(jobId);
+      const isActuallyApplied = result.application.status === 'APPLIED';
+      if (isActuallyApplied) {
+        this.applicationsToday++;
+        this.saveAutonomousConfigToDisk();
+      }
       this.agentLog.push({
         jobId,
         jobTitle,
-        status: 'success',
+        status: isActuallyApplied ? 'success' : 'manual_needed',
         message: result.message,
         timestamp: new Date().toISOString(),
       });
-      console.log(`[Agent Queue] ✓ Applied: "${jobTitle}" via ${result.method}`);
+      if (isActuallyApplied) {
+        console.log(`[Agent Queue] ✓ Applied (${this.applicationsToday}/${this.dailyApplicationLimit} today): "${jobTitle}" via ${result.method}`);
+      } else {
+        console.log(`[Agent Queue] 📋 Prepared (Action Needed): "${jobTitle}" — ${result.message}`);
+      }
     } catch (err: any) {
       this.agentLog.push({
         jobId,
@@ -608,7 +810,12 @@ class AgentStore {
       }, delayMs);
     } else {
       this.isAgentRunning = false;
-      console.log('[Agent Queue] Queue complete or agent stopped.');
+      console.log('[Agent Queue] Queue complete.');
+      if (this.isAutonomousMode) {
+        this.scheduleAutonomousCycle();
+      } else {
+        this.autonomousState = 'IDLE';
+      }
     }
   }
 
@@ -624,6 +831,9 @@ class AgentStore {
 
     this.isSchedulerRunning = true;
     this.lastCronRun = new Date().toISOString();
+    if (this.isAutonomousMode && !this.isAgentRunning) {
+      this.autonomousState = 'DISCOVERING';
+    }
 
     let newJobsFound = 0;
     let highFitMatched = 0;
@@ -649,12 +859,57 @@ class AgentStore {
           await this.tailorApplication(app.id);
           applicationsCreated++;
           this.totalApplicationsQueued++;
+
+          // Auto-Enqueue high-fit job directly into applyQueue
+          if (!this.applyQueue.includes(job.id) && job.status !== 'APPLIED') {
+            this.applyQueue.push(job.id);
+            job.status = 'MATCHED';
+            this.jobs.set(job.id, job);
+          }
+        }
+      }
+
+      // Also auto-enqueue any unapplied matched jobs if queue is empty
+      if (this.applyQueue.length === 0) {
+        for (const job of Array.from(this.jobs.values())) {
+          if (job.status === 'MATCHED' && !this.applyQueue.includes(job.id)) {
+            const existingApp = Array.from(this.applications.values()).find(a => a.job_id === job.id);
+            if (!existingApp || existingApp.status !== 'APPLIED') {
+              this.applyQueue.push(job.id);
+            }
+          }
+        }
+      }
+
+      this.saveJobsToDisk();
+      this.saveQueueToDisk();
+
+      // If autonomous mode is enabled, auto-start queue or schedule next cycle
+      if (this.isAutonomousMode) {
+        if (!this.isAgentRunning && this.applyQueue.length > 0) {
+          console.log(`[Autonomous Loop] ${this.applyQueue.length} jobs ready in queue. Auto-launching application worker...`);
+          this.startAgent();
+        } else if (this.applyQueue.length === 0) {
+          console.log('[Autonomous Loop] Discovery completed with no new jobs to apply. Scheduling next discovery cycle...');
+          this.scheduleAutonomousCycle();
         }
       }
     } catch (err: any) {
       console.error('Local cron agent execution error:', err.message);
+      if (this.isAutonomousMode && !this.isAgentRunning && this.applyQueue.length === 0) {
+        this.scheduleAutonomousCycle();
+      }
     } finally {
       this.isSchedulerRunning = false;
+      if (this.isAutonomousMode) {
+        if (this.isAgentRunning) {
+          this.autonomousState = 'APPLYING';
+        } else if (this.autonomousCooldownTimer) {
+          this.autonomousState = 'COOLDOWN';
+        } else {
+          this.autonomousState = 'IDLE';
+        }
+      }
     }
 
     return { newJobsFound, highFitMatched, applicationsCreated };
@@ -785,6 +1040,8 @@ class AgentStore {
     } catch (e: any) {
       console.warn('[Store Persistence] Error loading applications.json:', e.message);
     }
+
+    this.loadAutonomousConfigFromDisk();
   }
 
   private saveApplicationsToDisk() {
@@ -833,6 +1090,42 @@ class AgentStore {
     } catch (e: any) {
       console.warn('[Store Persistence] Error loading queue.json:', e.message);
     }
+  }
+
+  private saveAutonomousConfigToDisk() {
+    try {
+      const dir = path.resolve(process.cwd(), 'database');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const p = path.join(dir, 'autonomous_config.json');
+      const data = {
+        isAutonomousMode: this.isAutonomousMode,
+        dailyApplicationLimit: this.dailyApplicationLimit,
+        autonomousCooldownMinutes: this.autonomousCooldownMinutes,
+        applicationsToday: this.applicationsToday,
+        lastDayReset: this.lastDayReset,
+      };
+      fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
+    } catch (err: any) {
+      console.warn('[Store Persistence] Failed to persist autonomous config to disk:', err.message);
+    }
+  }
+
+  private loadAutonomousConfigFromDisk() {
+    try {
+      const p = path.resolve(process.cwd(), 'database/autonomous_config.json');
+      if (fs.existsSync(p)) {
+        const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+        if (typeof data.isAutonomousMode === 'boolean') this.isAutonomousMode = data.isAutonomousMode;
+        if (typeof data.dailyApplicationLimit === 'number') this.dailyApplicationLimit = data.dailyApplicationLimit;
+        if (typeof data.autonomousCooldownMinutes === 'number') this.autonomousCooldownMinutes = data.autonomousCooldownMinutes;
+        if (typeof data.applicationsToday === 'number') this.applicationsToday = data.applicationsToday;
+        if (typeof data.lastDayReset === 'string') this.lastDayReset = data.lastDayReset;
+        console.log(`[Store Persistence] Loaded autonomous configuration from disk.`);
+      }
+    } catch (e: any) {
+      console.warn('[Store Persistence] Error loading autonomous_config.json:', e.message);
+    }
+    this.checkDailyLimitReset();
   }
 
   private loadInitialProfile(): IMasterProfile {

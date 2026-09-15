@@ -8,7 +8,9 @@ import {
   Globe, 
   Download, 
   ShieldAlert,
-  X
+  X,
+  Camera,
+  ExternalLink
 } from 'lucide-react';
 import { AgentApi } from '@/lib/api-client';
 import { IApplication, ApplicationStatus } from '@/types';
@@ -24,7 +26,7 @@ const STAGES: { id: ApplicationStatus; label: string; badge: string }[] = [
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<IApplication[]>([]);
   const [selectedApp, setSelectedApp] = useState<IApplication | null>(null);
-  const [activeTab, setActiveTab] = useState<'resume' | 'cover_letter' | 'email' | 'form_review'>('resume');
+  const [activeTab, setActiveTab] = useState<'resume' | 'cover_letter' | 'email' | 'form_review' | 'browser_proof'>('resume');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [inspectingForm, setInspectingForm] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -159,7 +161,7 @@ export default function ApplicationsPage() {
                       </p>
 
                       <div className="flex items-center justify-between pt-2 text-[10px] text-slate-500 border-t border-slate-100">
-                        <span className="flex items-center gap-1 font-mono">
+                        <span className="flex items-center gap-1.5 font-mono">
                           {app.application_channel === 'EMAIL' ? (
                             <span className="text-emerald-700 font-medium flex items-center gap-1">
                               <Mail className="h-3 w-3 text-emerald-600" /> Email
@@ -167,6 +169,11 @@ export default function ApplicationsPage() {
                           ) : (
                             <span className="text-indigo-700 font-medium flex items-center gap-1">
                               <Globe className="h-3 w-3 text-indigo-600" /> Web ATS
+                            </span>
+                          )}
+                          {app.browser_screenshot_url && (
+                            <span className="text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[9px] font-semibold flex items-center gap-0.5" title="Browser screenshot available">
+                              <Camera className="h-2.5 w-2.5" /> Proof
                             </span>
                           )}
                         </span>
@@ -261,12 +268,13 @@ export default function ApplicationsPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex border-b border-slate-200">
+            <div className="flex border-b border-slate-200 overflow-x-auto">
               {[
                 { id: 'resume', label: 'Tailored Resume' },
                 { id: 'cover_letter', label: 'Cover Letter' },
                 { id: 'email', label: 'Email Outreach' },
                 { id: 'form_review', label: 'Form Inspector' },
+                { id: 'browser_proof', label: selectedApp.browser_screenshot_url ? '📸 Browser Proof' : 'Browser Proof' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -414,6 +422,52 @@ export default function ApplicationsPage() {
                     <p className="text-[11px] text-slate-500">Proposed QA answer: <strong className="text-brand-700 font-semibold">Yes, authorized for international remote contract work</strong></p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Tab 5: Browser Automation Proof */}
+            {activeTab === 'browser_proof' && (
+              <div className="space-y-4 text-xs">
+                {selectedApp.browser_screenshot_url ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-slate-700 uppercase font-mono text-[11px]">
+                          Browser Form Automation Proof
+                        </h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Snapshot captured directly by the Playwright AI agent during form fill & submission.
+                        </p>
+                      </div>
+                      <a
+                        href={selectedApp.browser_screenshot_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 font-semibold transition-colors flex-shrink-0"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span>Open Full Size</span>
+                      </a>
+                    </div>
+                    <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-900 shadow-sm">
+                      <img
+                        src={selectedApp.browser_screenshot_url}
+                        alt="Autonomous browser session screenshot"
+                        className="w-full h-auto object-contain max-h-[500px]"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-slate-400 space-y-3">
+                    <Globe className="h-10 w-10 mx-auto text-slate-300" />
+                    <div>
+                      <p className="font-medium text-slate-600">No browser screenshot recorded yet</p>
+                      <p className="text-[11px] text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
+                        When the Playwright browser agent interacts with web portals for this role, audit screenshots of filled forms and submissions will appear here.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

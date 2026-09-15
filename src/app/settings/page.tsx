@@ -7,11 +7,13 @@ import {
   Mail, 
   Save, 
   CheckCircle2, 
-  RefreshCw,
-  Power
+  RefreshCw, 
+  Power,
+  Zap,
+  ShieldCheck
 } from 'lucide-react';
 import { AgentApi } from '@/lib/api-client';
-import { ISchedulerStatus } from '@/types';
+import { ISchedulerStatus, IAutonomousStatus } from '@/types';
 
 export default function SettingsPage() {
   const [scheduler, setScheduler] = useState<ISchedulerStatus | null>(null);
@@ -29,13 +31,28 @@ export default function SettingsPage() {
   const [adzunaId, setAdzunaId] = useState('');
   const [smtpUser, setSmtpUser] = useState('talhasadiq320@gmail.com');
 
+  // Autonomous Loop State
+  const [autonomousMode, setAutonomousMode] = useState(true);
+  const [dailyLimit, setDailyLimit] = useState(40);
+  const [cooldownMinutes, setCooldownMinutes] = useState(5);
+
   useEffect(() => {
     const fetchStatus = async () => {
       try {
         setLoading(true);
-        const st = await AgentApi.getSchedulerStatus();
-        setScheduler(st);
-        if (st.cron_expression) setCronExpression(st.cron_expression);
+        const [st, agentSt] = await Promise.all([
+          AgentApi.getSchedulerStatus().catch(() => null),
+          AgentApi.getAgentStatus().catch(() => null),
+        ]);
+        if (st) {
+          setScheduler(st);
+          if (st.cron_expression) setCronExpression(st.cron_expression);
+        }
+        if (agentSt?.autonomous) {
+          setAutonomousMode(agentSt.autonomous.is_autonomous);
+          setDailyLimit(agentSt.autonomous.daily_limit || 40);
+          setCooldownMinutes(agentSt.autonomous.cooldown_minutes || 5);
+        }
       } catch (err) {
         console.error('Failed to get scheduler status:', err);
       } finally {
@@ -57,13 +74,20 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => {
+    try {
+      await Promise.all([
+        AgentApi.toggleAutonomous(autonomousMode),
+        AgentApi.setAutonomousConfig({ dailyLimit, cooldownMinutes }),
+      ]);
+      setStatusMessage('Agent configuration & autonomous loop settings updated!');
+    } catch (err: any) {
+      setStatusMessage(`Save failed: ${err.message}`);
+    } finally {
       setSaving(false);
-      setStatusMessage('Agent configuration updated and active!');
       setTimeout(() => setStatusMessage(null), 4000);
-    }, 600);
+    }
   };
 
   return (
@@ -98,6 +122,90 @@ export default function SettingsPage() {
           <span>{statusMessage}</span>
         </div>
       )}
+
+      {/* 24/7 Autonomous Continuous Loop Card */}
+      <div className="glass-panel rounded-2xl p-6 lg:p-7 space-y-6 border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-white to-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center border border-indigo-200">
+              <Zap className="h-4 w-4 fill-indigo-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>24/7 Autonomous Auto-Pilot Loop</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold uppercase">
+                  Continuous Loop
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Self-sustaining cycle: scrapes jobs → scores matches → auto-enqueues → applies → cools down → repeats indefinitely.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setAutonomousMode(!autonomousMode)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              autonomousMode
+                ? 'bg-indigo-600 border-indigo-700 text-white shadow-sm'
+                : 'bg-slate-100 border-slate-200 text-slate-600'
+            }`}
+          >
+            <Power className="h-3.5 w-3.5" />
+            <span>{autonomousMode ? 'Auto-Pilot Active' : 'Auto-Pilot Paused'}</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+          <div>
+            <label className="block font-mono text-slate-700 font-medium mb-1.5 flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Daily Application Cap (Anti-Spam Safeguard)</span>
+            </label>
+            <div className="flex items-center gap-3 mt-1.5">
+              <input
+                type="range"
+                min={5}
+                max={150}
+                step={5}
+                value={dailyLimit}
+                onChange={(e) => setDailyLimit(Number(e.target.value))}
+                className="flex-1 accent-indigo-600 cursor-pointer"
+              />
+              <span className="font-mono text-indigo-700 font-bold w-20 text-center bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-lg">
+                {dailyLimit} / day
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1.5">
+              Limits daily applications to keep Gmail SMTP safe from spam reputation flags. Resets every 24h at midnight.
+            </p>
+          </div>
+
+          <div>
+            <label className="block font-mono text-slate-700 font-medium mb-1.5 flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Queue Empty Cooldown Interval</span>
+            </label>
+            <div className="flex items-center gap-3 mt-1.5">
+              <input
+                type="range"
+                min={1}
+                max={30}
+                value={cooldownMinutes}
+                onChange={(e) => setCooldownMinutes(Number(e.target.value))}
+                className="flex-1 accent-indigo-600 cursor-pointer"
+              />
+              <span className="font-mono text-indigo-700 font-bold w-16 text-center bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-lg">
+                {cooldownMinutes} min
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1.5">
+              Minutes to wait before triggering the next automated discovery pass after all queued jobs are applied.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Local Background Cron Agent */}
       <div className="glass-panel rounded-2xl p-6 lg:p-7 space-y-6">

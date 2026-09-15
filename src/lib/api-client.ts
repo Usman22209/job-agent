@@ -157,4 +157,24 @@ export const AgentApi = {
     const res = await apiClient.post('/agent', { action: 'remove', jobId });
     return res.data;
   },
+
+  async requeueApplied() {
+    const res = await apiClient.post('/agent', { action: 'requeueApplied' });
+    return res.data;
+  },
+
+  async reloadStore() {
+    const res = await apiClient.post('/agent', { action: 'reload' });
+    return res.data;
+  },
+
+  async toggleAutonomous(enabled: boolean) {
+    const res = await apiClient.post('/agent', { action: 'toggleAutonomous', enabled });
+    return res.data;
+  },
+
+  async setAutonomousConfig(config: { dailyLimit?: number; cooldownMinutes?: number }) {
+    const res = await apiClient.post('/agent', { action: 'setAutonomousConfig', ...config });
+    return res.data;
+  },
 };

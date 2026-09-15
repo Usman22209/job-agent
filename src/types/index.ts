@@ -162,6 +162,7 @@ export interface IApplication {
   email_body?: string;
   email_sent_at?: string;
   email_message_id?: string;
+  browser_screenshot_url?: string;
   needs_human_review: boolean;
   human_review_notes?: string;
   created_at?: string;
@@ -201,3 +202,15 @@ export interface ISchedulerStatus {
   total_jobs_scraped: number;
   total_applications_queued: number;
 }
+
+export type AutonomousLoopState = 'IDLE' | 'DISCOVERING' | 'APPLYING' | 'COOLDOWN';
+
+export interface IAutonomousStatus {
+  is_autonomous: boolean;
+  state: AutonomousLoopState;
+  applications_today: number;
+  daily_limit: number;
+  cooldown_minutes: number;
+  next_cycle_at?: string | null;
+}
+

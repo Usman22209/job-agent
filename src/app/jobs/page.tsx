@@ -22,10 +22,15 @@ import {
   Plus,
   PlusCircle,
   X,
-  Clock
+  Clock,
+  RotateCcw,
+  ChevronDown,
+  ChevronUp,
+  Terminal,
+  ShieldAlert
 } from 'lucide-react';
 import { AgentApi } from '@/lib/api-client';
-import { IJob, ISchedulerStatus } from '@/types';
+import { IJob, ISchedulerStatus, IAutonomousStatus } from '@/types';
 
 type QueueColumn = 'discovered' | 'queue' | 'applied';
 
@@ -36,6 +41,7 @@ interface AgentStatus {
   currentJobTitle: string | null;
   queueLength: number;
   log: { jobId: string; jobTitle: string; status: string; message: string; timestamp: string }[];
+  autonomous?: IAutonomousStatus;
 }
 
 function getSourceBadgeStyle(source: string) {
@@ -63,6 +69,29 @@ export default function QueueBoardPage() {
   const [testingEmail, setTestingEmail] = useState(false);
   const [addingJobId, setAddingJobId] = useState<string | null>(null);
   const [addingAll, setAddingAll] = useState(false);
+  const [stoppingAgent, setStoppingAgent] = useState(false);
+  const [startingAgent, setStartingAgent] = useState(false);
+  const [requeuing, setRequeuing] = useState(false);
+  const [isLogCollapsed, setIsLogCollapsed] = useState(false);
+  const [logFilter, setLogFilter] = useState<'all' | 'success' | 'manual'>('all');
+  const [togglingAutonomous, setTogglingAutonomous] = useState(false);
+
+  const handleToggleAutonomous = async () => {
+    try {
+      setTogglingAutonomous(true);
+      const current = agentStatus?.autonomous?.is_autonomous ?? true;
+      await AgentApi.toggleAutonomous(!current);
+      showMessage(!current
+        ? 'Autonomous Auto-Pilot ACTIVATED! The agent will continuously discover, queue, and apply 24/7.'
+        : 'Autonomous Auto-Pilot PAUSED. Switched to manual mode.'
+      );
+      await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+    } catch (err: any) {
+      showMessage(`Failed to toggle autonomous mode: ${err.message}`);
+    } finally {
+      setTogglingAutonomous(false);
+    }
+  };
 
   const fetchJobs = useCallback(async (silent = false) => {
     try {
@@ -183,25 +212,44 @@ export default function QueueBoardPage() {
 
   const handleStartAgent = async () => {
     try {
+      setStartingAgent(true);
       const res = await AgentApi.startAgent();
       showMessage(res.message);
       // Immediately refresh everything
       await Promise.all([fetchJobs(true), fetchAgentStatus()]);
     } catch (err: any) {
       showMessage(`Failed to start agent: ${err.message}`);
+    } finally {
+      setStartingAgent(false);
     }
   };
 
   const handleStopAgent = async () => {
     try {
+      setStoppingAgent(true);
       const res = await AgentApi.stopAgent();
-      showMessage(res.message || 'Agent stopping...');
+      showMessage(res.message || 'Agent stopped.');
       // Immediately update local state so UI responds instantly
       setAgentStatus((prev) => prev ? { ...prev, isRunning: false, currentJobId: null, currentJobTitle: null } : prev);
       // Then refresh from server
       await Promise.all([fetchJobs(true), fetchAgentStatus()]);
     } catch (err: any) {
       showMessage(`Failed to stop agent: ${err.message}`);
+    } finally {
+      setStoppingAgent(false);
+    }
+  };
+
+  const handleRequeueApplied = async () => {
+    try {
+      setRequeuing(true);
+      const res = await AgentApi.requeueApplied();
+      showMessage(`Moved ${res.movedCount || 0} jobs back to queue! Total queue: ${res.queueLength}`);
+      await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+    } catch (err: any) {
+      showMessage(`Failed to move jobs to queue: ${err.message}`);
+    } finally {
+      setRequeuing(false);
     }
   };
 
@@ -230,7 +278,7 @@ export default function QueueBoardPage() {
     for (const job of filteredJobs) {
       if (job.status === 'APPLIED') {
         grouped.applied.push(job);
-      } else if (queueSet.has(job.id) || job.id === currentId || job.status === 'MATCHED') {
+      } else if (queueSet.has(job.id) || job.id === currentId) {
         grouped.queue.push(job);
       } else {
         grouped.discovered.push(job);
@@ -243,7 +291,7 @@ export default function QueueBoardPage() {
   const queueCount = agentStatus?.queueLength ?? columns.queue.length;
 
   return (
-    <div className="p-6 lg:p-8 max-w-full mx-auto space-y-5 h-full flex flex-col">
+    <div className="p-6 lg:p-8 max-w-full mx-auto space-y-6 pb-20">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
         <div>
@@ -266,20 +314,43 @@ export default function QueueBoardPage() {
           {isAgentRunning ? (
             <button
               onClick={handleStopAgent}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-xs shadow-sm transition-all transform active:scale-95"
+              disabled={stoppingAgent}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-all transform active:scale-95 disabled:opacity-60 cursor-pointer"
             >
-              <Square className="h-3.5 w-3.5 fill-white" />
-              <span>Stop Agent</span>
+              {stoppingAgent ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+              ) : (
+                <Square className="h-3.5 w-3.5 fill-white" />
+              )}
+              <span>{stoppingAgent ? 'Stopping...' : 'Stop Agent'}</span>
             </button>
           ) : (
-            <button
-              onClick={handleStartAgent}
-              disabled={queueCount === 0}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Play className="h-3.5 w-3.5 fill-white" />
-              <span>Start Agent{queueCount > 0 ? ` (${queueCount})` : ''}</span>
-            </button>
+            <>
+              <button
+                onClick={handleStartAgent}
+                disabled={queueCount === 0 || startingAgent}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {startingAgent ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                ) : (
+                  <Play className="h-3.5 w-3.5 fill-white" />
+                )}
+                <span>{startingAgent ? 'Starting...' : `Start Agent${queueCount > 0 ? ` (${queueCount})` : ''}`}</span>
+              </button>
+
+              {queueCount === 0 && columns.discovered.length > 0 && (
+                <button
+                  onClick={handleAddAllToQueue}
+                  disabled={addingAll}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 font-bold text-xs shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                  title="Queue all unapplied jobs"
+                >
+                  <PlusCircle className={`h-3.5 w-3.5 ${addingAll ? 'animate-spin' : ''}`} />
+                  <span>{addingAll ? 'Queueing...' : `Queue All (${columns.discovered.length})`}</span>
+                </button>
+              )}
+            </>
           )}
 
           {/* Auto-Scraping */}
@@ -300,6 +371,27 @@ export default function QueueBoardPage() {
             </select>
           </div>
 
+          {/* Autonomous Mode Toggle */}
+          <button
+            onClick={handleToggleAutonomous}
+            disabled={togglingAutonomous}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold shadow-2xs transition-all cursor-pointer ${
+              agentStatus?.autonomous?.is_autonomous
+                ? 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700'
+                : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500'
+            }`}
+            title="Continuous 24/7 Autonomous Scrape & Apply Loop"
+          >
+            <Zap className={`h-3.5 w-3.5 ${agentStatus?.autonomous?.is_autonomous ? 'fill-indigo-600 text-indigo-600' : 'text-slate-400'}`} />
+            <span>
+              {togglingAutonomous
+                ? 'Updating...'
+                : agentStatus?.autonomous?.is_autonomous
+                ? 'Auto-Pilot: ON'
+                : 'Auto-Pilot: OFF'}
+            </span>
+          </button>
+
           {/* Test Gmail */}
           <button
             onClick={handleTestEmail}
@@ -319,6 +411,38 @@ export default function QueueBoardPage() {
           </button>
         </div>
       </div>
+
+      {/* Autonomous Auto-Pilot Live Status Banner */}
+      {agentStatus?.autonomous?.is_autonomous && (
+        <div className="p-3 rounded-xl bg-indigo-50/90 border border-indigo-200 text-indigo-900 text-xs flex items-center justify-between shadow-2xs font-medium animate-fadeIn flex-shrink-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
+            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-extrabold uppercase tracking-wide text-indigo-700 text-[11px] bg-indigo-100 px-2 py-0.5 rounded-md border border-indigo-200">
+                24/7 Autonomous Loop
+              </span>
+              <span>
+                {agentStatus.autonomous.state === 'DISCOVERING' && 'Searching job boards & auto-tailoring matches...'}
+                {agentStatus.autonomous.state === 'APPLYING' && `Auto-applying sequentially (${agentStatus.autonomous.applications_today}/${agentStatus.autonomous.daily_limit} today)...`}
+                {agentStatus.autonomous.state === 'COOLDOWN' && `Queue complete. Safe cooldown before next discovery pass (${agentStatus.autonomous.next_cycle_at ? `waking up at ${new Date(agentStatus.autonomous.next_cycle_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : `${agentStatus.autonomous.cooldown_minutes}m`})`}
+                {agentStatus.autonomous.state === 'IDLE' && 'Standing by for continuous loop trigger.'}
+              </span>
+              <span className="text-indigo-600/80 font-mono text-[11px]">
+                • Today: {agentStatus.autonomous.applications_today}/{agentStatus.autonomous.daily_limit} applied
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={handleToggleAutonomous}
+            className="text-xs text-indigo-700 font-bold hover:underline ml-3 flex-shrink-0 cursor-pointer"
+          >
+            Pause Loop
+          </button>
+        </div>
+      )}
 
       {/* Agent Running Status Banner */}
       {isAgentRunning && (
@@ -394,11 +518,11 @@ export default function QueueBoardPage() {
           <span>Loading live positions...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 flex-1 min-h-0 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
           {/* ========== COLUMN 1: DISCOVERED ========== */}
-          <div className="kanban-col-discovered bg-white/70 border border-slate-200/80 rounded-2xl flex flex-col min-h-[500px] max-h-[calc(100vh-280px)] shadow-2xs">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <div className="kanban-col-discovered bg-slate-50/70 border border-slate-200/90 rounded-2xl flex flex-col h-[680px] shadow-2xs overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-white/90 flex-shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Inbox className="h-4 w-4 text-brand-500" />
@@ -476,6 +600,22 @@ export default function QueueBoardPage() {
                         ) : null}
                       </div>
                       <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{job.description}</p>
+                      {/* Tailored Resume Indicator if generated */}
+                      {job.tailored_resume_pdf_url && (
+                        <div className="pt-1 flex items-center justify-between text-[11px]">
+                          <span className="text-emerald-700 flex items-center gap-1 font-semibold">
+                            <FileText className="h-3 w-3 text-emerald-600" /> Resume Ready
+                          </span>
+                          <a
+                            href={job.tailored_resume_pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 hover:text-indigo-700 font-bold text-[10px] hover:underline"
+                          >
+                            View PDF ↗
+                          </a>
+                        </div>
+                      )}
                       {/* Add to Queue Button */}
                       <div className="pt-2 border-t border-slate-100">
                         <button
@@ -498,8 +638,8 @@ export default function QueueBoardPage() {
           </div>
 
           {/* ========== COLUMN 2: IN QUEUE ========== */}
-          <div className="kanban-col-queue bg-white/70 border border-slate-200/80 rounded-2xl flex flex-col min-h-[500px] max-h-[calc(100vh-280px)] shadow-2xs">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <div className="kanban-col-queue bg-slate-50/70 border border-slate-200/90 rounded-2xl flex flex-col h-[680px] shadow-2xs overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-white/90 flex-shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Loader2 className={`h-4 w-4 text-amber-500 ${isAgentRunning ? 'animate-spin' : ''}`} />
@@ -605,8 +745,8 @@ export default function QueueBoardPage() {
           </div>
 
           {/* ========== COLUMN 3: APPLIED ========== */}
-          <div className="kanban-col-applied bg-white/70 border border-slate-200/80 rounded-2xl flex flex-col min-h-[500px] max-h-[calc(100vh-280px)] shadow-2xs">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <div className="kanban-col-applied bg-slate-50/70 border border-slate-200/90 rounded-2xl flex flex-col h-[680px] shadow-2xs overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-white/90 flex-shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -614,9 +754,22 @@ export default function QueueBoardPage() {
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-0.5">Successfully sent</p>
               </div>
-              <span className="text-xs font-mono font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 text-emerald-700">
-                {columns.applied.length}
-              </span>
+              <div className="flex items-center gap-2">
+                {columns.applied.length > 0 && (
+                  <button
+                    onClick={handleRequeueApplied}
+                    disabled={requeuing}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 text-[11px] font-bold transition-all disabled:opacity-50 cursor-pointer"
+                    title="Move all applied jobs back to queue"
+                  >
+                    <RotateCcw className={`h-3 w-3 ${requeuing ? 'animate-spin' : ''}`} />
+                    <span>{requeuing ? 'Moving...' : 'Move to Queue'}</span>
+                  </button>
+                )}
+                <span className="text-xs font-mono font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 text-emerald-700">
+                  {columns.applied.length}
+                </span>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {columns.applied.length === 0 ? (
@@ -689,44 +842,256 @@ export default function QueueBoardPage() {
         </div>
       )}
 
-      {/* Agent Activity Log */}
-      {agentStatus && agentStatus.log.length > 0 && (
-        <div className="flex-shrink-0 bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-slate-700 font-mono uppercase flex items-center gap-2">
-              <Zap className="h-3.5 w-3.5 text-amber-500" /> Agent Activity Log
-            </h4>
-            <span className="text-[10px] text-slate-400 font-mono">{agentStatus.log.length} entries</span>
+      {/* ========================================================================= */}
+      {/* SECTION: Agent Execution Log Console — Anchored at Bottom of Page         */}
+      {/* ========================================================================= */}
+      {agentStatus && (
+        <div className="w-full relative clear-both block z-0 pt-8 mt-12 border-t-2 border-slate-200/80">
+          {/* Section Heading */}
+          <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <span className="flex items-center justify-center h-7 w-7 rounded-lg bg-slate-900 text-amber-400 shadow-xs">
+                <Terminal className="h-4 w-4" />
+              </span>
+              <div>
+                <h3 className="text-sm font-bold font-mono uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                  Agent Execution Console
+                  {isAgentRunning ? (
+                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-sans font-semibold">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Live Engine Active
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-sans font-medium">
+                      Idle
+                    </span>
+                  )}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Real-time audit log of browser ATS navigation, form submissions, and email outreach.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-2xs">
+                {agentStatus.log.length} total events
+              </span>
+            </div>
           </div>
-          <div className="max-h-40 overflow-y-auto rounded-xl border border-slate-100">
-            <table className="w-full text-[11px]">
-              <tbody>
-                {agentStatus.log.slice().reverse().map((entry, i) => (
-                  <tr key={i} className={`border-b border-slate-50 last:border-0 ${i % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'}`}>
-                    <td className="px-3 py-2 w-5">
-                      {entry.status === 'success' ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                      ) : (
-                        <X className="h-3.5 w-3.5 text-red-500" />
-                      )}
-                    </td>
-                    <td className="py-2 font-semibold text-slate-800 max-w-[200px] truncate">
-                      {entry.jobTitle}
-                    </td>
-                    <td className="py-2 px-3">
-                      {entry.status === 'success' ? (
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-[10px]">Sent</span>
-                      ) : (
-                        <span className="px-1.5 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 font-semibold text-[10px]">Failed</span>
-                      )}
-                    </td>
-                    <td className="py-2 text-slate-400 font-mono text-[10px] text-right pr-3 whitespace-nowrap">
-                      {new Date(entry.timestamp).toLocaleTimeString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          {/* Console Box */}
+          <div className="bg-slate-950 border border-slate-800 text-slate-100 rounded-2xl shadow-xl overflow-hidden">
+            {/* Top Toolbar */}
+            <div className="px-5 py-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                {/* Simulated Terminal Window Dots */}
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+                </div>
+                <span className="text-xs font-mono font-bold text-slate-300">
+                  audit-trail.log
+                </span>
+              </div>
+
+              {/* Filter Tabs & Collapse */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center bg-slate-800/90 rounded-lg p-0.5 border border-slate-700/60 text-[11px] font-mono">
+                  <button
+                    onClick={() => setLogFilter('all')}
+                    className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                      logFilter === 'all'
+                        ? 'bg-slate-700 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    All ({agentStatus.log.length})
+                  </button>
+                  <button
+                    onClick={() => setLogFilter('success')}
+                    className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                      logFilter === 'success'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Applied ({agentStatus.log.filter((l) => l.status === 'success').length})
+                  </button>
+                  <button
+                    onClick={() => setLogFilter('manual')}
+                    className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                      logFilter === 'manual'
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Needs Action ({agentStatus.log.filter((l) => l.status !== 'success').length})
+                  </button>
+                </div>
+
+                {/* Collapse / Expand Button */}
+                <button
+                  onClick={() => setIsLogCollapsed(!isLogCollapsed)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-xs font-mono transition-all cursor-pointer"
+                  title={isLogCollapsed ? 'Expand Console' : 'Collapse Console'}
+                >
+                  {isLogCollapsed ? (
+                    <>
+                      <span>Expand</span>
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </>
+                  ) : (
+                    <>
+                      <span>Collapse</span>
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Collapsed State Bar */}
+            {isLogCollapsed ? (
+              <div
+                onClick={() => setIsLogCollapsed(false)}
+                className="px-5 py-3.5 bg-slate-900/40 hover:bg-slate-900 transition-colors cursor-pointer flex items-center justify-between text-xs text-slate-400"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <span className="text-amber-400 font-mono font-semibold">Latest:</span>
+                  <span className="font-bold text-slate-200 truncate">
+                    {agentStatus.log[agentStatus.log.length - 1]?.jobTitle || 'No recorded events yet'}
+                  </span>
+                  <span className="text-slate-600">—</span>
+                  <span className="truncate text-slate-400">
+                    {agentStatus.log[agentStatus.log.length - 1]?.message || 'Start agent to begin autonomous tasks.'}
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-brand-400 ml-3 flex-shrink-0 hover:underline">
+                  Click to Expand ▾
+                </span>
+              </div>
+            ) : agentStatus.log.length === 0 ? (
+              /* Empty State */
+              <div className="py-12 px-4 text-center text-slate-500 font-mono text-xs flex flex-col items-center gap-2">
+                <Terminal className="h-6 w-6 text-slate-600" />
+                <span>Console ready. Start the agent to watch autonomous browser and email dispatches.</span>
+              </div>
+            ) : (
+              /* Expanded Event Stream */
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/80 bg-slate-950 p-2 space-y-1">
+                {agentStatus.log
+                  .slice()
+                  .reverse()
+                  .filter((entry) => {
+                    if (logFilter === 'success') return entry.status === 'success';
+                    if (logFilter === 'manual') return entry.status !== 'success';
+                    return true;
+                  })
+                  .map((entry, i) => {
+                    const isSuccess = entry.status === 'success';
+                    const isCloudflare =
+                      entry.message?.toLowerCase().includes('cloudflare') ||
+                      entry.message?.toLowerCase().includes('captcha');
+                    const isBrowser =
+                      entry.message?.toLowerCase().includes('browser') ||
+                      entry.message?.toLowerCase().includes('portal');
+                    const isEmail = entry.message?.toLowerCase().includes('email');
+                    const matchedJob = jobs.find(
+                      (j) => j.id === entry.jobId || j.title.toLowerCase() === entry.jobTitle.toLowerCase()
+                    );
+
+                    return (
+                      <div
+                        key={i}
+                        className="p-3.5 rounded-xl hover:bg-slate-900/80 transition-colors flex items-start gap-3.5"
+                      >
+                        {/* Status Icon */}
+                        <div className="mt-0.5 flex-shrink-0">
+                          {isSuccess ? (
+                            <span className="flex items-center justify-center h-6 w-6 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                            </span>
+                          ) : isCloudflare ? (
+                            <span className="flex items-center justify-center h-6 w-6 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                              <ShieldAlert className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <span className="flex items-center justify-center h-6 w-6 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                              <X className="h-3.5 w-3.5" />
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Event Details */}
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-bold text-slate-100 leading-tight">
+                                {entry.jobTitle}
+                              </span>
+
+                              {matchedJob?.company && (
+                                <span className="text-[11px] text-slate-400 font-medium">
+                                  @{matchedJob.company}
+                                </span>
+                              )}
+
+                              {/* Channel Badges */}
+                              {isBrowser && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 flex items-center gap-1 font-mono">
+                                  <Layers className="h-2.5 w-2.5" /> Browser ATS
+                                </span>
+                              )}
+                              {isEmail && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-mono">
+                                  <Mail className="h-2.5 w-2.5" /> Email Direct
+                                </span>
+                              )}
+
+                              {/* Status Badges */}
+                              {isSuccess ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                  ✓ Applied
+                                </span>
+                              ) : isCloudflare ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                  🛡️ Cloudflare Bot Shield
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                  📋 Needs Manual Submit
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              {matchedJob?.url && (
+                                <a
+                                  href={matchedJob.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[11px] font-mono text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                                >
+                                  Open Portal <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              )}
+                              <span className="text-[10px] font-mono text-slate-500 whitespace-nowrap">
+                                {entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : ''}
+                              </span>
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                            {entry.message}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         </div>
       )}

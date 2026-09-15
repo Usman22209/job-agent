@@ -38,6 +38,25 @@ export async function POST(req: NextRequest) {
         const res = store.removeFromQueue(body.jobId);
         return NextResponse.json(res);
       }
+      case 'requeueApplied': {
+        const res = store.moveAppliedToQueue();
+        return NextResponse.json(res);
+      }
+      case 'reload': {
+        store.reloadFromDisk();
+        return NextResponse.json({ success: true, message: 'Store reloaded from disk' });
+      }
+      case 'toggleAutonomous': {
+        const res = store.toggleAutonomousMode(Boolean(body.enabled));
+        return NextResponse.json({ success: true, autonomous: res });
+      }
+      case 'setAutonomousConfig': {
+        const res = store.setAutonomousConfig({
+          dailyLimit: body.dailyLimit ? Number(body.dailyLimit) : undefined,
+          cooldownMinutes: body.cooldownMinutes ? Number(body.cooldownMinutes) : undefined,
+        });
+        return NextResponse.json({ success: true, autonomous: res });
+      }
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }

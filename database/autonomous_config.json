@@ -1,0 +1,7 @@
+{
+  "isAutonomousMode": true,
+  "dailyApplicationLimit": 40,
+  "autonomousCooldownMinutes": 5,
+  "applicationsToday": 0,
+  "lastDayReset": "2026-09-15"
+}

@@ -29,6 +29,8 @@ generated_resumes/
 storage/
 database/sessions/
 *.pdf
+public/screenshots/*.png
+!public/screenshots/.gitkeep
 
 # Operating System Files
 .DS_Store
@@ -43,3 +45,9 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sublime-workspace
+
+# Private SSH Keys & Secrets
+*.key*
+*.pem
+*.pub
+id_rsa*
