@@ -1,0 +1,45 @@
+name: CI/CD Auto Deploy to Oracle VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Production VM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            echo "🚀 Starting deployment on Oracle VM..."
+            cd /home/ubuntu/job-agent
+
+            # Temporarily stash any server-side runtime database changes
+            git stash push -m "server-db-changes" database/ || true
+
+            echo "📥 Pulling latest changes from main..."
+            git pull origin main
+
+            # Restore runtime database files
+            git stash pop || true
+
+            echo "📦 Installing dependencies..."
+            npm install --production=false
+
+            echo "🔨 Building Next.js application..."
+            npm run build
+
+            echo "🔄 Restarting job-agent under PM2..."
+            pm2 restart job-agent --update-env
+            pm2 save
+
+            echo "✅ Deployment complete! Job Agent is running the latest build."
