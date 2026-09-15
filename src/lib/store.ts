@@ -436,7 +436,11 @@ class AgentStore {
         if (emailRes.success) {
           app.status = 'APPLIED';
           job.status = 'APPLIED';
-          message = `Application & tailored PDF resume emailed directly to ${job.contact_email}! A copy was BCC'd to ${this.profile.email}.`;
+          if (emailRes.mode === 'LIVE_SMTP') {
+            message = `Application & tailored PDF resume emailed directly to ${job.contact_email}! A copy was BCC'd to ${this.profile.email}.`;
+          } else {
+            message = `[SIMULATION MODE] Application prepared for ${job.contact_email} (Sandbox Mode — configure SMTP in .env.local for live dispatch).`;
+          }
         } else {
           app.status = 'READY';
           message = `Email dispatch to ${job.contact_email} reported an issue: ${emailRes.error || 'SMTP check needed'}`;
