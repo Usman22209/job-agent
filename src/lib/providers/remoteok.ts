@@ -3,7 +3,10 @@ import { cleanHtmlText } from '../normalizer';
 
 export async function searchRemoteOkJobs(query: string = '', limit: number = 40): Promise<any[]> {
   try {
-    const response = await axios.get('https://remoteok.com/api', {
+    const tag = query ? query.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+    const url = tag ? `https://remoteok.com/api?tag=${encodeURIComponent(tag)}` : 'https://remoteok.com/api';
+
+    const response = await axios.get(url, {
       timeout: 10000,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',

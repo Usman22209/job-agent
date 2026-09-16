@@ -485,9 +485,14 @@ export default function QueueBoardPage() {
               <span className="text-indigo-600/80 font-mono text-[11px]">
                 • Today: {agentStatus.autonomous.applications_today}/{agentStatus.autonomous.daily_limit} applied
               </span>
+              {agentStatus.autonomous.current_region && (
+                <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-indigo-200">
+                  🌍 {agentStatus.autonomous.current_region}
+                </span>
+              )}
               {agentStatus.autonomous.email_only !== false && (
                 <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
-                  ✉️ Email Only (Skipping Portal Forms)
+                  ✉️ Email Only
                 </span>
               )}
             </div>

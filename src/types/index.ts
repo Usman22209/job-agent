@@ -213,5 +213,7 @@ export interface IAutonomousStatus {
   cooldown_minutes: number;
   next_cycle_at?: string | null;
   email_only?: boolean;
+  current_region?: string;
+  current_roles?: string[];
 }
 

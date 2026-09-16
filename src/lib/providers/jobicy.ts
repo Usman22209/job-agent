@@ -1,11 +1,18 @@
 import axios from 'axios';
 import { cleanHtmlText } from '../normalizer';
 
-export async function searchJobicyJobs(query: string = '', limit: number = 30): Promise<any[]> {
+export async function searchJobicyJobs(query: string = '', limit: number = 30, geo?: string): Promise<any[]> {
   try {
-    const url = query
-      ? `https://jobicy.com/api/v2/remote-jobs?count=${limit}&tag=${encodeURIComponent(query)}`
-      : `https://jobicy.com/api/v2/remote-jobs?count=${limit}&industry=engineering`;
+    let url = `https://jobicy.com/api/v2/remote-jobs?count=${limit}`;
+    if (query) {
+      const sanitizedTag = query.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      url += `&tag=${encodeURIComponent(sanitizedTag)}`;
+    } else {
+      url += `&industry=engineering`;
+    }
+    if (geo && geo !== 'Worldwide' && geo !== 'Remote' && geo !== 'anywhere') {
+      url += `&geo=${encodeURIComponent(geo.toLowerCase())}`;
+    }
 
     const response = await axios.get(url, {
       timeout: 10000,

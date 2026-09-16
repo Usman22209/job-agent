@@ -59,6 +59,29 @@ class AgentStore {
   private autonomousCooldownTimer: NodeJS.Timeout | null = null;
   private emailOnlyMode: boolean = true;
 
+  // --- Adaptive Multi-Region & Role Discovery Matrix ---
+  private searchPoolIndex: number = 0;
+  private searchRegionIndex: number = 0;
+
+  private readonly SEARCH_ROLE_POOLS: string[][] = [
+    ['React Native', 'React', 'Next.js', 'TypeScript'],
+    ['Full Stack Developer', 'Software Engineer', 'Frontend Developer'],
+    ['Node.js', 'NestJS', 'FastAPI', 'Backend Engineer'],
+    ['Mobile Developer', 'Mobile Engineer', 'Android', 'iOS'],
+    ['AI Engineer', 'LLM Engineer', 'Applied AI', 'Python Developer'],
+    ['Web Developer', 'JavaScript Engineer', 'API Developer']
+  ];
+
+  private readonly SEARCH_REGIONS: { name: string; geoCode: string }[] = [
+    { name: 'Worldwide / Anywhere', geoCode: 'anywhere' },
+    { name: 'USA / North America', geoCode: 'usa' },
+    { name: 'Europe & UK (EMEA)', geoCode: 'emea' },
+    { name: 'Latin America (LATAM)', geoCode: 'latam' },
+    { name: 'Asia-Pacific (APAC)', geoCode: 'apac' },
+    { name: 'Canada', geoCode: 'canada' },
+    { name: 'United Kingdom', geoCode: 'uk' }
+  ];
+
 
   constructor() {
     this.profile = this.loadInitialProfile();
@@ -149,7 +172,8 @@ class AgentStore {
 
   async runDiscovery(
     queries: string[] = ['React Native', 'React', 'Next.js', 'AI Engineer'],
-    location: string = 'Remote'
+    location: string = 'Worldwide',
+    geoCode?: string
   ): Promise<{ newJobs: IJob[]; total: number; sourceCounts: Record<string, number> }> {
     const newJobs: IJob[] = [];
     const sourceCounts: Record<string, number> = {};
@@ -161,25 +185,27 @@ class AgentStore {
       scrapePromises.push(searchRemotiveJobs(q, 30));
     }
 
-    // 2. Jobicy (Query each role)
+    // 2. Jobicy (Query each role with optional region geoCode)
     for (const q of queries) {
-      scrapePromises.push(searchJobicyJobs(q, 25));
+      scrapePromises.push(searchJobicyJobs(q, 25, geoCode));
     }
 
-    // 3. RemoteOK (Tech jobs)
-    scrapePromises.push(searchRemoteOkJobs(queries[0] || 'react', 40));
+    // 3. RemoteOK (Query top roles)
+    for (const q of queries.slice(0, 2)) {
+      scrapePromises.push(searchRemoteOkJobs(q, 35));
+    }
 
     // 4. Arbeitnow (Active engineering jobs)
-    scrapePromises.push(searchArbeitnowJobs(queries[0] || 'react', 40));
+    scrapePromises.push(searchArbeitnowJobs(queries[0] || 'react', 35));
 
     // 5. SerpApi (Google Jobs - if key configured)
-    for (const q of queries) {
+    for (const q of queries.slice(0, 2)) {
       scrapePromises.push(searchGoogleJobs(q, location));
     }
 
     // 6. Adzuna (If key configured)
-    for (const q of queries) {
-      scrapePromises.push(searchAdzunaJobs(q, 'us'));
+    for (const q of queries.slice(0, 2)) {
+      scrapePromises.push(searchAdzunaJobs(q, geoCode || 'us'));
     }
 
     const settled = await Promise.allSettled(scrapePromises);
@@ -661,6 +687,9 @@ class AgentStore {
 
   getAutonomousStatus(): IAutonomousStatus {
     this.checkDailyLimitReset();
+    const currentPool = this.SEARCH_ROLE_POOLS[this.searchPoolIndex % this.SEARCH_ROLE_POOLS.length];
+    const currentRegion = this.SEARCH_REGIONS[this.searchRegionIndex % this.SEARCH_REGIONS.length];
+
     return {
       is_autonomous: this.isAutonomousMode,
       state: this.autonomousState,
@@ -669,6 +698,8 @@ class AgentStore {
       cooldown_minutes: this.autonomousCooldownMinutes,
       next_cycle_at: this.nextAutonomousCycleAt,
       email_only: this.emailOnlyMode,
+      current_region: currentRegion.name,
+      current_roles: currentPool,
     };
   }
 
@@ -795,7 +826,13 @@ class AgentStore {
       console.log('[Agent Queue] All jobs in queue processed.');
 
       if (this.isAutonomousMode) {
-        console.log(`[Autonomous Loop] Queue emptied! Entering ${this.autonomousCooldownMinutes}m cooldown before next discovery pass.`);
+        // Advance to next region & role pool so the next cycle discovers new jobs in other regions/stacks!
+        this.searchRegionIndex = (this.searchRegionIndex + 1) % this.SEARCH_REGIONS.length;
+        if (this.searchRegionIndex === 0) {
+          this.searchPoolIndex = (this.searchPoolIndex + 1) % this.SEARCH_ROLE_POOLS.length;
+        }
+        const nextRegion = this.SEARCH_REGIONS[this.searchRegionIndex % this.SEARCH_REGIONS.length];
+        console.log(`[Autonomous Loop] Queue emptied! Next pass will explore Region: "${nextRegion.name}". Entering ${this.autonomousCooldownMinutes}m cooldown.`);
         this.scheduleAutonomousCycle();
       } else {
         this.autonomousState = 'IDLE';
@@ -912,14 +949,21 @@ class AgentStore {
     let applicationsCreated = 0;
 
     try {
-      const targetRoles = this.profile.preferences.target_roles || [
-        'React Native Developer',
-        'Next.js Developer',
-      ];
-      const location = this.profile.preferences.remote ? 'Remote' : 'Worldwide';
+      // Pick current search pool & region from our adaptive discovery matrix
+      const currentPool = this.SEARCH_ROLE_POOLS[this.searchPoolIndex % this.SEARCH_ROLE_POOLS.length];
+      const currentRegion = this.SEARCH_REGIONS[this.searchRegionIndex % this.SEARCH_REGIONS.length];
 
-      const discRes = await this.runDiscovery(targetRoles, location);
+      console.log(`[Autonomous Loop] 🌍 Discovery cycle targeting Region: "${currentRegion.name}" with Roles: [${currentPool.join(', ')}]`);
+
+      const discRes = await this.runDiscovery(currentPool, currentRegion.name, currentRegion.geoCode);
       newJobsFound = discRes.newJobs.length;
+      console.log(`[Autonomous Loop] Scraped ${newJobsFound} new positions in "${currentRegion.name}".`);
+
+      // Rotate region for the next pass
+      this.searchRegionIndex = (this.searchRegionIndex + 1) % this.SEARCH_REGIONS.length;
+      if (this.searchRegionIndex === 0) {
+        this.searchPoolIndex = (this.searchPoolIndex + 1) % this.SEARCH_ROLE_POOLS.length;
+      }
 
       const threshold = Number(process.env.AUTO_TAILOR_THRESHOLD) || 75;
 
