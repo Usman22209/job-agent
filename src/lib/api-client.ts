@@ -70,6 +70,43 @@ export const AgentApi = {
     return res.data;
   },
 
+  // On-Demand Custom Apply
+  async customApply(payload: {
+    title?: string;
+    company?: string;
+    description: string;
+    recipientEmail: string;
+    location?: string;
+    autoSend?: boolean;
+    customSubject?: string;
+    customBody?: string;
+  }) {
+    const res = await apiClient.post('/custom-apply', payload);
+    return res.data as {
+      success: boolean;
+      application: IApplication;
+      emailResult?: any;
+      coverLetter?: string;
+      emailDraft?: { subject: string; body: string };
+      pdfUrl?: string;
+    };
+  },
+
+  async extractJobDetails(text: string) {
+    const res = await apiClient.post('/custom-apply/extract', { text });
+    return res.data as {
+      title: string;
+      company: string;
+      email: string;
+      location: string;
+    };
+  },
+
+  async getCustomApplications() {
+    const res = await apiClient.get('/custom-apply');
+    return res.data as IApplication[];
+  },
+
   // Browser Agent / Form Inspector
   async inspectForm(url: string) {
     const res = await apiClient.post('/browser-agent/inspect', { url });

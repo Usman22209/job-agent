@@ -8,7 +8,8 @@ import {
   GitPullRequest, 
   Layers, 
   UserCheck, 
-  Settings 
+  Settings,
+  SendHorizontal 
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -16,6 +17,12 @@ const NAV_ITEMS = [
     href: '/',
     label: 'Overview & Analytics',
     icon: Activity,
+  },
+  {
+    href: '/custom-apply',
+    label: 'On-Demand Apply',
+    icon: SendHorizontal,
+    badge: 'Custom',
   },
   {
     href: '/jobs',
@@ -66,6 +73,11 @@ export function SidebarNav() {
               }`}
             />
             <span className="flex-1">{item.label}</span>
+            {item.badge && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+                {item.badge}
+              </span>
+            )}
           </Link>
         );
       })}

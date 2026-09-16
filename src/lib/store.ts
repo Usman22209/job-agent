@@ -478,12 +478,119 @@ class AgentStore {
     return app;
   }
 
-  async sendEmailForApplication(applicationId: string): Promise<any> {
+  async createCustomApplication(params: {
+    title?: string;
+    company?: string;
+    description: string;
+    recipientEmail: string;
+    location?: string;
+    autoSend?: boolean;
+    customSubject?: string;
+    customBody?: string;
+  }): Promise<{
+    application: IApplication;
+    emailResult?: any;
+    coverLetter?: string;
+    emailDraft?: { subject: string; body: string };
+    pdfUrl?: string;
+  }> {
+    const trimmedDesc = (params.description || '').trim();
+    const recipient = (params.recipientEmail || '').trim();
+    if (!trimmedDesc) {
+      throw new Error('Job description is required');
+    }
+    if (!recipient) {
+      throw new Error('Recipient email is required');
+    }
+
+    const title = params.title?.trim() || 'Software Engineer';
+    const company = params.company?.trim() || 'Hiring Team';
+    const location = params.location?.trim() || 'Remote';
+
+    // 1. Create a standalone manual IJob (not queued into autonomous loop)
+    const jobId = `manual_${crypto.randomUUID()}`;
+    const job: IJob = {
+      id: jobId,
+      source: 'manual',
+      title,
+      company,
+      location,
+      is_remote: true,
+      description: trimmedDesc,
+      url: '',
+      contact_email: recipient,
+      application_type: 'EMAIL',
+      status: 'DISCOVERED',
+      created_at: new Date().toISOString(),
+    };
+
+    this.jobs.set(job.id, job);
+    this.saveJobsToDisk();
+
+    // 2. Create matching application record
+    const app: IApplication = {
+      id: crypto.randomUUID(),
+      job_id: job.id,
+      job,
+      profile_id: this.profile.id,
+      status: 'MATCHED',
+      application_channel: 'EMAIL',
+      needs_human_review: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    this.applications.set(app.id, app);
+    this.saveApplicationsToDisk();
+
+    // 3. Tailor ATS resume & cover letter, and generate PDF
+    await this.tailorApplication(app.id);
+
+    const tailoredApp = this.applications.get(app.id)!;
+
+    if (params.customSubject) {
+      tailoredApp.email_subject = params.customSubject;
+    }
+    if (params.customBody) {
+      tailoredApp.email_body = params.customBody;
+    }
+
+    let emailResult: any = null;
+    if (params.autoSend) {
+      emailResult = await this.sendEmailForApplication(
+        tailoredApp.id,
+        params.customSubject,
+        params.customBody
+      );
+    }
+
+    this.saveApplicationsToDisk();
+
+    return {
+      application: this.applications.get(app.id)!,
+      emailResult,
+      coverLetter: tailoredApp.cover_letter,
+      emailDraft: {
+        subject: tailoredApp.email_subject || '',
+        body: tailoredApp.email_body || '',
+      },
+      pdfUrl: tailoredApp.tailored_resume_pdf_url,
+    };
+  }
+
+  async sendEmailForApplication(
+    applicationId: string,
+    overrideSubject?: string,
+    overrideBody?: string
+  ): Promise<any> {
     const app = this.applications.get(applicationId);
     if (!app) throw new Error(`Application ${applicationId} not found`);
 
     const job = app.job || this.jobs.get(app.job_id)!;
     const pdfPath = (app as any).local_pdf_path;
+
+    if (overrideSubject) app.email_subject = overrideSubject;
+    if (overrideBody) app.email_body = overrideBody;
 
     console.log(`[Email] Preparing personalized email for "${job.title}" at ${job.company}...`);
     console.log(`[Email] Using ${app.email_subject ? 'tailored' : 'default'} email draft. PDF: ${pdfPath ? 'attached' : 'none'}`);
