@@ -19,6 +19,8 @@ import { searchArbeitnowJobs } from './providers/arbeitnow';
 import { searchJobicyJobs } from './providers/jobicy';
 import { searchGoogleJobs } from './providers/serpapi';
 import { searchAdzunaJobs } from './providers/adzuna';
+import { searchHackerNewsJobs } from './providers/hackernews';
+import { searchWeWorkRemotelyJobs } from './providers/weworkremotely';
 import { evaluateJobMatch } from './matcher';
 import { tailorResumeAndCoverLetter } from './resume-tailor';
 import { generateResumePdf } from './pdf-generator';
@@ -318,7 +320,13 @@ class AgentStore {
     scrapePromises.push(searchArbeitnowJobs('engineering', 50));
     scrapePromises.push(searchArbeitnowJobs('react', 50));
 
-    // 5. SerpApi & Adzuna (if configured)
+    // 5. Hacker News: Who is Hiring (direct founder/CTO emails)
+    scrapePromises.push(searchHackerNewsJobs('', 100));
+
+    // 6. We Work Remotely: programming RSS feed
+    scrapePromises.push(searchWeWorkRemotelyJobs('', 50));
+
+    // 7. SerpApi & Adzuna (if configured)
     scrapePromises.push(searchGoogleJobs('remote full stack developer', 'Worldwide'));
     scrapePromises.push(searchAdzunaJobs('react developer', 'us'));
 
@@ -349,6 +357,8 @@ class AgentStore {
     const sourceCounts: Record<string, number> = {};
 
     const scrapePromises = [
+      searchHackerNewsJobs(query, 50),
+      searchWeWorkRemotelyJobs(query, 40),
       searchRemotiveJobs(query, 40),
       searchRemoteOkJobs(query, 40),
       searchJobicyJobs(query, 30),

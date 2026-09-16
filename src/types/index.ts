@@ -1,6 +1,6 @@
 // Core Types & Interfaces for AI Job Application Agent Platform
 
-export type JobSource = 'remotive' | 'remoteok' | 'arbeitnow' | 'jobicy' | 'serpapi' | 'adzuna' | 'apify' | 'feed' | 'manual';
+export type JobSource = 'remotive' | 'remoteok' | 'arbeitnow' | 'jobicy' | 'serpapi' | 'adzuna' | 'apify' | 'feed' | 'manual' | 'hackernews' | 'weworkremotely';
 export type JobStatus = 'DISCOVERED' | 'MATCHED' | 'APPLIED' | 'SKIPPED' | 'ARCHIVED';
 export type MatchClassification = 'EXCELLENT' | 'GOOD' | 'POSSIBLE' | 'SKIP';
 export type ApplicationChannel = 'EMAIL' | 'WEB_FORM' | 'ATS' | 'MANUAL';
