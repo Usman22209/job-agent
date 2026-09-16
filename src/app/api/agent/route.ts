@@ -28,8 +28,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(res);
       }
       case 'addAll': {
-        const res = store.addAllToQueue();
+        const res = store.addAllToQueue(body.emailOnly);
         return NextResponse.json(res);
+      }
+      case 'purgePortalJobs': {
+        const res = store.purgePortalJobsFromQueue();
+        return NextResponse.json({ success: true, ...res });
+      }
+      case 'setEmailOnly': {
+        const res = store.setEmailOnlyMode(Boolean(body.enabled));
+        return NextResponse.json({ success: true, emailOnly: res });
       }
       case 'remove': {
         if (!body.jobId) {
@@ -54,6 +62,7 @@ export async function POST(req: NextRequest) {
         const res = store.setAutonomousConfig({
           dailyLimit: body.dailyLimit ? Number(body.dailyLimit) : undefined,
           cooldownMinutes: body.cooldownMinutes ? Number(body.cooldownMinutes) : undefined,
+          emailOnly: typeof body.emailOnly === 'boolean' ? body.emailOnly : undefined,
         });
         return NextResponse.json({ success: true, autonomous: res });
       }

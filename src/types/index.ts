@@ -212,5 +212,6 @@ export interface IAutonomousStatus {
   daily_limit: number;
   cooldown_minutes: number;
   next_cycle_at?: string | null;
+  email_only?: boolean;
 }
 

@@ -35,6 +35,7 @@ export default function SettingsPage() {
   const [autonomousMode, setAutonomousMode] = useState(true);
   const [dailyLimit, setDailyLimit] = useState(40);
   const [cooldownMinutes, setCooldownMinutes] = useState(5);
+  const [emailOnly, setEmailOnly] = useState(true);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -52,6 +53,7 @@ export default function SettingsPage() {
           setAutonomousMode(agentSt.autonomous.is_autonomous);
           setDailyLimit(agentSt.autonomous.daily_limit || 40);
           setCooldownMinutes(agentSt.autonomous.cooldown_minutes || 5);
+          setEmailOnly(agentSt.autonomous.email_only !== false);
         }
       } catch (err) {
         console.error('Failed to get scheduler status:', err);
@@ -79,7 +81,7 @@ export default function SettingsPage() {
     try {
       await Promise.all([
         AgentApi.toggleAutonomous(autonomousMode),
-        AgentApi.setAutonomousConfig({ dailyLimit, cooldownMinutes }),
+        AgentApi.setAutonomousConfig({ dailyLimit, cooldownMinutes, emailOnly }),
       ]);
       setStatusMessage('Agent configuration & autonomous loop settings updated!');
     } catch (err: any) {
@@ -204,6 +206,33 @@ export default function SettingsPage() {
               Minutes to wait before triggering the next automated discovery pass after all queued jobs are applied.
             </p>
           </div>
+        </div>
+
+        {/* Email Applications Only Toggle */}
+        <div className="pt-4 border-t border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-indigo-600" />
+              <span className="font-bold text-slate-800 text-xs">Email Applications Only (Skip Web Portal Forms)</span>
+              <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
+                Recommended
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 max-w-xl">
+              Strictly applies to positions with direct hiring emails via Gmail SMTP. Skips external job board forms that require manual CAPTCHAs, external logins, or multi-step portals.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setEmailOnly(!emailOnly)}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer self-start sm:self-auto ${
+              emailOnly
+                ? 'bg-emerald-600 border-emerald-700 text-white shadow-2xs'
+                : 'bg-slate-100 border-slate-200 text-slate-600'
+            }`}
+          >
+            <span>{emailOnly ? 'Email Only: ON' : 'All Methods'}</span>
+          </button>
         </div>
       </div>
 

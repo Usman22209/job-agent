@@ -27,7 +27,8 @@ import {
   ChevronDown,
   ChevronUp,
   Terminal,
-  ShieldAlert
+  ShieldAlert,
+  Trash2
 } from 'lucide-react';
 import { AgentApi } from '@/lib/api-client';
 import { IJob, ISchedulerStatus, IAutonomousStatus } from '@/types';
@@ -75,6 +76,35 @@ export default function QueueBoardPage() {
   const [isLogCollapsed, setIsLogCollapsed] = useState(false);
   const [logFilter, setLogFilter] = useState<'all' | 'success' | 'manual'>('all');
   const [togglingAutonomous, setTogglingAutonomous] = useState(false);
+  const [togglingEmailOnly, setTogglingEmailOnly] = useState(false);
+  const [purgingPortals, setPurgingPortals] = useState(false);
+
+  const handleToggleEmailOnly = async () => {
+    try {
+      setTogglingEmailOnly(true);
+      const next = !(agentStatus?.autonomous?.email_only ?? true);
+      await AgentApi.setEmailOnly(next);
+      showMessage(`Email-Only Mode: ${next ? 'ON (Auto-skips form portals)' : 'OFF (All methods)'}`);
+      await fetchAgentStatus();
+    } catch (err: any) {
+      showMessage(`Failed to update mode: ${err.message}`);
+    } finally {
+      setTogglingEmailOnly(false);
+    }
+  };
+
+  const handlePurgePortalJobs = async () => {
+    try {
+      setPurgingPortals(true);
+      const res = await AgentApi.purgePortalJobs();
+      showMessage(`Purged ${res.removed} web portal jobs! ${res.remaining} email jobs in queue.`);
+      await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+    } catch (err: any) {
+      showMessage(`Failed to purge portal jobs: ${err.message}`);
+    } finally {
+      setPurgingPortals(false);
+    }
+  };
 
   const handleToggleAutonomous = async () => {
     try {
@@ -191,8 +221,9 @@ export default function QueueBoardPage() {
   const handleAddAllToQueue = async () => {
     try {
       setAddingAll(true);
-      const res = await AgentApi.addAllToQueue();
-      showMessage(`Added ${res.added} jobs to queue (${res.skipped} skipped). Queue: ${res.queueLength} total.`);
+      const isEmailOnly = agentStatus?.autonomous?.email_only ?? true;
+      const res = await AgentApi.addAllToQueue(isEmailOnly);
+      showMessage(`Added ${res.added} ${isEmailOnly ? 'email' : ''} jobs to queue (${res.skipped} skipped). Queue: ${res.queueLength} total.`);
       await Promise.all([fetchJobs(true), fetchAgentStatus()]);
     } catch (err: any) {
       showMessage(`Failed: ${err.message}`);
@@ -392,6 +423,27 @@ export default function QueueBoardPage() {
             </span>
           </button>
 
+          {/* Email-Only Mode Toggle */}
+          <button
+            onClick={handleToggleEmailOnly}
+            disabled={togglingEmailOnly}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold shadow-2xs transition-all cursor-pointer ${
+              agentStatus?.autonomous?.email_only !== false
+                ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800'
+                : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-600'
+            }`}
+            title="When ON: Agent only auto-applies to positions with direct hiring email, auto-skipping form applications"
+          >
+            <Mail className={`h-3.5 w-3.5 ${agentStatus?.autonomous?.email_only !== false ? 'text-emerald-600' : 'text-slate-400'}`} />
+            <span>
+              {togglingEmailOnly
+                ? 'Updating...'
+                : agentStatus?.autonomous?.email_only !== false
+                ? 'Email Only: ON'
+                : 'All Methods'}
+            </span>
+          </button>
+
           {/* Test Gmail */}
           <button
             onClick={handleTestEmail}
@@ -433,6 +485,11 @@ export default function QueueBoardPage() {
               <span className="text-indigo-600/80 font-mono text-[11px]">
                 • Today: {agentStatus.autonomous.applications_today}/{agentStatus.autonomous.daily_limit} applied
               </span>
+              {agentStatus.autonomous.email_only !== false && (
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+                  ✉️ Email Only (Skipping Portal Forms)
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -536,11 +593,17 @@ export default function QueueBoardPage() {
                   <button
                     onClick={handleAddAllToQueue}
                     disabled={addingAll}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 text-[11px] font-bold transition-all disabled:opacity-50"
-                    title="Add all discovered jobs to the queue"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 text-[11px] font-bold transition-all disabled:opacity-50 cursor-pointer"
+                    title={agentStatus?.autonomous?.email_only !== false ? "Queue all discovered email positions" : "Queue all discovered positions"}
                   >
                     <PlusCircle className={`h-3 w-3 ${addingAll ? 'animate-spin' : ''}`} />
-                    <span>{addingAll ? 'Adding...' : 'Add All'}</span>
+                    <span>
+                      {addingAll
+                        ? 'Adding...'
+                        : agentStatus?.autonomous?.email_only !== false
+                        ? `+ Add Email (${columns.discovered.filter(j => j.contact_email).length})`
+                        : `+ Add All (${columns.discovered.length})`}
+                    </span>
                   </button>
                 )}
                 <span className="text-xs font-mono font-bold bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 text-slate-600">
@@ -647,9 +710,22 @@ export default function QueueBoardPage() {
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-0.5">{isAgentRunning ? 'Agent is processing...' : 'Waiting for agent start'}</p>
               </div>
-              <span className="text-xs font-mono font-bold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 text-amber-700">
-                {columns.queue.length}
-              </span>
+              <div className="flex items-center gap-2">
+                {columns.queue.some(j => !j.contact_email) && (
+                  <button
+                    onClick={handlePurgePortalJobs}
+                    disabled={purgingPortals}
+                    className="flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2 py-1 rounded-lg transition-all cursor-pointer"
+                    title="Clear form-based web portal jobs from the active queue"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span>{purgingPortals ? 'Purging...' : 'Purge Portal Jobs'}</span>
+                  </button>
+                )}
+                <span className="text-xs font-mono font-bold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 text-amber-700">
+                  {columns.queue.length}
+                </span>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {columns.queue.length === 0 ? (

@@ -57,6 +57,7 @@ class AgentStore {
   private autonomousCooldownMinutes: number = 5;
   private nextAutonomousCycleAt: string | null = null;
   private autonomousCooldownTimer: NodeJS.Timeout | null = null;
+  private emailOnlyMode: boolean = true;
 
 
   constructor() {
@@ -451,6 +452,16 @@ class AgentStore {
         message = `Email dispatch error: ${err.message}`;
       }
     } else {
+      // If Email-Only mode is active, skip web portal automation cleanly
+      if (this.emailOnlyMode) {
+        return {
+          success: false,
+          method: 'WEB_PORTAL',
+          application: app,
+          applyUrl: job.application_url || job.url,
+          message: `Skipped web portal application (Email-only mode is active).`,
+        };
+      }
       // Web portal jobs: try Playwright browser automation
       console.log(`[Agent Queue] Web portal job — attempting browser automation for ${job.company}...`);
       const pdfPath = (app as any).local_pdf_path;
@@ -519,12 +530,17 @@ class AgentStore {
     return { success: true, queueLength: this.applyQueue.length, message: `Added "${job.title}" to queue (#${this.applyQueue.length})` };
   }
 
-  addAllToQueue(): { added: number; skipped: number; queueLength: number } {
+  addAllToQueue(onlyEmail?: boolean): { added: number; skipped: number; queueLength: number } {
     let added = 0;
     let skipped = 0;
+    const filterEmail = onlyEmail !== undefined ? onlyEmail : this.emailOnlyMode;
     const allJobs = Array.from(this.jobs.values());
     for (const job of allJobs) {
       if (job.status === 'APPLIED' || this.applyQueue.includes(job.id)) {
+        skipped++;
+        continue;
+      }
+      if (filterEmail && !job.contact_email) {
         skipped++;
         continue;
       }
@@ -536,6 +552,30 @@ class AgentStore {
     this.saveQueueToDisk();
     this.saveJobsToDisk();
     return { added, skipped, queueLength: this.applyQueue.length };
+  }
+
+  purgePortalJobsFromQueue(): { removed: number; remaining: number } {
+    const portalJobIds: string[] = [];
+    const newQueue: string[] = [];
+
+    for (const jobId of this.applyQueue) {
+      const job = this.jobs.get(jobId);
+      if (job && !job.contact_email) {
+        portalJobIds.push(jobId);
+        if (job.status === 'MATCHED') {
+          job.status = 'DISCOVERED';
+          this.jobs.set(jobId, job);
+        }
+      } else {
+        newQueue.push(jobId);
+      }
+    }
+
+    this.applyQueue = newQueue;
+    this.saveQueueToDisk();
+    this.saveJobsToDisk();
+    console.log(`[Agent Queue] Purged ${portalJobIds.length} web portal jobs from queue. ${this.applyQueue.length} email jobs remaining.`);
+    return { removed: portalJobIds.length, remaining: this.applyQueue.length };
   }
 
   removeFromQueue(jobId: string): { success: boolean; queueLength: number } {
@@ -628,7 +668,15 @@ class AgentStore {
       daily_limit: this.dailyApplicationLimit,
       cooldown_minutes: this.autonomousCooldownMinutes,
       next_cycle_at: this.nextAutonomousCycleAt,
+      email_only: this.emailOnlyMode,
     };
+  }
+
+  setEmailOnlyMode(enabled: boolean): boolean {
+    this.emailOnlyMode = enabled;
+    this.saveAutonomousConfigToDisk();
+    console.log(`[Autonomous Loop] Email-only applications mode set to: ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    return this.emailOnlyMode;
   }
 
   toggleAutonomousMode(enabled: boolean): IAutonomousStatus {
@@ -657,12 +705,15 @@ class AgentStore {
     return this.getAutonomousStatus();
   }
 
-  setAutonomousConfig(config: { dailyLimit?: number; cooldownMinutes?: number }): IAutonomousStatus {
+  setAutonomousConfig(config: { dailyLimit?: number; cooldownMinutes?: number; emailOnly?: boolean }): IAutonomousStatus {
     if (typeof config.dailyLimit === 'number' && config.dailyLimit > 0) {
       this.dailyApplicationLimit = config.dailyLimit;
     }
     if (typeof config.cooldownMinutes === 'number' && config.cooldownMinutes > 0) {
       this.autonomousCooldownMinutes = config.cooldownMinutes;
+    }
+    if (typeof config.emailOnly === 'boolean') {
+      this.emailOnlyMode = config.emailOnly;
     }
     this.saveAutonomousConfigToDisk();
     return this.getAutonomousStatus();
@@ -771,6 +822,23 @@ class AgentStore {
 
     const job = this.jobs.get(jobId);
     const jobTitle = job?.title || 'Unknown';
+
+    // Fast-skip portal jobs in Email-only mode without wasting browser automation time
+    if (this.emailOnlyMode && (!job || !job.contact_email)) {
+      console.log(`[Agent Queue] ⏭ Skipping web portal job "${jobTitle}" (Email-only mode active).`);
+      this.agentLog.push({
+        jobId,
+        jobTitle,
+        status: 'skipped',
+        message: 'Skipped web portal application (Email-only mode active).',
+        timestamp: new Date().toISOString(),
+      });
+      this.currentlyProcessingJobId = null;
+      this.saveQueueToDisk();
+      this.processNextInQueue();
+      return;
+    }
+
     console.log(`[Agent Queue] Processing: "${jobTitle}" (${jobId})`);
 
     try {
@@ -858,6 +926,10 @@ class AgentStore {
       for (const job of discRes.newJobs) {
         const match = await this.matchJob(job.id);
         if (match.score >= threshold) {
+          // If email-only mode is active and job has no hiring contact email, skip auto-enqueue
+          if (this.emailOnlyMode && !job.contact_email) {
+            continue;
+          }
           highFitMatched++;
           const app = await this.createApplication(job.id);
           await this.tailorApplication(app.id);
@@ -876,6 +948,9 @@ class AgentStore {
       // Also auto-enqueue any unapplied matched jobs if queue is empty
       if (this.applyQueue.length === 0) {
         for (const job of Array.from(this.jobs.values())) {
+          if (this.emailOnlyMode && !job.contact_email) {
+            continue;
+          }
           if (job.status === 'MATCHED' && !this.applyQueue.includes(job.id)) {
             const existingApp = Array.from(this.applications.values()).find(a => a.job_id === job.id);
             if (!existingApp || existingApp.status !== 'APPLIED') {
@@ -1107,6 +1182,7 @@ class AgentStore {
         autonomousCooldownMinutes: this.autonomousCooldownMinutes,
         applicationsToday: this.applicationsToday,
         lastDayReset: this.lastDayReset,
+        emailOnlyMode: this.emailOnlyMode,
       };
       fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
     } catch (err: any) {
@@ -1124,6 +1200,7 @@ class AgentStore {
         if (typeof data.autonomousCooldownMinutes === 'number') this.autonomousCooldownMinutes = data.autonomousCooldownMinutes;
         if (typeof data.applicationsToday === 'number') this.applicationsToday = data.applicationsToday;
         if (typeof data.lastDayReset === 'string') this.lastDayReset = data.lastDayReset;
+        if (typeof data.emailOnlyMode === 'boolean') this.emailOnlyMode = data.emailOnlyMode;
         console.log(`[Store Persistence] Loaded autonomous configuration from disk.`);
       }
     } catch (e: any) {

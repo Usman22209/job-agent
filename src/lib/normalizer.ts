@@ -44,7 +44,13 @@ export function normalizeJob(raw: any, source: JobSource): IJob {
     description.toLowerCase().includes('work from anywhere');
 
   // Extract Contact Email from description or fields
-  const contactEmail = raw.contact_email || extractEmail(rawDesc) || extractEmail(description);
+  let contactEmail = raw.contact_email || extractEmail(rawDesc) || extractEmail(description);
+  if (!contactEmail && applicationUrl && applicationUrl.toLowerCase().startsWith('mailto:')) {
+    contactEmail = applicationUrl.replace(/^mailto:/i, '').split('?')[0].trim().toLowerCase();
+  }
+  if (!contactEmail && url && url.toLowerCase().startsWith('mailto:')) {
+    contactEmail = url.replace(/^mailto:/i, '').split('?')[0].trim().toLowerCase();
+  }
 
   // Detect ATS Platform and Application Type
   const { platform, type } = detectApplicationType(applicationUrl, url, contactEmail);

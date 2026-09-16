@@ -148,8 +148,18 @@ export const AgentApi = {
     return res.data;
   },
 
-  async addAllToQueue() {
-    const res = await apiClient.post('/agent', { action: 'addAll' });
+  async addAllToQueue(emailOnly?: boolean) {
+    const res = await apiClient.post('/agent', { action: 'addAll', emailOnly });
+    return res.data;
+  },
+
+  async purgePortalJobs() {
+    const res = await apiClient.post('/agent', { action: 'purgePortalJobs' });
+    return res.data;
+  },
+
+  async setEmailOnly(enabled: boolean) {
+    const res = await apiClient.post('/agent', { action: 'setEmailOnly', enabled });
     return res.data;
   },
 
@@ -173,7 +183,7 @@ export const AgentApi = {
     return res.data;
   },
 
-  async setAutonomousConfig(config: { dailyLimit?: number; cooldownMinutes?: number }) {
+  async setAutonomousConfig(config: { dailyLimit?: number; cooldownMinutes?: number; emailOnly?: boolean }) {
     const res = await apiClient.post('/agent', { action: 'setAutonomousConfig', ...config });
     return res.data;
   },
