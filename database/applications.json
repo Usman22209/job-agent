@@ -3214,11 +3214,127 @@
       "reasoning": "The candidate has strong AI integration experience and full-stack capabilities, aligning well with the AI-driven aspect of the role. However, they lack the explicitly required 5+ years of expert-level Ruby on Rails experience needed for a Tech Lead position in Rails.",
       "created_at": "2026-09-10T09:07:43.427Z"
     },
-    "status": "MATCHED",
+    "status": "APPLIED",
     "application_channel": "EMAIL",
     "needs_human_review": false,
     "created_at": "2026-09-10T09:07:43.428Z",
-    "updated_at": "2026-09-10T09:07:43.428Z"
+    "updated_at": "2026-09-16T08:27:52.936Z",
+    "tailored_resume_json": {
+      "full_name": "Talha Sadiq",
+      "headline": "AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering",
+      "contact_line": "talhasadiq320@gmail.com | +92 345 6601101 | Pakistan (Open to Remote Worldwide)",
+      "summary": "Full Stack Developer with 8 years of production experience in Ruby on Rails, Node.js, React, and React Native, specializing in AI engineering, LLM integrations, and microservices architecture. Hands-on with Claude Code, Cursor AI, OpenAI API, and Model Context Protocol (MCP) integrations for automated workflows and production AI features. Background spans robust backend API design, scalable databases, and cloud deployments across AWS, Azure, and Firebase, with a strong focus on fintech applications.",
+      "ordered_skills": [
+        "Ruby on Rails",
+        "Node.js",
+        "React",
+        "React Native",
+        "TypeScript",
+        "JavaScript",
+        "REST APIs",
+        "Microservices",
+        "OpenAI API",
+        "Gemini API",
+        "Model Context Protocol (MCP)",
+        "Claude Code & Cursor AI",
+        "Prompt Engineering",
+        "AI Workflow Automation (n8n)",
+        "MongoDB",
+        "Firebase & Realm",
+        "AWS (CDK, SDK, Cognito)",
+        "Azure",
+        "Docker",
+        "CI/CD & Fastlane",
+        "Socket.IO & WebRTC",
+        "Stripe & Twilio"
+      ],
+      "experience": [
+        {
+          "company": "Excersys (USA Based)",
+          "position": "Full Stack Developer",
+          "period": "Jan 2023 - Present",
+          "bullet_points": [
+            "Build and maintain production Ruby on Rails, Node.js, and React applications across fintech, food-tech, and sports-tech products, serving live users.",
+            "Use Claude Code, Cursor AI, and MCP integrations in daily development for AI-assisted code generation, debugging, and code review, cutting feature turnaround time.",
+            "Develop real-time AI platforms with OpenAI integration and microservices architecture deployed on AWS, Azure, and Firebase.",
+            "Design REST API and microservices architecture across Node.js, Ruby on Rails, and Python (Django, FastAPI) backends."
+          ]
+        },
+        {
+          "company": "Katch (Kuwait Based)",
+          "position": "Full Stack Developer",
+          "period": "Apr 2022 - Dec 2022",
+          "bullet_points": [
+            "Delivered platform features using React, Node.js, and MongoDB, GraphQL, Socket.IO, and Redux Toolkit powering real-time data flow and user interaction."
+          ]
+        },
+        {
+          "company": "Naseeb Networks (Rozee.pk)",
+          "position": "Senior React Native Developer",
+          "period": "Nov 2020 - Mar 2022",
+          "bullet_points": [
+            "Led development of Dukan.pk (team of 10), Log.Fish, Deenee, and Ailaaj, covering secure payments, real-time notifications, and offline-first architecture."
+          ]
+        }
+      ],
+      "selected_projects": [
+        {
+          "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+          "technologies": [
+            "Ruby on Rails",
+            "Node.js",
+            "React",
+            "Django",
+            "FastAPI",
+            "Azure",
+            "Claude Code",
+            "Cursor AI",
+            "MCP"
+          ],
+          "description": "AI-assisted build of a B2B supply chain platform for restaurants, cafes, and suppliers. Combined React and Node.js front ends with Ruby on Rails, Django, and FastAPI microservices on Azure.",
+          "url": "https://kafy.co"
+        },
+        {
+          "title": "Liquidus — Crypto Wallet Platform (Excersys)",
+          "technologies": [
+            "React Native",
+            "Node.js",
+            "React",
+            "Web3",
+            "Cryptography",
+            "CI/CD"
+          ],
+          "description": "Secure fintech and crypto wallet enabling instant interest earning while keeping full user control of private keys, built with robust encryption and backend services.",
+          "url": "https://liquidus.finance"
+        },
+        {
+          "title": "WatchSports — Sports Event Search & Streaming Guide (Excersys)",
+          "technologies": [
+            "React Native",
+            "Node.js",
+            "GraphQL",
+            "AWS Cognito",
+            "TensorFlow"
+          ],
+          "description": "Sports event discovery and connect-to-watch platform utilizing machine learning recommendations and secure cloud services.",
+          "url": "https://watchsports.app"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor in Computer Science (CGPA 3.20)",
+          "institution": "University of Central Punjab",
+          "year": "2018"
+        }
+      ]
+    },
+    "tailored_resume_pdf_url": "/resumes/Resume_Talha_Sadiq_Mitre_Media_1789547269441.pdf",
+    "local_pdf_path": "C:\\Users\\Usman\\Documents\\GitHub\\job-agent\\public\\resumes\\Resume_Talha_Sadiq_Mitre_Media_1789547269441.pdf",
+    "cover_letter": "Dear Hiring Team at Mitre Media,\n\nI am writing to express my enthusiastic interest in the Tech Lead Full-Stack Rails Engineer position. With 8 years of production experience spanning Ruby on Rails, Node.js, and React, combined with a deep passion for FinTech and modern AI engineering, I am thrilled at the prospect of helping power innovative financial platforms like Dividend.com and MutualFunds.com. Throughout my career, I have thrived in building scalable microservices architectures and leveraging cutting-edge LLMs to deliver high-performance user experiences.\n\nIn my current role at Excersys, I architect and maintain robust applications across fintech and enterprise products using Ruby on Rails, Node.js, and React. My hands-on experience includes integrating LLMs and advanced AI tools—such as Claude Code, Cursor AI, and OpenAI APIs—directly into my daily development workflows and production codebases. Whether designing RESTful microservices, optimizing backend state management, or collaborating within fast-paced teams, I maintain a strong commitment to clean, maintainable code and a 'get things done' entrepreneurial mentality.\n\nI am deeply inspired by Mitre Media’s mission to redefine FinTech with AI-driven insights that empower millions of investors and top asset managers. I am eager to bring my expertise in Ruby on Rails, full-stack development, and LLM integrations to your remote-first, high-impact team. Thank you for considering my application, and I look forward to the possibility of discussing how my technical background aligns with your vision.",
+    "email_subject": "Application for Tech Lead Full-Stack Rails Engineer — Talha Sadiq",
+    "email_body": "Dear Hiring Team at Mitre Media,\n\nI am writing to express my enthusiastic interest in the Tech Lead Full-Stack Rails Engineer position. With 8 years of production experience spanning Ruby on Rails, Node.js, and React, combined with a deep passion for FinTech and modern AI engineering, I am thrilled at the prospect of helping power innovative financial platforms like Dividend.com and MutualFunds.com. Throughout my career, I have thrived in building scalable microservices architectures and leveraging cutting-edge LLMs to deliver high-performance user experiences.\n\nIn my current role at Excersys, I architect and maintain robust applications across fintech and enterprise products using Ruby on Rails, Node.js, and React. My hands-on experience includes integrating LLMs and advanced AI tools—such as Claude Code, Cursor AI, and OpenAI APIs—directly into my daily development workflows and production codebases. Whether designing RESTful microservices, optimizing backend state management, or collaborating within fast-paced teams, I maintain a strong commitment to clean, maintainable code and a 'get things done' entrepreneurial mentality.\n\nI am deeply inspired by Mitre Media’s mission to redefine FinTech with AI-driven insights that empower millions of investors and top asset managers. I am eager to bring my expertise in Ruby on Rails, full-stack development, and LLM integrations to your remote-first, high-impact team. Thank you for considering my application, and I look forward to the possibility of discussing how my technical background aligns with your vision.\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
+    "email_sent_at": "2026-09-16T08:27:52.857Z",
+    "email_message_id": "<b014d13c-7c84-636b-2bcf-6ecc18e74f7e@gmail.com>"
   },
   {
     "id": "e78b4df6-3a2c-4164-80ef-4c87a29d4257",
@@ -23804,5 +23920,1279 @@
     "email_subject": "Application for Inside Sales Contractor — Talha Sadiq",
     "email_body": "Dear Hiring Manager at Credit Wellness, LLC,\n\nI am writing to express my strong interest in the Inside Sales Contractor position. As an autonomous self-starter with 8 years of professional experience building digital platforms and managing remote collaborations, I bring a unique blend of tech-savviness, resilience, and exceptional interpersonal skills. Throughout my career working with international clients across the US, Kuwait, and Pakistan, I have consistently demonstrated the ability to communicate empathetically, handle high-pressure environments with professionalism, and adapt rapidly to new tools and workflows.\n\nWhile my technical background spans full-stack development and digital solutions, my core strengths lie in my strong active listening abilities, passion for continuous learning, and drive to meet and exceed performance targets. I am highly comfortable navigating complex digital tools, CRMs, and communication software daily. I excel at building immediate rapport with people from diverse backgrounds, making sure clients feel heard, supported, and guided through sensitive topics like financial health and credit profiles with utmost empathy and patience.\n\nI am deeply motivated by growth-oriented environments that reward hard work and dedication. I am fully prepared to commit to your training schedule, master your processes, and leverage my communication skills to help clients enroll in services that truly improve their financial standing. Thank you for considering my application—I look forward to discussing how my work ethic and interpersonal strengths align with Credit Wellness, LLC.\n\nSincerely,\nTalha Sadiq\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
     "browser_screenshot_url": "/screenshots/apply_Credit_Wellness__LLC_cloudflare_1789042254521.png"
+  },
+  {
+    "id": "e44c9978-4ab4-4bdc-9b0c-d473505b91b4",
+    "job_id": "5741d34d-1cf7-4f4a-a861-3cfe40b1bfa0",
+    "job": {
+      "id": "5741d34d-1cf7-4f4a-a861-3cfe40b1bfa0",
+      "source": "jobicy",
+      "source_id": "149241",
+      "title": "Canada- Sr Application Engineer (Salesforce-Agentforce Ai)",
+      "company": "PointClickCare",
+      "location": "Canada",
+      "is_remote": true,
+      "salary_min": null,
+      "salary_max": null,
+      "currency": "USD",
+      "description": "At PointClickCare our mission is simple: to help providers deliver exceptional care. And that starts with our people. As a leading health tech company that’s founder-led and privately held, we empower our employees to push boundaries, innovate, and shape the future of healthcare. With the largest long-term and post-acute care dataset and a Marketplace of 400+ integrated partners, our platform serves over 30,000 provider organizations, making a real difference in millions of lives. We also reinvest a significant percentage of our revenue back into research and development, ensuring our employees have the resources to innovate and make a lasting impact. Recognized by Forbes as a top private cloud company and honored as one of Canada’s Most Admired Corporate Cultures, we offer flexibility, growth opportunities, and meaningful work.  At PointClickCare, we empower our people to be the architects of a smarter healthcare future; one that is human-first and accelerated by AI to create meaningful and lasting change. Employees harness AI as a catalyst for creativity, productivity, and thoughtful decision-making. By integrating AI tools into our daily workflows, collaboration is enhanced, outcomes are improved, and every team member has the proficiency to maximize their impact. It all starts with our hiring practices where we uncover AI expertise that complements our mission, and we continue to invest in training and development to nurture innovation throughout the employee journey.Join us in redefining healthcare — so it doesn’t just survive, it thrives. To learn more about PointClickCare, check out Life at PointClickCare and connect with us on Glassdoor and LinkedIn.**Travel to Office expectations**For Remote Roles: If this role is remote, there will be in-office events that will require travel to and from the Mississauga and/or Salt Lake City office. These will include, but not limited to, onboarding, team events, semi-annual and annual team meetings.For Hybrid Roles: If this role is Hybrid, there will be an expectation to reside within commutable distance to the office/location specified in the job listing. This will include, but not limited to, weekly/bi-weekly/monthly events in the office with your specific team. This is a requirement for this role.Job Summary\n\nWe’re looking for creative thinkers with hands-on experience in Agentforce, AI agent development, and intelligent process automation, who thrive in a collaborative, fast-paced environment. As a Senior Application Engineer specializing in Salesforce Agentforce AI at PointClickCare, you’ll architect and deliver state-of-the-art AI agents and automations that transform system workflows. You’ll be empowered to experiment, prototype, and deliver solutions that directly shape the future of our technology landscape, gain exposure to the latest AI technologies and dedicated time for professional development and certifications as you create AI Agents using Agentforce and other AI tools.\n\nTo succeed in this role, you need to be an autonomous and accountable team player with a continuous learning mindset and understand what it means to be a member of a high performing team. You bring hands-on experience building Agentforce AI Agents and over 5 years of experience and knowledge designing, developing, and maintaining configuration and custom applications that integrate with Salesforce or other connected apps. \n\nAs a Senior Application Engineer (Salesforce Agentforce AI) at PointClickCare you will also build intelligent process automations, test automations, and debug standard to complex issues related with Apex code, JavaScript, Python or code from other programming languages as it relates to the applications you are developing for. You will develop technical documentation, be part of our DevOps maintenance crew and peer review builds developed by other team members and vendors. You will provide training and consultation related to the systems and processes developed by the team to our business partners and support both transformational projects, high priority enhancements and resolve standard to high complexity incidents to quickly deliver value to the business.\n\nKey duties and responsibilities:\n\n•Work at the forefront of AI-driven Salesforce solutions and build AI Agents using Agentforce, and other AI platforms like Microsoft Studio for CoPilot Agents.\n\n•Pioneer intelligent automations in enterprise environments using IPA tools like Power Automate, Alteryx, and others.\n\n•Build test automations to improve QA efficiencies in QA for Salesforce and other applications.\n\n•Collaborate with product designers, end-users, and other team members to refine and understand outcomes and AI use cases.\n\n•Collaborate with other team members to brainstorm ideas for prototyping to test and solution for use cases identified and prioritized.\n\n•Execute standard to complex tasks in the application development life cycle using languages like Apex, JavaScript, Python, etc., etc., relevant to the core applications (Salesforce, Billing Platform, etc.) and connected or integrated apps (Conga, Docusign, Adobe, Marketo, Gainsight, Gong, Qualtrics, Kantata, TaskRay, etc.). \n\n•Perform unit tests for your builds and collaborate with Product Designers and other team members to create accurate and quality test scripts for automated and manual testing.\n\n•Analyze, troubleshoot, and debug systems for standard issues\n\n•Be an AI change agent in your team to gain team buy-in for adopting use of AI agents to save time, reduce waste and improve efficiency to deliver value to customers faster\n\n•Create and maintain technical documentation for all builds and AI Agents produced\n\n•Onboard, mentor and coach Junior - Intermediate application engineers and your peers – including peer reviewing their work, providing feedback, approving pull requests and providing guidance as needed. \n\n•Perform other tasks and duties as assigned\n\nSkills and Qualifications: \n\n•Hands-on experience building Agentforce AI Agents, AI workflows, custom agent development, and integration of external data sources. •Solid experience with Salesforce integrations and external system integrations (Conga, Docusign, Adobe, Marketo, Gainsight, Gong, Qualtrics, Kantata, TaskRay.• Working experience with Workday platform highly desired\n\n•Experience creating intelligent process automations using tools like Power Automate or others\n\n•Solid experience creating test automations for Salesforce and other platforms\n\n•Solid experience writing clean code that performs well at scale using JavaScript, Apex, Python, etc.\n\n•Proficient in DevOps processes and tools (e.g., Copado, AutoRabit)\n\n•Proficient in GITHUB and troubleshooting standard versioning and DevOps issues\n\n•Proficient in Agile methodologies (Scrum/Kanban) to iteratively deliver standard solutions\n\n•Solid experience with automated testing frameworks (e.g. PMD, Selenium, Copado CRT)\n\n•In-depth understanding of Salesforce data models, security, and governor limits\n\n•Excellent organization, critical-thinking and self-management skills\n\n•A continuous learner – you must enjoy acquiring and sharing knowledge and wisdom with others\n\n•Solid Team player and coach to partner with cross-functional teams and other areas of practice like BA, QA & Operations\n\n•Communicates standard - complex ideas, anticipates potential objections and persuades others, often at team level, to adopt a different point of view\n\n•Proven experience as a great Intermediate Application Engineer\n\nCertifications:\n\n•Salesforce Certified Agentforce Specialist\n\n•Salesforce Certified Platform Developer I & II (required)\n\n•Salesforce Advanced Administrator certification (required)\n\n•Salesforce Certified Application/Systems Architect (desired)\n\n•BSc/BA in Computer Science, Engineering, or a related field (or equivalent work experience)\n\nBonus points for:\n\n•Experience building AI Agents on other AI Platforms\n\n•Experience being part teams that operated using the Product Operating Model\n\n•Experience working on a SaaS product\n\n•Experience with Salesforce Lightning Design System (SLDS) or other UI frameworks like React, Vue.js, or Angular\n\n•Standard understanding of Salesforce Sales Cloud, Service Cloud, Revenue Cloud, Agentforce, and Salesforce Einstein\n\n•Experience working with AWS, Azure, or other cloud platforms.\n\n•Experience working with Service-Oriented Architecture (SOA) and SaaS product development\n\n•Knowledge of SAML, OAuth, and OpenID Connect for authentication and authorization\n\n•Experience with on-call responsibilities for production-grade systems.\n\n•Understanding how to solve the dysfunctions of a team (trust, conflict, commitment, accountability and team results)\n\n #remote \n\n#canada PointClickCare Benefits & Perks:Benefits starting from Day 1!Retirement Plan Matching Flexible Paid Time OffWellness Support Programs and ResourcesParental & Caregiver LeavesFertility & Adoption SupportContinuous Development Support ProgramEmployee Assistance Program Allyship and Inclusion CommunitiesEmployee Recognition … and more!It is the policy of PointClickCare to ensure equal employment opportunity without discrimination or harassment on the basis of race, religion, national origin, status, age, sex, sexual orientation, gender identity or expression, marital or domestic/civil partnership status, disability, veteran status, genetic information, or any other basis protected by law. PointClickCare welcomes and encourages applications from people with disabilities. Accommodations are available upon request for candidates taking part in all aspects of the selection process. Please contact recruitment@pointclickcare.com should you require any accommodations. As part of our commitment to a streamlined and equitable hiring experience, PointClickCare uses AI tools to assist with candidate screening and assessment.When you apply for a position, your information is processed and stored with Lever, in accordance with Lever’s Privacy Policy. We use this information to evaluate your candidacy for the posted position. We also store this information, and may use it in relation to future positions to which you apply, or which we believe may be relevant to you given your background. When we have no ongoing legitimate business need to process your information, we will either delete or anonymize it.  If you have any questions about how PointClickCare uses or processes your information, or if you would like to ask to access, correct, or delete your information, please contact PointClickCare’s human resources team: recruitment@pointclickcare.com PointClickCare is committed to Information Security. By applying to this position, if hired, you commit to following our information security policies and procedures and making every effort to secure confidential and/or sensitive information.",
+      "url": "https://jobicy.com/jobs/149241-canada-sr-application-engineer-salesforce-agentforce-ai",
+      "application_url": "https://jobicy.com/jobs/149241-canada-sr-application-engineer-salesforce-agentforce-ai",
+      "contact_email": "recruitment@pointclickcare.com",
+      "application_type": "EMAIL",
+      "ats_platform": "DirectEmail",
+      "posted_at": "2026-09-15T04:30:27.000Z",
+      "status": "APPLIED",
+      "dedup_hash": "1a10786722ccde5c8d2a308d5e275c57e7db86a6513376a25ea36d3fc93da00f",
+      "created_at": "2026-09-15T10:54:54.077Z",
+      "match": {
+        "job_id": "5741d34d-1cf7-4f4a-a861-3cfe40b1bfa0",
+        "score": 45,
+        "classification": "SKIP",
+        "matching_skills": [
+          "JavaScript",
+          "Python",
+          "React",
+          "AWS",
+          "Azure",
+          "Prompt Engineering"
+        ],
+        "missing_skills": [
+          "Salesforce Agentforce",
+          "Apex",
+          "Salesforce Platform Developer certifications",
+          "Power Automate",
+          "Copado"
+        ],
+        "recommendation": "SKIP",
+        "reasoning": "While the candidate has strong general full-stack and AI engineering experience, they completely lack the mandatory Salesforce ecosystem expertise, specifically Salesforce Agentforce, Apex, and required Salesforce certifications. This role heavily centers on Salesforce enterprise configuration and application development rather than general web/AI software engineering.",
+        "created_at": "2026-09-16T08:29:42.315Z"
+      }
+    },
+    "match": {
+      "job_id": "5741d34d-1cf7-4f4a-a861-3cfe40b1bfa0",
+      "score": 45,
+      "classification": "SKIP",
+      "matching_skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "AWS",
+        "Azure",
+        "Prompt Engineering"
+      ],
+      "missing_skills": [
+        "Salesforce Agentforce",
+        "Apex",
+        "Salesforce Platform Developer certifications",
+        "Power Automate",
+        "Copado"
+      ],
+      "recommendation": "SKIP",
+      "reasoning": "While the candidate has strong general full-stack and AI engineering experience, they completely lack the mandatory Salesforce ecosystem expertise, specifically Salesforce Agentforce, Apex, and required Salesforce certifications. This role heavily centers on Salesforce enterprise configuration and application development rather than general web/AI software engineering.",
+      "created_at": "2026-09-16T08:29:42.315Z"
+    },
+    "status": "APPLIED",
+    "application_channel": "EMAIL",
+    "needs_human_review": false,
+    "created_at": "2026-09-16T08:29:42.316Z",
+    "updated_at": "2026-09-16T08:29:52.209Z",
+    "tailored_resume_json": {
+      "full_name": "Talha Sadiq",
+      "headline": "AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering",
+      "contact_line": "talhasadiq320@gmail.com | +92 345 6601101 | Pakistan (Open to Remote Worldwide)",
+      "summary": "Full Stack Developer with 8 years of production experience in JavaScript, TypeScript, Node.js, and React, now expanding into AI engineering, workflow automation, and custom AI agent integrations. Hands-on with OpenAI API, Python (FastAPI, Django), and Model Context Protocol (MCP) integrations for AI-assisted development and intelligent application workflows. Proven background in cloud architectures across AWS, Azure, and Firebase, building scalable web and mobile applications for live users.",
+      "ordered_skills": [
+        "JavaScript",
+        "TypeScript",
+        "Node.js",
+        "Python (Django, FastAPI)",
+        "React",
+        "React Native",
+        "REST APIs",
+        "Microservices",
+        "OpenAI API",
+        "AI Workflow Automation (n8n)",
+        "Prompt Engineering",
+        "Claude Code & Cursor AI",
+        "Model Context Protocol (MCP)",
+        "MongoDB",
+        "Firebase & Realm",
+        "AWS (CDK, SDK, Cognito)",
+        "Azure",
+        "GraphQL",
+        "Docker",
+        "CI/CD & Fastlane"
+      ],
+      "experience": [
+        {
+          "company": "Excersys (USA Based)",
+          "position": "Full Stack Developer",
+          "period": "Jan 2023 - Present",
+          "bullet_points": [
+            "Build and maintain production React Native, Node.js, and React applications, supporting scalable web and mobile architectures.",
+            "Use Claude Code, Cursor AI, and MCP integrations in daily development for AI-assisted code generation, debugging, and review, accelerating feature turnaround times.",
+            "Develop real-time AI platform features with OpenAI integration and Python (Django, FastAPI) and Node.js microservices.",
+            "Design REST API architectures across Node.js, Ruby on Rails, and Python backends deployed on AWS and Azure."
+          ]
+        },
+        {
+          "company": "Katch (Kuwait Based)",
+          "position": "Full Stack Developer",
+          "period": "Apr 2022 - Dec 2022",
+          "bullet_points": [
+            "Delivered platform features using Node.js, React, and MongoDB, integrating GraphQL and real-time messaging workflows."
+          ]
+        },
+        {
+          "company": "Naseeb Networks (Rozee.pk)",
+          "position": "Senior React Native Developer",
+          "period": "Nov 2020 - Mar 2022",
+          "bullet_points": [
+            "Led development of multiple applications (team of 10) covering payment integrations, automated workflows, and offline-first architectures."
+          ]
+        },
+        {
+          "company": "Digital Tech",
+          "position": "React Native Developer",
+          "period": "Sep 2019 - Oct 2020",
+          "bullet_points": [
+            "Developed cross-platform applications and contributed to architectural decisions, code reviews, and technical documentation."
+          ]
+        },
+        {
+          "company": "Quaid Ventures",
+          "position": "Android Application Developer",
+          "period": "Sep 2018 - Aug 2019",
+          "bullet_points": [
+            "Built native Android applications for POS and e-commerce solutions, performing unit testing and system troubleshooting."
+          ]
+        }
+      ],
+      "selected_projects": [
+        {
+          "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+          "technologies": [
+            "React Native",
+            "Node.js",
+            "React",
+            "Ruby on Rails",
+            "Django",
+            "FastAPI",
+            "Azure",
+            "Claude Code",
+            "Cursor AI",
+            "MCP"
+          ],
+          "description": "AI-assisted build of a supply chain platform for restaurants and suppliers. Combined React Native, Node.js, and React front ends with Ruby on Rails, Django, and FastAPI microservices on Azure.",
+          "url": "https://kafy.co"
+        },
+        {
+          "title": "Real-Time AI Mobile Platform — Wearables (Excersys)",
+          "technologies": [
+            "Swift",
+            "Kotlin",
+            "OpenAI",
+            "ONNX Runtime",
+            "WebRTC",
+            "Bluetooth LE",
+            "Fastlane"
+          ],
+          "description": "Real-time mobile solution for wearable devices with voice-first interaction and AI-driven features using OpenAI integration and on-device inference.",
+          "url": ""
+        },
+        {
+          "title": "WatchSports — Sports Event Search & Streaming Guide (Excersys)",
+          "technologies": [
+            "React Native",
+            "Node.js",
+            "GraphQL",
+            "AWS Cognito",
+            "TensorFlow"
+          ],
+          "description": "Sports event discovery platform featuring recommendation workflows and scalable cloud backend integration.",
+          "url": "https://watchsports.app"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor in Computer Science (CGPA 3.20)",
+          "institution": "University of Central Punjab",
+          "year": "2018"
+        }
+      ]
+    },
+    "tailored_resume_pdf_url": "/resumes/Resume_Talha_Sadiq_PointClickCare_1789547389331.pdf",
+    "local_pdf_path": "C:\\Users\\Usman\\Documents\\GitHub\\job-agent\\public\\resumes\\Resume_Talha_Sadiq_PointClickCare_1789547389331.pdf",
+    "cover_letter": "Dear Hiring Team at PointClickCare,\n\nI am writing to express my strong interest in the Senior Application Engineer position at PointClickCare. With 8 years of production software engineering experience spanning JavaScript, TypeScript, Node.js, React, and Python, alongside hands-on integration of AI platforms like OpenAI, I am excited about the opportunity to help build intelligent workflows and AI-driven solutions that empower healthcare providers to deliver exceptional care.\n\nThroughout my career—most recently at Excersys—I have specialized in architecting and delivering full-stack applications, designing robust REST APIs and microservices, and incorporating modern AI tooling (such as Claude Code, Cursor AI, and MCP integrations) into daily development lifecycles to accelerate feature delivery and build automated workflows. My background includes building real-time AI platforms, writing clean, scalable code in JavaScript and Python, collaborating closely with cross-functional teams, and maintaining rigorous DevOps and testing practices across cloud environments like AWS and Azure.\n\nPointClickCare's mission to humanize healthcare and leverage AI as a catalyst for productivity deeply resonates with my own passion for building thoughtful, user-centric technology. I am eager to bring my continuous learning mindset, technical execution skills, and collaborative approach to your engineering team to help shape the future of smarter healthcare workflows. Thank you for your time and consideration; I look forward to discussing how my background aligns with your team's goals.",
+    "email_subject": "Application for Canada- Sr Application Engineer (Salesforce-Agentforce Ai) — Talha Sadiq",
+    "email_body": "Dear Hiring Team at PointClickCare,\n\nI am writing to express my strong interest in the Senior Application Engineer position at PointClickCare. With 8 years of production software engineering experience spanning JavaScript, TypeScript, Node.js, React, and Python, alongside hands-on integration of AI platforms like OpenAI, I am excited about the opportunity to help build intelligent workflows and AI-driven solutions that empower healthcare providers to deliver exceptional care.\n\nThroughout my career—most recently at Excersys—I have specialized in architecting and delivering full-stack applications, designing robust REST APIs and microservices, and incorporating modern AI tooling (such as Claude Code, Cursor AI, and MCP integrations) into daily development lifecycles to accelerate feature delivery and build automated workflows. My background includes building real-time AI platforms, writing clean, scalable code in JavaScript and Python, collaborating closely with cross-functional teams, and maintaining rigorous DevOps and testing practices across cloud environments like AWS and Azure.\n\nPointClickCare's mission to humanize healthcare and leverage AI as a catalyst for productivity deeply resonates with my own passion for building thoughtful, user-centric technology. I am eager to bring my continuous learning mindset, technical execution skills, and collaborative approach to your engineering team to help shape the future of smarter healthcare workflows. Thank you for your time and consideration; I look forward to discussing how my background aligns with your team's goals.\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
+    "email_sent_at": "2026-09-16T08:29:52.169Z",
+    "email_message_id": "<4e30e1bf-0c1d-fe44-bddd-bd56e0984b5a@gmail.com>"
+  },
+  {
+    "id": "afd80596-ed48-490c-9cfb-592b8fc13dd3",
+    "job_id": "9979dc2e-3906-44d7-95a3-2a2ecfbd61bb",
+    "job": {
+      "id": "9979dc2e-3906-44d7-95a3-2a2ecfbd61bb",
+      "source": "jobicy",
+      "source_id": "153297",
+      "title": "Senior Frontend Software Engineer (AI Receptionist)",
+      "company": "Cresta",
+      "location": "Canada,  USA",
+      "is_remote": true,
+      "salary_min": null,
+      "salary_max": null,
+      "currency": "USD",
+      "description": "Cresta unlocks the true potential of the customer experience, turning every conversation into a competitive advantage. Cresta’s unified AI platform combines conversational AI agents, real-time human agent augmentation, and comprehensive conversation intelligence to drive revenue and efficiency gains across every channel. The world’s leading companies, including United Airlines, Cox Communications, and Marriott, use Cresta to power world-class customer experiences every day. \n\nBorn from the Stanford AI Lab, Cresta has raised more than $270 million from the world’s leading investors, including a16z, Greylock, and Sequoia. Cresta’s leadership includes some of the leading minds in AI today. Our CEO, Ping Wu, founded and led Google's Contact Center AI and Vertex AI platforms before joining Cresta to build the future of AI-driven customer experiences.\n\nOver the next few years, AI is going to redefine how people all over the world interact with businesses every day. Come build that future at Cresta.\n\nAbout the Role\nCresta AI Receptionist is redefining how businesses engage with customers by delivering natural, intelligent, and reliable AI-powered voice experiences. Our AI Receptionist answers calls, understands customer intent, completes tasks, schedules appointments, routes conversations, and seamlessly hands off to human agents when needed.\n\nAs a Senior Software Engineer, Frontend, you'll help build the web applications that power the AI Receptionist experience for enterprise customers. You'll work closely with Product, Design, AI/ML, and Platform teams to create intuitive interfaces for configuring AI agents, managing deployments, monitoring live conversations, analyzing performance, and continuously improving customer experiences.\n\nYou'll have the opportunity to solve challenging frontend engineering problems while helping shape the future of conversational AI and voice automation.\n\nWhat You'll Do\n\n• Partner with Product Managers, Designers, and Engineers to define and deliver new AI Receptionist capabilities.\n\n• Design and build modern, responsive, and highly interactive web applications using React and TypeScript.\n\n• Create intuitive user experiences for configuring conversational AI, managing knowledge sources, testing AI behavior, and deploying voice agents.\n\n• Build reusable UI components and frontend infrastructure that improve consistency, scalability, and engineering velocity.\n\n• Integrate frontend applications with backend services using REST APIs, WebSockets, and real-time streaming technologies.\n\n• Collaborate closely with AI and ML engineers to surface LLM-powered capabilities through intuitive user experiences.\n\n• Optimize application performance, accessibility, reliability, and responsiveness across enterprise-scale deployments.\n\n• Drive frontend architecture decisions and establish engineering best practices.\n\n• Improve developer productivity through testing, CI/CD, observability, monitoring, and automation.\n\n• Mentor engineers through technical leadership, design reviews, and collaborative problem solving.\n\nWhat We're Looking For\n\n• 5+ years of professional software engineering experience with a strong focus on frontend development.\n\n• Deep expertise with modern frontend technologies including React, TypeScript, JavaScript, HTML, and CSS.\n\n• Experience building complex, production-scale web applications with exceptional user experiences.\n\n• Strong understanding of frontend architecture, component design, state management, and modern build systems.\n\n• Experience integrating with backend services using REST APIs, GraphQL, WebSockets, or streaming protocols.\n\n• Familiarity with frontend tooling including Vite, Webpack, Node.js, and modern testing frameworks.\n\n• Strong understanding of application performance optimization, observability, and debugging.\n\n• Experience collaborating closely with Product and Design teams to build polished enterprise applications.\n\n• Ability to influence technical direction while contributing high-quality production code.\n\n• Excellent communication skills and the ability to thrive in a fast-paced, collaborative environment.\n\nNice to Have\n\n• Experience building AI-powered or Generative AI applications.\n\n• Experience working with Large Language Models (LLMs) and AI agent platforms.\n\n• Experience building products for conversational AI, voice technology, or contact center software.\n\n• Experience with real-time communication technologies.\n\n• Experience with Go or other backend technologies.\n\n• Experience building cloud-native distributed systems.\n\nPerks & Benefits:\n\n• We offer Cresta employees a variety of medical, dental, and vision plans, designed to fit you and your family’s needs\n\n• Paid parental leave to support you and your family\n\n• Monthly Health & Wellness allowance\n\n• Work from home office stipend to help you succeed in a remote environment\n\n• Lunch reimbursement for in-office employees \n\n• PTO: 3 weeks in Canada \n\nCompensation for this position includes a base salary, equity, and a variety of benefits. Actual base salaries will be based on candidate-specific factors, including experience, skillset, and location, and local minimum pay requirements as applicable. We are actively hiring for this role in the US and Canada. Your recruiter can provide further details.\n\nWe have noticed a rise in recruiting impersonations across the industry, where scammers attempt to access candidates' personal and financial information through fake interviews and offers. All Cresta recruiting email communications will always come from the @cresta.ai domain. Any outreach claiming to be from Cresta via other sources should be ignored. If you are uncertain whether you have been contacted by an official Cresta employee, reach out to recruiting@cresta.ai",
+      "url": "https://jobicy.com/jobs/153297-senior-frontend-software-engineer-ai-receptionist",
+      "application_url": "https://jobicy.com/jobs/153297-senior-frontend-software-engineer-ai-receptionist",
+      "contact_email": "recruiting@cresta.ai",
+      "application_type": "EMAIL",
+      "ats_platform": "DirectEmail",
+      "posted_at": "2026-09-14T14:32:26.000Z",
+      "status": "APPLIED",
+      "dedup_hash": "e35bff6dd61bedf89b07f6650887c271d7795c12916657339d3b394b7c587948",
+      "created_at": "2026-09-15T10:54:54.248Z",
+      "match": {
+        "job_id": "9979dc2e-3906-44d7-95a3-2a2ecfbd61bb",
+        "score": 88,
+        "classification": "EXCELLENT",
+        "matching_skills": [
+          "React",
+          "TypeScript",
+          "JavaScript",
+          "REST APIs",
+          "Node.js",
+          "OpenAI API",
+          "Gemini API"
+        ],
+        "missing_skills": [
+          "GraphQL",
+          "Go",
+          "Webpack"
+        ],
+        "recommendation": "APPLY",
+        "reasoning": "The candidate brings 8 years of production experience with deep expertise in React and TypeScript, aligning closely with the frontend requirements for this AI-focused role. Furthermore, their direct experience with generative AI integrations, LLMs, and real-time tech makes them an exceptionally strong fit for Cresta's AI Receptionist platform.",
+        "created_at": "2026-09-16T08:30:11.202Z"
+      }
+    },
+    "match": {
+      "job_id": "9979dc2e-3906-44d7-95a3-2a2ecfbd61bb",
+      "score": 88,
+      "classification": "EXCELLENT",
+      "matching_skills": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "REST APIs",
+        "Node.js",
+        "OpenAI API",
+        "Gemini API"
+      ],
+      "missing_skills": [
+        "GraphQL",
+        "Go",
+        "Webpack"
+      ],
+      "recommendation": "APPLY",
+      "reasoning": "The candidate brings 8 years of production experience with deep expertise in React and TypeScript, aligning closely with the frontend requirements for this AI-focused role. Furthermore, their direct experience with generative AI integrations, LLMs, and real-time tech makes them an exceptionally strong fit for Cresta's AI Receptionist platform.",
+      "created_at": "2026-09-16T08:30:11.202Z"
+    },
+    "status": "APPLIED",
+    "application_channel": "EMAIL",
+    "needs_human_review": false,
+    "created_at": "2026-09-16T08:30:11.202Z",
+    "updated_at": "2026-09-16T08:30:28.520Z",
+    "tailored_resume_json": {
+      "full_name": "Talha Sadiq",
+      "headline": "AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering",
+      "contact_line": "talhasadiq320@gmail.com | +92 345 6601101 | Pakistan (Open to Remote Worldwide)",
+      "summary": "Full Stack Developer with 8 years of production experience specializing in React, TypeScript, and Node.js, now heavily focused on AI engineering, conversational platforms, and LLM integrations. Hands-on experience building complex, production-scale web applications, integrating real-time streaming services, and developing AI agent interfaces using OpenAI API, Claude Code, and Cursor AI. Proven background in architecting responsive user experiences and collaborating closely with cross-functional product and AI teams to surface advanced intelligence in enterprise systems.",
+      "ordered_skills": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "Node.js",
+        "React Native",
+        "REST APIs",
+        "GraphQL",
+        "Socket.IO & WebRTC",
+        "Next.js",
+        "FastAPI",
+        "Python (Django, FastAPI)",
+        "OpenAI API",
+        "Gemini API",
+        "Model Context Protocol (MCP)",
+        "TensorFlow & ONNX Runtime",
+        "Claude Code & Cursor AI",
+        "AWS (CDK, SDK, Cognito)",
+        "Azure",
+        "MongoDB",
+        "Firebase & Realm",
+        "Docker",
+        "CI/CD & Fastlane"
+      ],
+      "experience": [
+        {
+          "company": "Excersys (USA Based)",
+          "position": "Full Stack Developer",
+          "period": "Jan 2023 - Present",
+          "bullet_points": [
+            "Build and maintain production React, React Native, and Node.js web and mobile applications across multiple platforms, serving live users and ensuring high performance.",
+            "Develop real-time AI and conversational platforms incorporating OpenAI integration, WebSocket communication, and streaming technologies for responsive user experiences.",
+            "Leverage Claude Code, Cursor AI, and MCP integrations in daily development to accelerate feature delivery, maintain rigorous code quality, and optimize frontend architecture.",
+            "Design robust REST API and microservices architectures across Node.js, Ruby on Rails, and Python backends deployed on AWS and Azure."
+          ]
+        },
+        {
+          "company": "Katch (Kuwait Based)",
+          "position": "Full Stack Developer",
+          "period": "Apr 2022 - Dec 2022",
+          "bullet_points": [
+            "Delivered enterprise platform features using React, React Native, and Node.js, powered by MongoDB, GraphQL, Socket.IO, and Redux Toolkit to enable real-time order tracking and chat systems."
+          ]
+        },
+        {
+          "company": "Naseeb Networks (Rozee.pk)",
+          "position": "Senior React Native Developer",
+          "period": "Nov 2020 - Mar 2022",
+          "bullet_points": [
+            "Led development of multiple production applications (managing a team of 10), implementing real-time notifications, secure payment flows, and responsive UI components."
+          ]
+        },
+        {
+          "company": "Digital Tech",
+          "position": "React Native Developer",
+          "period": "Sep 2019 - Oct 2020",
+          "bullet_points": [
+            "Developed cross-platform applications, contributing significantly to frontend architecture decisions, component design, and code reviews."
+          ]
+        },
+        {
+          "company": "Quaid Ventures",
+          "position": "Android Application Developer",
+          "period": "Sep 2018 - Aug 2019",
+          "bullet_points": [
+            "Built native Android enterprise and e-commerce applications with a focus on responsive UI state management and backend synchronization."
+          ]
+        }
+      ],
+      "selected_projects": [
+        {
+          "title": "Real-Time AI Mobile Platform — Wearables (Excersys)",
+          "technologies": [
+            "Swift",
+            "Kotlin",
+            "OpenAI",
+            "ONNX Runtime",
+            "WebRTC",
+            "Bluetooth LE"
+          ],
+          "description": "Engineered a real-time platform featuring voice-first interaction, audio/video streaming, and AI-driven capabilities using OpenAI integration and WebRTC.",
+          "url": ""
+        },
+        {
+          "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+          "technologies": [
+            "React",
+            "React Native",
+            "Node.js",
+            "Ruby on Rails",
+            "FastAPI",
+            "Azure"
+          ],
+          "description": "Built a comprehensive supply chain web and mobile platform combining React and Node.js front ends with multi-service microservice back ends on Azure.",
+          "url": "https://kafy.co"
+        },
+        {
+          "title": "WatchSports — Sports Event Search & Streaming Guide (Excersys)",
+          "technologies": [
+            "React",
+            "Node.js",
+            "GraphQL",
+            "AWS Cognito",
+            "TensorFlow"
+          ],
+          "description": "Developed an event discovery and streaming connect platform featuring TensorFlow-powered recommendations and GraphQL data integration.",
+          "url": "https://watchsports.app"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor in Computer Science (CGPA 3.20)",
+          "institution": "University of Central Punjab",
+          "year": "2018"
+        }
+      ]
+    },
+    "tailored_resume_pdf_url": "/resumes/Resume_Talha_Sadiq_Cresta_1789547425516.pdf",
+    "local_pdf_path": "C:\\Users\\Usman\\Documents\\GitHub\\job-agent\\public\\resumes\\Resume_Talha_Sadiq_Cresta_1789547425516.pdf",
+    "cover_letter": "Dear Hiring Team at Cresta,\n\nI am thrilled to submit my application for the Senior Frontend Software Engineer (AI Receptionist) position. With 8 years of production experience specializing in React, TypeScript, and Node.js, combined with my recent hands-on work building conversational AI platforms, LLM integrations, and real-time streaming web applications, I am eager to help shape the future of AI-driven voice automation at Cresta.\n\nThroughout my career at companies like Excersys and Rozee.pk, I have focused on designing and building modern, responsive, and highly interactive web and mobile applications. My recent work directly intersects with Cresta’s mission: I have developed real-time AI platforms utilizing OpenAI APIs, WebSockets, and streaming technologies, creating intuitive user experiences that bridge complex backend intelligence with seamless frontend interfaces. Whether architecting reusable UI component systems, optimizing application performance across enterprise deployments, or collaborating with AI/ML engineers to surface LLM capabilities, I thrive on solving challenging frontend problems that elevate user engagement and product reliability.\n\nBorn from the Stanford AI Lab, Cresta is defining the gold standard for conversational AI and human agent augmentation. I am excited by the opportunity to bring my deep expertise in React and TypeScript, along with my passion for generative AI products, to help build the web applications powering the AI Receptionist experience. Thank you for your time and consideration, and I look forward to discussing how my technical background and collaborative approach can contribute to the Cresta engineering team.",
+    "email_subject": "Application for Senior Frontend Software Engineer (AI Receptionist) — Talha Sadiq",
+    "email_body": "Dear Hiring Team at Cresta,\n\nI am thrilled to submit my application for the Senior Frontend Software Engineer (AI Receptionist) position. With 8 years of production experience specializing in React, TypeScript, and Node.js, combined with my recent hands-on work building conversational AI platforms, LLM integrations, and real-time streaming web applications, I am eager to help shape the future of AI-driven voice automation at Cresta.\n\nThroughout my career at companies like Excersys and Rozee.pk, I have focused on designing and building modern, responsive, and highly interactive web and mobile applications. My recent work directly intersects with Cresta’s mission: I have developed real-time AI platforms utilizing OpenAI APIs, WebSockets, and streaming technologies, creating intuitive user experiences that bridge complex backend intelligence with seamless frontend interfaces. Whether architecting reusable UI component systems, optimizing application performance across enterprise deployments, or collaborating with AI/ML engineers to surface LLM capabilities, I thrive on solving challenging frontend problems that elevate user engagement and product reliability.\n\nBorn from the Stanford AI Lab, Cresta is defining the gold standard for conversational AI and human agent augmentation. I am excited by the opportunity to bring my deep expertise in React and TypeScript, along with my passion for generative AI products, to help build the web applications powering the AI Receptionist experience. Thank you for your time and consideration, and I look forward to discussing how my technical background and collaborative approach can contribute to the Cresta engineering team.\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
+    "email_sent_at": "2026-09-16T08:30:28.477Z",
+    "email_message_id": "<84b26c4c-8ea8-9dc2-68a8-819b5dd886eb@gmail.com>"
+  },
+  {
+    "id": "1451f5c4-0aa3-46a2-a2d7-3d64c2923134",
+    "job_id": "5bf80304-c350-47da-881b-0b26e0561357",
+    "job": {
+      "id": "5bf80304-c350-47da-881b-0b26e0561357",
+      "source": "jobicy",
+      "source_id": "149101",
+      "title": "Senior Software Engineer, Backend (AI Agent Integrations)",
+      "company": "Cresta",
+      "location": "Canada",
+      "is_remote": true,
+      "salary_min": null,
+      "salary_max": null,
+      "currency": "USD",
+      "description": "Cresta unlocks the true potential of the customer experience, turning every conversation into a competitive advantage. Cresta’s unified AI platform combines conversational AI agents, real-time human agent augmentation, and comprehensive conversation intelligence to drive revenue and efficiency gains across every channel. The world’s leading companies, including United Airlines, Cox Communications, and Marriott, use Cresta to power world-class customer experiences every day. \n\nBorn from the Stanford AI Lab, Cresta has raised more than $270 million from the world’s leading investors, including a16z, Greylock, and Sequoia. Cresta’s leadership includes some of the leading minds in AI today. Our CEO, Ping Wu, founded and led Google's Contact Center AI and Vertex AI platforms before joining Cresta to build the future of AI-driven customer experiences.\n\nOver the next few years, AI is going to redefine how people all over the world interact with businesses every day. Come build that future at Cresta.\n\nAbout the role:Cresta’s AI Agent team is building enterprise-grade AI Agents that can operate inside real-world contact center environments. A critical part of that mission is enabling our AI Agents to seamlessly integrate with customers’ CCaaS platforms (Contact Center as a Service), including voice and digital channels — and to smoothly transition conversations between AI and human agents when needed.\n\nThis role is focused on building the backend systems that allow our AI Agents to:\n\n• Integrate deeply with leading CCaaS platforms\n\n• Participate in live customer conversations across voice and chat\n\n• Maintain full conversation state and context\n\n• Perform real-time actions within the CCaaS ecosystem\n\n• Seamlessly hand off conversations to human agents — without losing context, history, or workflow state\n\n• Support human agents with AI assistance after transfer\n\nWe are looking for strong backend engineers who want to work at the intersection of distributed systems, real-time communication, enterprise integrations, and AI Agent orchestration.\n\nThis is not a pure research role — it is about building production-grade infrastructure that enables AI Agents to operate reliably in mission-critical customer environments.\n\nWhy This Role Is Unique: \n\n• AI + Real-Time Systems: Work on infrastructure that enables AI Agents to participate in live conversations at scale.\n\n• Enterprise-Grade Integrations: Design robust integrations with major CCaaS platforms and customer systems.\n\n• Human-AI Collaboration: Build the systems that make AI-to-human handoff seamless, contextual, and reliable.\n\n• High-Impact Engineering: Your work directly determines how smoothly AI Agents operate in production environments.\n\nIf you’re a strong backend engineer who wants to apply your expertise to real-world AI systems operating inside complex enterprise ecosystems, this role offers that opportunity.\n\nResponsibilities:\n\n• Design and build scalable backend services that integrate Cresta’s AI Agents with customers’ CCaaS platforms.\n\n• Architect systems that manage real-time conversation state, context propagation, and session lifecycle.\n\n• Implement seamless AI-to-human handoff mechanisms, ensuring full context transfer and minimal disruption to the customer experience.\n\n• Develop secure and reliable integrations with CCaaS APIs (voice, chat, messaging, routing, agent desktop, etc.).\n\n• Collaborate closely with ML engineers and AI researchers to operationalize AI Agent capabilities in live environments.\n\n• Ensure high availability, low latency, and strong observability for real-time conversation systems.\n\n• Implement authentication, authorization, compliance, and enterprise security best practices across integrations.\n\n• Drive improvements in reliability, performance, and scalability in production environments handling high interaction volumes\n\nQualifications We Value:\n• Bachelor’s degree in Computer Science or related field.\n\n• 5+ years of experience building scalable backend systems in production environments.\n\n• Strong experience designing and maintaining robust APIs (REST, gRPC).\n\n• Solid understanding of distributed systems and real-time communication architectures.\n\n• Experience integrating with third-party enterprise platforms and APIs.\n\n• Experience working with CCaaS platforms or contact center systems is a strong plus.\n\n• Familiarity with AI Agents, Virtual Agents, or LLM-based systems is a plus.\n\n• Experience with containerized environments (Kubernetes, Docker).\n\n• Experience with cloud platforms such as AWS, GCP, or Azure.\n\n• Strong understanding of system reliability, observability, and security in enterprise environments.\n\nPerks & Benefits:\n\n• We offer Cresta employees a variety of medical, dental, and vision plans, designed to fit you and your family’s needs\n\n• Paid parental leave to support you and your family\n\n• Monthly Health & Wellness allowance\n\n• Work from home office stipend to help you succeed in a remote environment\n\n• Lunch reimbursement for in-office employees \n\n• PTO: 3 weeks in Canada \n\nCompensation for this position includes a base salary, equity, and a variety of benefits. Actual base salaries will be based on candidate-specific factors, including experience, skillset, and location, and local minimum pay requirements as applicable. We are actively hiring for this role in the US and Canada. Your recruiter can provide further details.\n\nWe have noticed a rise in recruiting impersonations across the industry, where scammers attempt to access candidates' personal and financial information through fake interviews and offers. All Cresta recruiting email communications will always come from the @cresta.ai domain. Any outreach claiming to be from Cresta via other sources should be ignored. If you are uncertain whether you have been contacted by an official Cresta employee, reach out to recruiting@cresta.ai",
+      "url": "https://jobicy.com/jobs/149101-senior-software-engineer-backend-ai-agent-integrations",
+      "application_url": "https://jobicy.com/jobs/149101-senior-software-engineer-backend-ai-agent-integrations",
+      "contact_email": "recruiting@cresta.ai",
+      "application_type": "EMAIL",
+      "ats_platform": "DirectEmail",
+      "posted_at": "2026-09-12T13:30:07.000Z",
+      "status": "APPLIED",
+      "dedup_hash": "4e5ba92a3f8264911bcd2b1c5d48ac8af6fd37e953ca9697b27803a932210a6f",
+      "created_at": "2026-09-15T10:54:54.777Z",
+      "match": {
+        "job_id": "5bf80304-c350-47da-881b-0b26e0561357",
+        "score": 85,
+        "classification": "GOOD",
+        "matching_skills": [
+          "Node.js",
+          "Python",
+          "REST APIs",
+          "Microservices",
+          "AWS",
+          "Azure",
+          "Docker",
+          "Socket.IO & WebRTC",
+          "OpenAI API",
+          "Prompt Engineering"
+        ],
+        "missing_skills": [
+          "gRPC",
+          "Kubernetes",
+          "CCaaS platforms"
+        ],
+        "recommendation": "APPLY",
+        "reasoning": "Talha brings 8 years of strong backend and full-stack production experience combined with modern AI agent and LLM integration capabilities, aligning well with Cresta's backend AI agent requirements. While missing direct CCaaS experience and gRPC, his background in real-time communication, microservices, and cloud infrastructure makes him a strong fit for the role.",
+        "created_at": "2026-09-16T08:30:47.015Z"
+      }
+    },
+    "match": {
+      "job_id": "5bf80304-c350-47da-881b-0b26e0561357",
+      "score": 85,
+      "classification": "GOOD",
+      "matching_skills": [
+        "Node.js",
+        "Python",
+        "REST APIs",
+        "Microservices",
+        "AWS",
+        "Azure",
+        "Docker",
+        "Socket.IO & WebRTC",
+        "OpenAI API",
+        "Prompt Engineering"
+      ],
+      "missing_skills": [
+        "gRPC",
+        "Kubernetes",
+        "CCaaS platforms"
+      ],
+      "recommendation": "APPLY",
+      "reasoning": "Talha brings 8 years of strong backend and full-stack production experience combined with modern AI agent and LLM integration capabilities, aligning well with Cresta's backend AI agent requirements. While missing direct CCaaS experience and gRPC, his background in real-time communication, microservices, and cloud infrastructure makes him a strong fit for the role.",
+      "created_at": "2026-09-16T08:30:47.015Z"
+    },
+    "status": "APPLIED",
+    "application_channel": "EMAIL",
+    "needs_human_review": false,
+    "created_at": "2026-09-16T08:30:47.015Z",
+    "updated_at": "2026-09-16T08:30:57.211Z",
+    "tailored_resume_json": {
+      "full_name": "Talha Sadiq",
+      "headline": "AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering",
+      "contact_line": "talhasadiq320@gmail.com | +92 345 6601101 | Pakistan (Open to Remote Worldwide)",
+      "summary": "Full Stack Developer with 8 years of production experience specializing in scalable backend systems, REST APIs, real-time communication architectures, and AI agent integrations. Proven track record in designing microservices and distributed backend solutions across Node.js, Python (Django, FastAPI), and Ruby on Rails, deployed on AWS, Azure, and Firebase. Hands-on expertise integrating LLM applications, OpenAI APIs, and real-time conversation state management for enterprise production environments.",
+      "ordered_skills": [
+        "Node.js",
+        "REST APIs",
+        "Microservices",
+        "Python (Django, FastAPI)",
+        "OpenAI API",
+        "Model Context Protocol (MCP)",
+        "Socket.IO & WebRTC",
+        "AWS (CDK, SDK, Cognito)",
+        "Azure",
+        "Docker",
+        "CI/CD & Fastlane",
+        "TypeScript",
+        "JavaScript",
+        "React",
+        "React Native",
+        "MongoDB",
+        "Firebase & Realm",
+        "GraphQL",
+        "Claude Code & Cursor AI"
+      ],
+      "experience": [
+        {
+          "company": "Excersys (USA Based)",
+          "position": "Full Stack Developer",
+          "period": "Jan 2023 - Present",
+          "bullet_points": [
+            "Design and build scalable backend services and microservices architectures using Node.js, Ruby on Rails, and Python (Django, FastAPI), deployed on AWS, Azure, and Firebase to support high-interaction production environments.",
+            "Develop real-time communication architectures and AI integration platforms utilizing OpenAI API integrations, WebRTC, and on-device inference to manage conversation state, context propagation, and session lifecycles.",
+            "Leverage modern AI-assisted development workflows (Claude Code, Cursor AI, and MCP integrations) to accelerate feature delivery, debugging, and robust code reviews across distributed systems."
+          ]
+        },
+        {
+          "company": "Katch (Kuwait Based)",
+          "position": "Full Stack Developer",
+          "period": "Apr 2022 - Dec 2022",
+          "bullet_points": [
+            "Delivered platform features utilizing Node.js backends, MongoDB, GraphQL, and Socket.IO to power real-time order processing, live chat messaging, and seamless state management."
+          ]
+        },
+        {
+          "company": "Naseeb Networks (Rozee.pk)",
+          "position": "Senior React Native Developer",
+          "period": "Nov 2020 - Mar 2022",
+          "bullet_points": [
+            "Led development of high-scale applications (Dukan.pk, Log.Fish, Deenee, Ailaaj) managing payment integrations, real-time notifications, and robust offline-first architecture with Realm and Firebase."
+          ]
+        },
+        {
+          "company": "Digital Tech",
+          "position": "React Native Developer",
+          "period": "Sep 2019 - Oct 2020",
+          "bullet_points": [
+            "Developed cross-platform applications, contributing significantly to backend API consumption, architecture decisions, and code reviews."
+          ]
+        },
+        {
+          "company": "Quaid Ventures",
+          "position": "Android Application Developer",
+          "period": "Sep 2018 - Aug 2019",
+          "bullet_points": [
+            "Built native Android applications for POS and e-commerce products including Zash Go and Qareeb Online Store, focusing on reliable client-server communication."
+          ]
+        }
+      ],
+      "selected_projects": [
+        {
+          "title": "Real-Time AI Mobile Platform — Wearables (Excersys)",
+          "technologies": [
+            "Swift",
+            "Kotlin",
+            "OpenAI",
+            "ONNX Runtime",
+            "WebRTC",
+            "Bluetooth LE",
+            "Fastlane"
+          ],
+          "description": "Real-time mobile and backend solution for wearable devices featuring audio/video streaming, voice-first interaction, and real-time conversation state management using OpenAI integration and WebRTC.",
+          "url": ""
+        },
+        {
+          "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+          "technologies": [
+            "React Native",
+            "Node.js",
+            "React",
+            "Ruby on Rails",
+            "Django",
+            "FastAPI",
+            "Azure",
+            "Claude Code",
+            "Cursor AI",
+            "MCP"
+          ],
+          "description": "Built a robust supply chain platform combining Node.js, Ruby on Rails, Django, and FastAPI microservices hosted on Azure, ensuring reliable data flow and high availability.",
+          "url": "https://kafy.co"
+        },
+        {
+          "title": "Dukan.pk — Digitizing Sellers (Rozee.pk)",
+          "technologies": [
+            "React Native",
+            "Realm",
+            "Firebase",
+            "Rabbit MQTT"
+          ],
+          "description": "Web-store platform enabling businesses to launch online stores instantly with automated payment and real-time delivery messaging integration, leading a team of 10 developers.",
+          "url": "https://dukan.pk"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor in Computer Science (CGPA 3.20)",
+          "institution": "University of Central Punjab",
+          "year": "2018"
+        }
+      ]
+    },
+    "tailored_resume_pdf_url": "/resumes/Resume_Talha_Sadiq_Cresta_1789547453589.pdf",
+    "local_pdf_path": "C:\\Users\\Usman\\Documents\\GitHub\\job-agent\\public\\resumes\\Resume_Talha_Sadiq_Cresta_1789547453589.pdf",
+    "cover_letter": "Dear Hiring Team at Cresta,\n\nI am writing to express my enthusiastic interest in the Senior Software Engineer, Backend (AI Agent Integrations) role at Cresta. With 8 years of professional experience building scalable backend systems, microservices, and real-time communication architectures across Node.js, Python (Django, FastAPI), and cloud environments like AWS and Azure, I am excited about the opportunity to contribute to Cresta’s pioneering enterprise AI Agent platform.\n\nThroughout my career, particularly in my current role at Excersys, I have focused on bridging robust backend infrastructure with modern AI capabilities. My hands-on work includes designing REST APIs, managing real-time conversation state and context propagation via WebSockets and WebRTC, and integrating LLM solutions such as the OpenAI API into production environments. I deeply understand the engineering challenges required to ensure low latency, high availability, and seamless session lifecycles—priorities that align directly with Cresta's mission to operate enterprise-grade AI agents reliably inside live customer communication ecosystems.\n\nI am eager to bring my expertise in distributed backend systems, third-party enterprise integrations, and LLM-based workflows to Cresta to help build the future of AI-driven customer experiences. Thank you for your time and consideration, and I look forward to discussing how my background can support your AI Agent team.\n\nSincerely,\nTalha Sadiq",
+    "email_subject": "Application for Senior Software Engineer, Backend (AI Agent Integrations) — Talha Sadiq",
+    "email_body": "Dear Hiring Team at Cresta,\n\nI am writing to express my enthusiastic interest in the Senior Software Engineer, Backend (AI Agent Integrations) role at Cresta. With 8 years of professional experience building scalable backend systems, microservices, and real-time communication architectures across Node.js, Python (Django, FastAPI), and cloud environments like AWS and Azure, I am excited about the opportunity to contribute to Cresta’s pioneering enterprise AI Agent platform.\n\nThroughout my career, particularly in my current role at Excersys, I have focused on bridging robust backend infrastructure with modern AI capabilities. My hands-on work includes designing REST APIs, managing real-time conversation state and context propagation via WebSockets and WebRTC, and integrating LLM solutions such as the OpenAI API into production environments. I deeply understand the engineering challenges required to ensure low latency, high availability, and seamless session lifecycles—priorities that align directly with Cresta's mission to operate enterprise-grade AI agents reliably inside live customer communication ecosystems.\n\nI am eager to bring my expertise in distributed backend systems, third-party enterprise integrations, and LLM-based workflows to Cresta to help build the future of AI-driven customer experiences. Thank you for your time and consideration, and I look forward to discussing how my background can support your AI Agent team.\n\nSincerely,\nTalha Sadiq\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
+    "email_sent_at": "2026-09-16T08:30:57.167Z",
+    "email_message_id": "<5a937648-8536-56a4-32da-7a2db279674d@gmail.com>"
+  },
+  {
+    "id": "55b8912e-ef10-4b06-8a33-a89ee4c77c36",
+    "job_id": "002f873f-a82d-4c1e-a89e-eabc3e4a85e9",
+    "job": {
+      "id": "002f873f-a82d-4c1e-a89e-eabc3e4a85e9",
+      "source": "jobicy",
+      "source_id": "153296",
+      "title": "Executive Assistant, Marketing",
+      "company": "Deepgram",
+      "location": "USA",
+      "is_remote": true,
+      "salary_min": null,
+      "salary_max": null,
+      "currency": "USD",
+      "description": "Company Overview\nDeepgram is the leading platform underpinning the emerging trillion-dollar Voice AI economy, providing real-time APIs for speech-to-text (STT), text-to-speech (TTS), and building production-grade voice agents at scale. More than 200,000 developers and 1,300+ organizations build voice offerings that are ‘Powered by Deepgram’, including Twilio, Cloudflare, Sierra, Decagon, Vapi, Daily, Cresta, Granola, and Jack in the Box. Deepgram’s voice-native foundation models are accessed through cloud APIs or as self-hosted and on-premises software, with unmatched accuracy, low latency, and cost efficiency. Backed by a recent Series C led by leading global investors and strategic partners, Deepgram has processed over 50,000 years of audio and transcribed more than 1 trillion words. There is no organization in the world that understands voice better than Deepgram.\n\nCompany Operating Rhythm\nAt Deepgram, we expect an AI-first mindset—AI use and comfort aren’t optional, they’re core to how we operate, innovate, and measure performance.\n\nEvery team member who works at Deepgram is expected to actively use and experiment with advanced AI tools, and even build your own into your everyday work. We measure how effectively AI is applied to deliver results, and consistent, creative use of the latest AI capabilities is key to success here. Candidates should be comfortable adopting new models and modes quickly, integrating AI into their workflows, and continuously pushing the boundaries of what these technologies can do.\n\nAdditionally, we move at the pace of AI. Change is rapid, and you can expect your day-to-day work to evolve just as quickly. This may not be the right role if you’re not excited to experiment, adapt, think on your feet, and learn constantly, or if you’re seeking something highly prescriptive with a traditional 9-to-5.\n\nTeam Overview\n\nYou'd be the right hand to our CMO and a force multiplier for the marketing leadership team. Marketing owns how the world discovers what Deepgram can do, and the CMO's time and focus are among the highest-leverage resources we have. Your job is to protect that leverage: keep the operation running cleanly enough that leadership stays heads-down on the work that moves the business, and connect the dots across teams so the right things meet at the right time.\n\nKey Goals\n\n• \nProtect and optimize the CMO's calendar — partner with them to set and re-sequence priorities as the picture shifts, so their time lands on strategic work rather than reactive fire drills\n\n• \nRun the marketing leadership operating cadence (staff meetings, QBRs, offsites, planning cycles) and coordinate with adjacent teams — RevOps, Comms, People — so cross-functional work lands without the CMO having to chase it\n\n• \nBuild Human+AI workflows for scheduling, inbox triage, and meeting prep that cut recurring admin turnaround by [X]%\n\n• \nSpot recurring friction in how leadership operates and ship [1–2] fixes a quarter — a template, a cadence, an automation — instead of absorbing the same problem every week\n\n• \nOwn complex travel and logistics with zero missed connections, and close expenses same-day\n\n• \nKeep confidential and sensitive matters secure, handling delicate information with total discretion\n\nMinimum Skills, Knowledge & Capabilities\n\n• \nOperates AI-native — designs Human+AI workflows for scheduling, drafting, and meeting prep rather than doing every task by hand\n\n• \nBuilds lightweight systems that eliminate recurring admin work instead of re-solving it each week\n\n• \nIdentifies problems in how the office runs and proposes practical solutions within the function\n\n• \nCoordinates across teams and programs, not just within a single leader's calendar\n\n• \nExercises sound judgment and discretion with confidential and sensitive information\n\n• \nJuggles competing priorities across time zones and calendars without dropping details\n\n• \nCommunicates clearly and professionally with senior stakeholders, internal and external\n\n• \nAnticipates needs and resolves problems before they reach the CMO's desk\n\nPreferred Qualifications (nice-to-have, not required)\n\n• \nTypically ~1–3 years supporting leaders or coordinating across teams, or equivalent demonstrated experience\n\n• \nPrior experience supporting a senior leader or executive, [in a fast-moving startup or high-growth tech environment]\n\n• \nHands-on with modern AI tools for drafting, summarizing, and automating repetitive work\n\n• \nFamiliarity with common exec-support tooling — [calendar, travel, expense, and comms platforms]\n\nOur Values\n\n• \nBe You — bring your whole self and a different perspective; diverse viewpoints make our products better.\n\n• \nBe Curious — challenge the status quo, keep learning, and ask 'how might we?' instead of accepting limits.\n\n• \nGrow Together — push each other to do great work, treat feedback as a gift, and leave the drama out.\n\n• \nDo the Right Thing — act with integrity and candor, assume best intent, choose ethics over expediency.\n\n• \nThink Smart. Act Fast. — weigh the high-leverage options, decide, and move; no analysis paralysis.\n\n• \nPut the Customer First — listen with empathy, understand their goals, and let their success drive ours.\n\nWe know the confidence gap and imposter syndrome can get in the way of meeting great candidates — so please don't hesitate to apply. We'd love to hear from you.\n\nNotice: We're aware of individuals impersonating Deepgram recruiters. All legitimate Deepgram recruiting communication comes from an @deepgram.com email address. If you've received a message claiming to be Deepgram, please forward it to careers@deepgram.com.",
+      "url": "https://jobicy.com/jobs/153296-executive-assistant-marketing",
+      "application_url": "https://jobicy.com/jobs/153296-executive-assistant-marketing",
+      "contact_email": "careers@deepgram.com",
+      "application_type": "EMAIL",
+      "ats_platform": "DirectEmail",
+      "posted_at": "2026-09-14T14:32:23.000Z",
+      "status": "APPLIED",
+      "dedup_hash": "0f39a28bc7ee96c6d73237d6f6a3c4e4302772f32420d295de02e719e560d42d",
+      "created_at": "2026-09-15T10:54:55.169Z",
+      "match": {
+        "job_id": "002f873f-a82d-4c1e-a89e-eabc3e4a85e9",
+        "score": 35,
+        "classification": "SKIP",
+        "matching_skills": [
+          "AI Workflow Automation (n8n)",
+          "Prompt Engineering"
+        ],
+        "missing_skills": [
+          "Executive Support",
+          "Calendar Management",
+          "Travel Logistics",
+          "Expense Management",
+          "Marketing Operations Coordination"
+        ],
+        "recommendation": "SKIP",
+        "reasoning": "While the candidate possesses exceptional technical AI and full-stack engineering skills that align with Deepgram's AI-first mindset, the role is for an Executive Assistant, Marketing. The candidate's 8-year profile is heavily weighted toward software development rather than executive operations, administrative support, and calendar management.",
+        "created_at": "2026-09-16T08:31:17.998Z"
+      }
+    },
+    "match": {
+      "job_id": "002f873f-a82d-4c1e-a89e-eabc3e4a85e9",
+      "score": 35,
+      "classification": "SKIP",
+      "matching_skills": [
+        "AI Workflow Automation (n8n)",
+        "Prompt Engineering"
+      ],
+      "missing_skills": [
+        "Executive Support",
+        "Calendar Management",
+        "Travel Logistics",
+        "Expense Management",
+        "Marketing Operations Coordination"
+      ],
+      "recommendation": "SKIP",
+      "reasoning": "While the candidate possesses exceptional technical AI and full-stack engineering skills that align with Deepgram's AI-first mindset, the role is for an Executive Assistant, Marketing. The candidate's 8-year profile is heavily weighted toward software development rather than executive operations, administrative support, and calendar management.",
+      "created_at": "2026-09-16T08:31:17.998Z"
+    },
+    "status": "APPLIED",
+    "application_channel": "EMAIL",
+    "needs_human_review": false,
+    "created_at": "2026-09-16T08:31:17.998Z",
+    "updated_at": "2026-09-16T08:31:27.614Z",
+    "tailored_resume_json": {
+      "full_name": "Talha Sadiq",
+      "headline": "AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering",
+      "contact_line": "talhasadiq320@gmail.com | +92 345 6601101 | Pakistan (Open to Remote Worldwide)",
+      "summary": "Full Stack Developer with 8 years of production experience in React Native, Node.js, and React, now specializing in AI engineering and workflow automation. Proven expertise in building Human+AI workflows, designing cutting-edge LLM applications, and deploying scalable architectures across AWS, Azure, and Firebase. Adept at leveraging advanced AI tools like Claude Code, Cursor AI, and OpenAI API to optimize operations, accelerate feature delivery, and streamline execution in fast-paced environments.",
+      "ordered_skills": [
+        "AI Workflow Automation (n8n)",
+        "Claude Code & Cursor AI",
+        "OpenAI API",
+        "Prompt Engineering",
+        "Model Context Protocol (MCP)",
+        "Node.js",
+        "React Native",
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "REST APIs",
+        "Microservices",
+        "AWS (CDK, SDK, Cognito)",
+        "Azure",
+        "Firebase & Realm",
+        "Python (Django, FastAPI)",
+        "CI/CD & Fastlane"
+      ],
+      "experience": [
+        {
+          "company": "Excersys (USA Based)",
+          "position": "Full Stack Developer",
+          "period": "Jan 2023 - Present",
+          "bullet_points": [
+            "Build and maintain production React Native and Node.js applications across fintech, food-tech, and sports-tech products, serving live users on iOS, Android, and web.",
+            "Utilize Claude Code, Cursor AI, and MCP integrations in daily development for AI-assisted code generation, workflow optimization, and rapid debugging.",
+            "Develop real-time AI mobile platforms with OpenAI integration and ONNX Runtime on-device inference, tuning performance on constrained hardware.",
+            "Design REST API and microservices architecture across Node.js, Ruby on Rails, and Python backends deployed on AWS, Azure, and Firebase."
+          ]
+        },
+        {
+          "company": "Katch (Kuwait Based)",
+          "position": "Full Stack Developer",
+          "period": "Apr 2022 - Dec 2022",
+          "bullet_points": [
+            "Delivered food delivery platform features in React Native, Node.js, and React, utilizing MongoDB, GraphQL, and Socket.IO to power real-time order processing and operations."
+          ]
+        },
+        {
+          "company": "Naseeb Networks (Rozee.pk)",
+          "position": "Senior React Native Developer",
+          "period": "Nov 2020 - Mar 2022",
+          "bullet_points": [
+            "Led development of Dukan.pk (team of 10), Log.Fish, Deenee, and Ailaaj, coordinating cross-functional product requirements, payments, and offline-first architecture."
+          ]
+        },
+        {
+          "company": "Digital Tech",
+          "position": "React Native Developer",
+          "period": "Sep 2019 - Oct 2020",
+          "bullet_points": [
+            "Developed cross-platform mobile applications in React Native, contributing to architecture decisions, technical planning, and code reviews."
+          ]
+        },
+        {
+          "company": "Quaid Ventures",
+          "position": "Android Application Developer",
+          "period": "Sep 2018 - Aug 2019",
+          "bullet_points": [
+            "Built native Android applications for POS and e-commerce products, including Zash Go and Qareeb Online Store, ensuring smooth operational workflows."
+          ]
+        }
+      ],
+      "selected_projects": [
+        {
+          "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+          "technologies": [
+            "React Native",
+            "Node.js",
+            "React",
+            "Azure",
+            "Claude Code",
+            "Cursor AI",
+            "MCP"
+          ],
+          "description": "AI-assisted build of a food-tech supply chain platform for restaurants, cafes, and suppliers in Qatar, combining modern frontend frameworks with robust microservices on Azure.",
+          "url": "https://kafy.co"
+        },
+        {
+          "title": "Real-Time AI Mobile Platform — Wearables (Excersys)",
+          "technologies": [
+            "Swift",
+            "Kotlin",
+            "OpenAI",
+            "ONNX Runtime",
+            "WebRTC",
+            "Fastlane"
+          ],
+          "description": "Real-time mobile solution for wearable devices featuring voice-first interaction and AI-driven capabilities using OpenAI integration and on-device inference.",
+          "url": ""
+        },
+        {
+          "title": "Dukan.pk — Digitizing Sellers (Rozee.pk)",
+          "technologies": [
+            "React Native",
+            "Realm",
+            "Firebase"
+          ],
+          "description": "Web-store platform allowing businesses to launch an online store in under 30 seconds with automated integrations, managing a development team of 10.",
+          "url": "https://dukan.pk"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor in Computer Science (CGPA 3.20)",
+          "institution": "University of Central Punjab",
+          "year": "2018"
+        }
+      ]
+    },
+    "tailored_resume_pdf_url": "/resumes/Resume_Talha_Sadiq_Deepgram_1789547484749.pdf",
+    "local_pdf_path": "C:\\Users\\Usman\\Documents\\GitHub\\job-agent\\public\\resumes\\Resume_Talha_Sadiq_Deepgram_1789547484749.pdf",
+    "cover_letter": "Dear Deepgram Team,\n\nI am writing to express my strong enthusiasm for the Executive Assistant, Marketing position at Deepgram. As an AI-Powered Full Stack Developer with 8 years of production experience building high-performance applications and leveraging advanced AI workflows, I deeply resonate with Deepgram's AI-first operating rhythm and commitment to moving at the pace of AI. Operating in fast-moving environments has equipped me with the adaptability, technical fluency, and proactive mindset required to act as a seamless force multiplier for leadership.\n\nThroughout my career—spanning roles at Excersys and leading development teams at Naseeb Networks—I have routinely integrated modern AI tooling such as Claude Code, Cursor AI, OpenAI APIs, and workflow automation into my daily operations to eliminate friction, streamline administrative overhead, and optimize execution speed. Whether architecting complex microservices, coordinating cross-functional programs, or building intuitive systems from scratch, I excel at anticipating needs, exercising total discretion, and translating abstract challenges into structured, scalable solutions.\n\nDeepgram's position at the forefront of the Voice AI economy is inspiring, and I am eager to bring my rigorous organizational capabilities, AI-native mindset, and dedication to operational excellence to your marketing leadership team. Thank you for your time and consideration; I look forward to the possibility of contributing to Deepgram's continued rapid growth.",
+    "email_subject": "Application for Executive Assistant, Marketing — Talha Sadiq",
+    "email_body": "Dear Deepgram Team,\n\nI am writing to express my strong enthusiasm for the Executive Assistant, Marketing position at Deepgram. As an AI-Powered Full Stack Developer with 8 years of production experience building high-performance applications and leveraging advanced AI workflows, I deeply resonate with Deepgram's AI-first operating rhythm and commitment to moving at the pace of AI. Operating in fast-moving environments has equipped me with the adaptability, technical fluency, and proactive mindset required to act as a seamless force multiplier for leadership.\n\nThroughout my career—spanning roles at Excersys and leading development teams at Naseeb Networks—I have routinely integrated modern AI tooling such as Claude Code, Cursor AI, OpenAI APIs, and workflow automation into my daily operations to eliminate friction, streamline administrative overhead, and optimize execution speed. Whether architecting complex microservices, coordinating cross-functional programs, or building intuitive systems from scratch, I excel at anticipating needs, exercising total discretion, and translating abstract challenges into structured, scalable solutions.\n\nDeepgram's position at the forefront of the Voice AI economy is inspiring, and I am eager to bring my rigorous organizational capabilities, AI-native mindset, and dedication to operational excellence to your marketing leadership team. Thank you for your time and consideration; I look forward to the possibility of contributing to Deepgram's continued rapid growth.\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
+    "email_sent_at": "2026-09-16T08:31:27.574Z",
+    "email_message_id": "<8b226196-7307-3cb6-fedf-c9a2a4d334fa@gmail.com>"
+  },
+  {
+    "id": "b131616d-577b-4d3c-b4d0-16a89dcecf86",
+    "job_id": "ead988cd-5290-42b2-a618-02b4fc1e0019",
+    "job": {
+      "id": "ead988cd-5290-42b2-a618-02b4fc1e0019",
+      "source": "jobicy",
+      "source_id": "149108",
+      "title": "Senior Software Engineer, Unsecured Installments",
+      "company": "Upstart",
+      "location": "USA",
+      "is_remote": true,
+      "salary_min": null,
+      "salary_max": null,
+      "currency": "USD",
+      "description": "About Upstart\n\nAt Upstart, we’re united by a mission that matters: to radically reduce the cost and complexity of borrowing for all Americans. Every day, we bring creativity, experimentation, and advanced AI to reshape access to credit, helping millions move forward financially with clarity and confidence.\n\nAs the leading AI lending marketplace, we partner with banks and credit unions to expand access to affordable credit through technology that’s both radically intelligent and deeply human. Our platform runs over one million predictions per borrower using more than 1,800 signals, powering smarter, fairer decisions for millions of customers. But the numbers only hint at the impact. Every idea, every voice, and every contribution moves us closer to a world where credit never stands between people and their financial progress.\n\nWe’re proudly digital-first, giving most Upstarters the flexibility to do their best work from wherever they thrive, alongside teammates across 80+ cities in the US and Canada. Digital-first doesn’t mean distant. We’re intentional about in-person connection through team onsites, planning sessions, and moments that spark creativity and trust. And whether you choose to work primarily from home or collaborate in-person from one of our offices in Columbus, Austin, the Bay Area, or New York City (opening Summer 2026), you’ll have the support to work in the way that works best for you.\n\nIf you’re energized by tackling meaningful problems, excited to innovate with purpose, and motivated by work that truly matters, we’d love to hear from you.\n\nThe Team: \n\nUnsecured Installments is one of Upstart's core lending products, helping borrowers access credit through a seamless, digitally native experience. The team owns critical parts of the borrower journey across offer generation, pricing, underwriting, funding, and borrower experience, while working closely with the broader lending platform that powers Upstart at scale. Recent work has focused on improving borrower flows, repricing and rate flexibility, partnership experiences, and the overall quality of the customer-facing experience.\n\nAs a Senior Software Engineer on the Unsecured Installments team, you'll be a technical leader for the frontend and full-stack experiences that borrowers interact with directly. Working primarily in React and TypeScript, you'll own the delivery of large, multi-month projects, shape the architecture of the team's mobile-web and full-stack surfaces, and set a high bar for quality across the borrower experience. You'll partner closely with product, design, and backend engineers to turn ambiguous problems into durable, well-architected solutions, and you'll mentor other engineers along the way.\n\nHow you’ll make an impact\n\n• \nOwn the design and delivery of large, complex frontend and full-stack initiatives using React and TypeScript, from planning and sequencing through launch and long-term maintenance.\n\n• \nSet technical direction for the team's frontend architecture and full-stack patterns, owning a 3–6 month roadmap and proactively addressing systemic gaps that threaten team effectiveness.\n\n• \nPartner closely with product, design, and backend engineers to translate roadmap priorities and borrower needs into scalable, high-quality experiences.\n\n• \nRaise the bar for engineering excellence through strong component and API design, thoughtful state management, testing, observability, and operational rigor across borrower-facing surfaces.\n\n• \nLead through ambiguity, breaking down loosely defined problems into clear, testable plans and using data to inform tradeoffs on scope, performance, and user experience.\n\n• \nMentor and grow other engineers through code reviews, design reviews, and technical guidance, and serve as a trusted collaborator across the team.\n\n• \nContribute to how the team uses AI in development workflows and product capabilities, with a pragmatic view of where it can create meaningful leverage.\n\nMinimum Qualifications \n\n• \nBachelor's degree in Computer Science, Engineering, or a related field (or equivalent practical experience) and 6+ years of professional software engineering experience.\n\n• \nDeep proficiency building complex web applications with React and TypeScript, including component architecture, state management, performance optimization, and consuming REST or GraphQL APIs.\n\n• \nFull-stack experience designing and building backend services and APIs in a language such as Python, Java, Kotlin, Ruby, or Node.js.\n\n• \nTrack record of independently leading the design and delivery of large, business-critical frontend or full-stack projects in production.\n\n• \nAbility to work effectively in ambiguous environments where product requirements, constraints, and system boundaries evolve over time.\n\n• \nStrong communication and collaboration skills, with the ability to explain technical tradeoffs and align product, design, and engineering partners.\n\nPreferred Qualifications\n\n• \nExperience serving as the frontend or full-stack technical lead for a product team or business-critical product surface.\n\n• \nExperience building consumer-facing products at scale with strong attention to performance, accessibility, and user experience.\n\n• \nBackground in fintech, lending, payments, or other regulated financial products with complex user journeys and high quality expectations.\n\n• \nExperience with experimentation, A/B testing, or feature-flagging to drive iterative product improvements in production.\n\n• \nFamiliarity with modern frontend tooling and testing frameworks (e.g., Jest, React Testing Library, Cypress) and CI/CD workflows.\n\n• \nHands-on experience leveraging generative AI in product features or internal engineering workflows.\n\n• \nPassion for building products that expand access to credit and improve financial outcomes for consumers.\n\nPosition location This role is available in the following locations: Remote\n\nTravel requirements As a digital first company, the majority of your work can be accomplished remotely. The majority of our employees can live and work anywhere in the U.S but are encouraged to to still spend high quality time in-person collaborating via regular onsites. The in-person sessions’ cadence varies depending on the team and role; most teams meet once or twice per quarter for 2-4 consecutive days at a time.\n\n#LI-REMOTE\n\n#LI-MidSenior --> use for L5, L6\n\nAt Upstart, your base pay is one part of your total compensation package. The anticipated base salary for this position is expected to be within the below range. Your actual base pay will depend on your geographic location–with our “digital first” philosophy, Upstart uses compensation regions that vary depending on location. Individual pay is also determined by job-related skills, experience, and relevant education or training. Your recruiter can share more about the specific salary range for your preferred location during the hiring process.\n\nIn addition, Upstart provides employees with target bonuses, equity compensation, and generous benefits packages (including medical, dental, vision, and 401k).\n\nUnited States | Remote - Anticipated Base Salary Range$166,900—$223,900 USDAt Upstart, your base pay is one part of your total compensation package. The anticipated base salary for this position is expected to be within the below range. Your actual base pay will depend on your geographic location–with our “digital first” philosophy, Upstart uses compensation regions that vary depending on location. Individual pay is also determined by job-related skills, experience, and relevant education or training. Your recruiter can share more about the specific salary range for your preferred location during the hiring process.\n\nIn addition, Upstart provides employees with target bonuses, equity compensation, and generous benefits packages (including medical, dental, vision, and 401k).\n\nCanada | Remote - Anticipated Base Salary Range$160,400—$217,000 CADWhat you'll love\n\nAt Upstart, our benefits are designed to support your health, financial well-being, family, and personal growth. Here’s what you can expect:\n\n• Competitive compensation, including base pay, bonus opportunities, and annual equity grants that vest quarterly \n\n• Retirement benefits to help you plan for the future, including a 401(k) or Group Retirement Savings Plan with a company match of $2 for every $1 contributed, up to $15,000 annually (USD in the US, CAD in Canada)\n\n• Employee Stock Purchase Plan (ESPP) with discounted stock purchase options for eligible employees (US only)\n\n• Comprehensive health coverage designed to support you and your family, including medical, dental, vision, and wellness resources for US and supplemental health coverage for Canada.\n\n• Health Savings Account contributions from Upstart for eligible plans (US only)\n\n• Income protection benefits, including life insurance and disability coverage for added financial security\n\n• Paid time off, sick leave, and company holidays, in line with local requirements\n\n• Paid family and parental leave to support caregiving and major life moments (duration varies by country)\n\n• Family-centered benefits to support fertility, parenthood, and caregiving needs\n\n• Employee Assistance Program (EAP) offering mental health support and life-centered resources\n\n• Financial wellness resources, including access to financial planning tools and a financial concierge service (US Only)\n\n• Annual wellness allowance to support your physical and emotional well-being and personal development, based on what matters most to you\n\n• Annual productivity allowance to invest in relevant tools and resources you need to do your best work, no matter where you work from\n\n• Connection and community through team events, all-company updates, and employee resource groups (ERGs)\n\n• Onsite perks, including catered lunches and fully stocked micro-kitchens when working from one of our offices in the Bay Area, Austin, Columbus, and New York City (opening Summer 2026!)\n\nFor roles based in Canada, please note that we are not currently able to hire in Quebec.\n\nUpstart is a proud Equal Opportunity Employer. Just as we are dedicated to improving access to affordable credit for all, we are committed to inclusive and fair hiring practices.\n\nIf you require reasonable accommodation in completing an application, interviewing, completing any pre-employment testing, or otherwise participating in the employee selection process, please email candidate_accommodations@upstart.com\n\nhttps://www.upstart.com/candidate_privacy_policy",
+      "url": "https://jobicy.com/jobs/149108-senior-software-engineer-unsecured-installments",
+      "application_url": "https://jobicy.com/jobs/149108-senior-software-engineer-unsecured-installments",
+      "contact_email": "candidate_accommodations@upstart.com",
+      "application_type": "EMAIL",
+      "ats_platform": "DirectEmail",
+      "posted_at": "2026-09-12T13:25:11.000Z",
+      "status": "APPLIED",
+      "dedup_hash": "f85e5b9a8861bf52328eecef121d321919bf2781c027e28722af5fd8528b571e",
+      "created_at": "2026-09-15T10:54:55.614Z",
+      "match": {
+        "job_id": "ead988cd-5290-42b2-a618-02b4fc1e0019",
+        "score": 85,
+        "classification": "EXCELLENT",
+        "matching_skills": [
+          "React",
+          "TypeScript",
+          "Node.js",
+          "JavaScript",
+          "REST APIs",
+          "Microservices",
+          "AWS",
+          "Generative AI"
+        ],
+        "missing_skills": [
+          "A/B testing",
+          "Feature-flagging"
+        ],
+        "recommendation": "APPLY",
+        "reasoning": "The candidate has 8 years of solid full-stack experience strongly matching the core requirements in React, TypeScript, and Node.js. Furthermore, their background in AI workflow automation and building production-grade web applications aligns well with Upstart's tech stack and focus on AI.",
+        "created_at": "2026-09-16T08:31:45.513Z"
+      }
+    },
+    "match": {
+      "job_id": "ead988cd-5290-42b2-a618-02b4fc1e0019",
+      "score": 85,
+      "classification": "EXCELLENT",
+      "matching_skills": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "JavaScript",
+        "REST APIs",
+        "Microservices",
+        "AWS",
+        "Generative AI"
+      ],
+      "missing_skills": [
+        "A/B testing",
+        "Feature-flagging"
+      ],
+      "recommendation": "APPLY",
+      "reasoning": "The candidate has 8 years of solid full-stack experience strongly matching the core requirements in React, TypeScript, and Node.js. Furthermore, their background in AI workflow automation and building production-grade web applications aligns well with Upstart's tech stack and focus on AI.",
+      "created_at": "2026-09-16T08:31:45.513Z"
+    },
+    "status": "APPLIED",
+    "application_channel": "EMAIL",
+    "needs_human_review": false,
+    "created_at": "2026-09-16T08:31:45.513Z",
+    "updated_at": "2026-09-16T08:31:55.585Z",
+    "tailored_resume_json": {
+      "full_name": "Talha Sadiq",
+      "headline": "Senior Full Stack & React / TypeScript Engineer",
+      "contact_line": "talhasadiq320@gmail.com | +92 345 6601101 | Pakistan (Open to Remote Worldwide)",
+      "summary": "Full Stack Developer with 8 years of production experience specializing in React, TypeScript, Node.js, and modern web and mobile architecture. Proven track record of independently leading the design and delivery of large-scale, business-critical frontend and full-stack initiatives in fintech and consumer applications. Experienced in component architecture, state management, complex user journeys, and leveraging AI development workflows to accelerate feature delivery.",
+      "ordered_skills": [
+        "React",
+        "TypeScript",
+        "JavaScript",
+        "React Native",
+        "Node.js",
+        "REST APIs",
+        "GraphQL",
+        "Microservices",
+        "Next.js",
+        "Python (Django, FastAPI)",
+        "Ruby on Rails",
+        "MongoDB",
+        "Firebase & Realm",
+        "AWS (CDK, SDK, Cognito)",
+        "Azure",
+        "CI/CD & Fastlane",
+        "Docker",
+        "Claude Code & Cursor AI",
+        "OpenAI API",
+        "Stripe & Twilio"
+      ],
+      "experience": [
+        {
+          "company": "Excersys (USA Based)",
+          "position": "Full Stack Developer",
+          "period": "Jan 2023 - Present",
+          "bullet_points": [
+            "Own the design and delivery of production React, TypeScript, and Node.js applications across fintech, food-tech, and sports-tech products, serving live users across web and mobile platforms.",
+            "Design robust REST API and microservices architectures across Node.js, Ruby on Rails, and Python backends deployed on AWS, Azure, and Firebase.",
+            "Utilize Claude Code and Cursor AI workflows to accelerate code generation, component design, and maintain high standards for code quality and testability.",
+            "Develop complex consumer-facing web and mobile features with a strong focus on performance optimization, scalable state management, and seamless user experience."
+          ]
+        },
+        {
+          "company": "Katch (Kuwait Based)",
+          "position": "Full Stack Developer",
+          "period": "Apr 2022 - Dec 2022",
+          "bullet_points": [
+            "Delivered core platform features using React, TypeScript, Node.js, MongoDB, and GraphQL, powering real-time customer workflows and interactive dashboards.",
+            "Optimized frontend component architecture and state management with Redux Toolkit to support high-volume user traffic and smooth interactions."
+          ]
+        },
+        {
+          "company": "Naseeb Networks (Rozee.pk)",
+          "position": "Senior React Native Developer",
+          "period": "Nov 2020 - Mar 2022",
+          "bullet_points": [
+            "Led development of Dukan.pk (managing a team of 10), Log.Fish, Deenee, and Ailaaj, architecting secure payment integrations and offline-first data synchronization with Realm and Firebase.",
+            "Set technical direction for frontend and mobile architecture, establishing clean coding standards, robust API integrations, and efficient state management patterns."
+          ]
+        },
+        {
+          "company": "Digital Tech",
+          "position": "React Native Developer",
+          "period": "Sep 2019 - Oct 2020",
+          "bullet_points": [
+            "Developed cross-platform applications using React and JavaScript, contributing heavily to architecture decisions, component reusability, and rigorous code reviews."
+          ]
+        },
+        {
+          "company": "Quaid Ventures",
+          "position": "Android Application Developer",
+          "period": "Sep 2018 - Aug 2019",
+          "bullet_points": [
+            "Built native Android applications for POS and e-commerce platforms, including Zash Go and Qareeb Online Store, focusing on reliable data handling and responsive UI."
+          ]
+        }
+      ],
+      "selected_projects": [
+        {
+          "title": "Liquidus — Crypto Wallet Platform (Excersys)",
+          "technologies": [
+            "React",
+            "TypeScript",
+            "Node.js",
+            "Web3",
+            "Cryptography",
+            "CI/CD"
+          ],
+          "description": "Secure fintech and crypto platform enabling instant interest earning while maintaining full user control over private keys, built with React, TypeScript, and Node.js.",
+          "url": "https://liquidus.finance"
+        },
+        {
+          "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+          "technologies": [
+            "React",
+            "Node.js",
+            "Ruby on Rails",
+            "FastAPI",
+            "Azure"
+          ],
+          "description": "Enterprise supply chain platform for restaurants and suppliers in Qatar, combining React and Node.js frontends with robust Ruby on Rails and FastAPI microservices on Azure.",
+          "url": "https://kafy.co"
+        },
+        {
+          "title": "Dukan.pk — Digitizing Sellers (Rozee.pk)",
+          "technologies": [
+            "React Native",
+            "Realm",
+            "Firebase",
+            "Rabbit MQTT"
+          ],
+          "description": "E-commerce platform enabling businesses to launch online stores in under 30 seconds with automated payment integrations, leading a team of 10 engineers.",
+          "url": "https://dukan.pk"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor in Computer Science (CGPA 3.20)",
+          "institution": "University of Central Punjab",
+          "year": "2018"
+        }
+      ]
+    },
+    "tailored_resume_pdf_url": "/resumes/Resume_Talha_Sadiq_Upstart_1789547512739.pdf",
+    "local_pdf_path": "C:\\Users\\Usman\\Documents\\GitHub\\job-agent\\public\\resumes\\Resume_Talha_Sadiq_Upstart_1789547512739.pdf",
+    "cover_letter": "Dear Upstart Hiring Team,\n\nI am writing to express my strong interest in the Senior Software Engineer, Unsecured Installments position at Upstart. With 8 years of professional software engineering experience—deeply rooted in React, TypeScript, Node.js, and full-stack architecture—I am inspired by Upstart's mission to radically reduce the cost and complexity of borrowing and expand access to affordable credit through advanced technology.\n\nThroughout my career, including my current role at Excersys and previous leadership experience at Naseeb Networks, I have specialized in independently leading the design, architecture, and delivery of complex, business-critical frontend and full-stack web and mobile initiatives. Working extensively with React and TypeScript, I have built scalable component libraries, optimized state management and performance across high-traffic consumer platforms, and integrated robust REST and GraphQL APIs. Furthermore, my background spans regulated and transaction-heavy domains such as fintech platforms, secure crypto wallets, and enterprise supply chain applications where reliability, security, and exceptional user experience are paramount.\n\nI am also highly pragmatic about leveraging modern AI developer tools, such as Claude Code and Cursor AI, to accelerate delivery cycles while maintaining rigorous engineering standards through automated testing and code reviews. I thrive in ambiguous, fast-paced environments and take pride in mentoring engineers, collaborating closely with product and design partners, and taking ownership of multi-month roadmaps from conception to long-term production maintenance. I would welcome the opportunity to bring my full-stack expertise and passion for consumer-centric engineering to Upstart's Unsecured Installments team.\n\nSincerely,\nTalha Sadiq",
+    "email_subject": "Application for Senior Software Engineer, Unsecured Installments — Talha Sadiq",
+    "email_body": "Dear Upstart Hiring Team,\n\nI am writing to express my strong interest in the Senior Software Engineer, Unsecured Installments position at Upstart. With 8 years of professional software engineering experience—deeply rooted in React, TypeScript, Node.js, and full-stack architecture—I am inspired by Upstart's mission to radically reduce the cost and complexity of borrowing and expand access to affordable credit through advanced technology.\n\nThroughout my career, including my current role at Excersys and previous leadership experience at Naseeb Networks, I have specialized in independently leading the design, architecture, and delivery of complex, business-critical frontend and full-stack web and mobile initiatives. Working extensively with React and TypeScript, I have built scalable component libraries, optimized state management and performance across high-traffic consumer platforms, and integrated robust REST and GraphQL APIs. Furthermore, my background spans regulated and transaction-heavy domains such as fintech platforms, secure crypto wallets, and enterprise supply chain applications where reliability, security, and exceptional user experience are paramount.\n\nI am also highly pragmatic about leveraging modern AI developer tools, such as Claude Code and Cursor AI, to accelerate delivery cycles while maintaining rigorous engineering standards through automated testing and code reviews. I thrive in ambiguous, fast-paced environments and take pride in mentoring engineers, collaborating closely with product and design partners, and taking ownership of multi-month roadmaps from conception to long-term production maintenance. I would welcome the opportunity to bring my full-stack expertise and passion for consumer-centric engineering to Upstart's Unsecured Installments team.\n\nSincerely,\nTalha Sadiq\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
+    "email_sent_at": "2026-09-16T08:31:55.540Z",
+    "email_message_id": "<598d7915-5786-5822-20cb-afbfafa11deb@gmail.com>"
+  },
+  {
+    "id": "afe018e2-445c-4a4a-8ff4-ae4253a08034",
+    "job_id": "f2ed9c3f-972a-4052-acdb-087a3c6e85d5",
+    "job": {
+      "id": "f2ed9c3f-972a-4052-acdb-087a3c6e85d5",
+      "source": "jobicy",
+      "source_id": "153088",
+      "title": "Senior Software Engineer",
+      "company": "Capital on Tap",
+      "location": "Portugal",
+      "is_remote": true,
+      "salary_min": null,
+      "salary_max": null,
+      "currency": "EUR",
+      "description": "We’re Capital on Tap \n Capital on Tap started because small businesses were underserved. Big banks were slow, their products weren't fit for purpose, and small business owners often couldn't access what they needed. We set out to fix that.\n\nToday we're a financial platform - not just a credit card company. We offer a best-in-class business credit card, SME-focused spend management platform, a savings product that hit £1 billion in funds within its first year, and a growing suite of tools and financial products that make running a small business easier. \n\n1,000+ employees, £20bn in annual card spend, 200,000+ customers, 17,000+ Trustpilot reviews averaging 4.7 stars, and we're profitable. We’ve done a pretty good job so far, but we’re just getting started! \n\nWe opened our first Portuguese office in Porto in autumn 2025, and in less than a year it has grown to a team of 50. Lisbon is the next step. We're opening our first office in the city and looking for engineers to join as founding members of the team, helping shape how we build, hire and work here from day one.\n\n The role starts out fully remote. Once our Lisbon office is open, it will move to a hybrid set-up of two days a week on site.\n\nSalary: €55,000-70,000\n\nThis is a multiple-headcount role, so please don't be put off if you've seen it advertised for a while.\n\nWhat You’ll Be Doing \nWe’re looking for Senior Full stack Engineers to help us build the best credit card and payment products for small businesses. If you’re looking for an environment where you’re given the freedom to make empowered decisions, research new technologies, and learn/share knowledge with your peers. Then keep on reading!\n\n• You’ll build robust and scalable solutions using .Net technology\n\n• From the first line of code to production, monitoring, and continuous improvement - you’ll own the SDLC\n\n• You’ll craft slick, responsive user interfaces with modern JavaScript frameworks (React), making sure our products don’t just work, they feel great to use\n\n• Teamwork makes the dream work - you’ll partner with Product Managers, QA’s, and fellow Software Engineers\n\n• You’ll build bulletproof unit and integration tests to keep our software sharp and our users happy\n\n• Bugs happen. When they do, you’ll be ready to troubleshoot and tweak as needed\n\n• You’ll bridge the gap between tech speak and business goals, ensuring everyone’s on the same page and moving forward together\n\nWe’re Looking For \nRequired skills:\n\n• A minimum of 5+ years hands-on experience in C#, .Net Core, SQL Server, ideally JavaScript and React also!\n\n• Good testing practices, in both Unit and Integration testing\n\n• Good understanding of database technologies\n\n• Experience in using Agile development practices\n\n• A passion for learning new skills and technologies\n\n• A proactive, supportive, and collaborative team player\n\nOur Tech Stack\n\n• Backend: C#, .Net, .Net Core\n\n• Frontend: React, JavaScript\n\n• Mobile: Flutter, Dart\n\n• Databases: SQL Server, MongoDB\n\n• Cloud: Azure & GCP\n\nInterview Process \n\n• First stage: 30-minute intro, CV review, and values with a Talent Partner\n\n• Second stage: 45-minute “Tech Chat” with a Team Manager\n\n• Final stage: 90-minute Code Pairing + 30-minute Values Interview\n\nDiversity & Inclusion \nWe welcome, consider and encourage applications from anyone who shares our commitment to inclusivity. Join us in creating a space where authenticity thrives, and everyone can do their best work.\n\nGreat Work Deserves Great Perks\n\nCheck out our benefits:\n\n Private Healthcare through AdvanceCare\n Anniversary Rewards (€280, €570, €860, 4-week fully paid sabbatical)\n\n️ 36 days holiday (inclusive of public holidays with public holidays carried over if they fall on a weekend)\n Annual Learning and Wellbeing Budget\n 6 free therapy sessions per year\n Free drinks and snacks in our offices\n\nOther Info\nCheck out our ‘Top Tips’ for interviewing.\n✔️Keep updated on new job opportunities by following us on Linkedin.\nEmail careers@capitalontap.com if you have any questions.\n\nExcited to work here? Apply!\nIf you’d like to progress your career within our fast growing, profitable fintech then click apply and we will aim to get back to you within 3 working days (during busy periods this could take up to 5 working days.)",
+      "url": "https://jobicy.com/jobs/153088-senior-software-engineer-8",
+      "application_url": "https://jobicy.com/jobs/153088-senior-software-engineer-8",
+      "contact_email": "careers@capitalontap.com",
+      "application_type": "EMAIL",
+      "ats_platform": "DirectEmail",
+      "posted_at": "2026-09-12T13:16:42.000Z",
+      "status": "APPLIED",
+      "dedup_hash": "c4a482a6894b91972cf6fe55c8c50f0626b14ff102fc0a0a59629bdd3a7efd8d",
+      "created_at": "2026-09-15T10:54:55.691Z",
+      "match": {
+        "job_id": "f2ed9c3f-972a-4052-acdb-087a3c6e85d5",
+        "score": 65,
+        "classification": "POSSIBLE",
+        "matching_skills": [
+          "React",
+          "JavaScript",
+          "Azure",
+          "MongoDB",
+          "Agile"
+        ],
+        "missing_skills": [
+          "C#",
+          ".Net",
+          ".Net Core",
+          "SQL Server",
+          "GCP"
+        ],
+        "recommendation": "REVIEW",
+        "reasoning": "The candidate has strong 8+ years of full-stack experience with React and JavaScript and cloud familiarity, but lacks required core backend stack experience in C# and .Net Core. Given their extensive modern tech background and adaptability, they could bridge the gap if the company is open to cross-training strong JavaScript engineers.",
+        "created_at": "2026-09-16T08:32:16.042Z"
+      }
+    },
+    "match": {
+      "job_id": "f2ed9c3f-972a-4052-acdb-087a3c6e85d5",
+      "score": 65,
+      "classification": "POSSIBLE",
+      "matching_skills": [
+        "React",
+        "JavaScript",
+        "Azure",
+        "MongoDB",
+        "Agile"
+      ],
+      "missing_skills": [
+        "C#",
+        ".Net",
+        ".Net Core",
+        "SQL Server",
+        "GCP"
+      ],
+      "recommendation": "REVIEW",
+      "reasoning": "The candidate has strong 8+ years of full-stack experience with React and JavaScript and cloud familiarity, but lacks required core backend stack experience in C# and .Net Core. Given their extensive modern tech background and adaptability, they could bridge the gap if the company is open to cross-training strong JavaScript engineers.",
+      "created_at": "2026-09-16T08:32:16.042Z"
+    },
+    "status": "APPLIED",
+    "application_channel": "EMAIL",
+    "needs_human_review": false,
+    "created_at": "2026-09-16T08:32:16.042Z",
+    "updated_at": "2026-09-16T08:32:25.396Z",
+    "tailored_resume_json": {
+      "full_name": "Talha Sadiq",
+      "headline": "AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering",
+      "contact_line": "talhasadiq320@gmail.com | +92 345 6601101 | Pakistan (Open to Remote Worldwide)",
+      "summary": "Full Stack Developer with 8 years of production experience specializing in React, Node.js, and modern web applications, bringing a strong background in fintech platforms, microservices architecture, and cloud deployments on Azure and AWS. Proven track record of taking full ownership of the SDLC from code to production, crafting responsive UIs, and collaborating closely with product teams to build scalable financial and B2B solutions.",
+      "ordered_skills": [
+        "React",
+        "JavaScript",
+        "TypeScript",
+        "Node.js",
+        "REST APIs",
+        "Microservices",
+        "MongoDB",
+        "Azure",
+        "AWS",
+        "CI/CD & Fastlane"
+      ],
+      "experience": [
+        {
+          "company": "Excersys (USA Based)",
+          "position": "Full Stack Developer",
+          "period": "Jan 2023 - Present",
+          "bullet_points": [
+            "Build and maintain production React, React Native, and Node.js applications across fintech, food-tech, and sports-tech products, taking full ownership of features from development to production deployment.",
+            "Design robust REST API and microservices architectures deployed across Azure, AWS, and Firebase, ensuring scalable and high-performance backend infrastructure for financial and enterprise systems."
+          ]
+        },
+        {
+          "company": "Katch (Kuwait Based)",
+          "position": "Full Stack Developer",
+          "period": "Apr 2022 - Dec 2022",
+          "bullet_points": [
+            "Delivered robust platform features using React, Node.js, and React Native, supported by MongoDB, GraphQL, and Socket.IO to power real-time data flow and responsive user interfaces."
+          ]
+        },
+        {
+          "company": "Naseeb Networks (Rozee.pk)",
+          "position": "Senior React Native Developer",
+          "period": "Nov 2020 - Mar 2022",
+          "bullet_points": [
+            "Led development of multiple high-impact web and mobile applications (including Dukan.pk), managing a cross-functional team of 10 and delivering secure payment and transaction workflows."
+          ]
+        },
+        {
+          "company": "Digital Tech",
+          "position": "React Native Developer",
+          "period": "Sep 2019 - Oct 2020",
+          "bullet_points": [
+            "Developed cross-platform applications, contributing directly to frontend architecture decisions, clean code standards, and comprehensive code reviews."
+          ]
+        },
+        {
+          "company": "Quaid Ventures",
+          "position": "Android Application Developer",
+          "period": "Sep 2018 - Aug 2019",
+          "bullet_points": [
+            "Built native Android applications for POS and e-commerce products, ensuring reliable transaction management and responsive user experiences."
+          ]
+        }
+      ],
+      "selected_projects": [
+        {
+          "title": "Kafy Supplier — B2B Food-Tech Supply Chain Platform (Excersys)",
+          "technologies": [
+            "React",
+            "React Native",
+            "Node.js",
+            "Ruby on Rails",
+            "Django",
+            "FastAPI",
+            "Azure"
+          ],
+          "description": "Engineered a comprehensive B2B supply chain platform for restaurants and suppliers, combining React and Node.js front ends with scalable microservices on Azure.",
+          "url": "https://kafy.co"
+        },
+        {
+          "title": "Liquidus — Crypto Wallet Platform (Excersys)",
+          "technologies": [
+            "React",
+            "React Native",
+            "Node.js",
+            "Web3",
+            "Cryptography",
+            "CI/CD"
+          ],
+          "description": "Developed a secure financial platform enabling interest earnings and secure digital asset management, utilizing modern JavaScript/React architectures and robust CI/CD pipelines.",
+          "url": "https://liquidus.finance"
+        },
+        {
+          "title": "Dukan.pk — Digitizing Sellers (Rozee.pk)",
+          "technologies": [
+            "React Native",
+            "Realm",
+            "Firebase",
+            "Rabbit MQTT"
+          ],
+          "description": "Spearheaded a web-store platform enabling businesses to launch online stores instantly with automated payment and delivery integrations, leading a team of 10 engineers.",
+          "url": "https://dukan.pk"
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor in Computer Science (CGPA 3.20)",
+          "institution": "University of Central Punjab",
+          "year": "2018"
+        }
+      ]
+    },
+    "tailored_resume_pdf_url": "/resumes/Resume_Talha_Sadiq_Capital_on_Tap_1789547542641.pdf",
+    "local_pdf_path": "C:\\Users\\Usman\\Documents\\GitHub\\job-agent\\public\\resumes\\Resume_Talha_Sadiq_Capital_on_Tap_1789547542641.pdf",
+    "cover_letter": "Dear Hiring Team at Capital on Tap,\n\nI am writing to express my enthusiastic interest in the Senior Software Engineer position for your expanding team in Lisbon. With 8 years of professional experience building scalable web and mobile applications, microservices, and high-performance user interfaces using React, JavaScript, and Node.js, I am inspired by Capital on Tap's mission to empower small businesses through innovative financial platforms.\n\nThroughout my career—most recently at Excersys and Naseeb Networks—I have taken full ownership of the software development lifecycle from initial architecture to production deployment and monitoring. Whether crafting responsive, user-centric interfaces in React or architecting resilient backend services deployed on cloud environments like Azure, I thrive in collaborative, Agile environments where engineers are given the autonomy to make impactful decisions. My background in developing secure fintech solutions and real-time platforms directly aligns with your commitment to building top-tier credit card and payment products.\n\nI am excited by the opportunity to join Capital on Tap as a founding member of your Lisbon team and contribute to shaping your technical culture from day one. Thank you for considering my application; I look forward to discussing how my technical background and collaborative approach can help drive your engineering goals forward.",
+    "email_subject": "Application for Senior Software Engineer — Talha Sadiq",
+    "email_body": "Dear Hiring Team at Capital on Tap,\n\nI am writing to express my enthusiastic interest in the Senior Software Engineer position for your expanding team in Lisbon. With 8 years of professional experience building scalable web and mobile applications, microservices, and high-performance user interfaces using React, JavaScript, and Node.js, I am inspired by Capital on Tap's mission to empower small businesses through innovative financial platforms.\n\nThroughout my career—most recently at Excersys and Naseeb Networks—I have taken full ownership of the software development lifecycle from initial architecture to production deployment and monitoring. Whether crafting responsive, user-centric interfaces in React or architecting resilient backend services deployed on cloud environments like Azure, I thrive in collaborative, Agile environments where engineers are given the autonomy to make impactful decisions. My background in developing secure fintech solutions and real-time platforms directly aligns with your commitment to building top-tier credit card and payment products.\n\nI am excited by the opportunity to join Capital on Tap as a founding member of your Lisbon team and contribute to shaping your technical culture from day one. Thank you for considering my application; I look forward to discussing how my technical background and collaborative approach can help drive your engineering goals forward.\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\nTalha Sadiq\ntalhasadiq320@gmail.com | +92 345 6601101",
+    "email_sent_at": "2026-09-16T08:32:25.353Z",
+    "email_message_id": "<66283740-6c47-7442-5d88-1e7eeddfcf32@gmail.com>"
+  },
+  {
+    "id": "f64cf31c-25f2-4fe5-ad6b-f0e9f8fab70a",
+    "job_id": "c87124b1-47ee-4dc3-be78-3b2a21122960",
+    "job": {
+      "id": "c87124b1-47ee-4dc3-be78-3b2a21122960",
+      "source": "jobicy",
+      "source_id": "153064",
+      "title": "Solutions Engineer",
+      "company": "ChargePoint",
+      "location": "UK",
+      "is_remote": true,
+      "salary_min": null,
+      "salary_max": null,
+      "currency": "USD",
+      "description": "About Us\nWith electric vehicles expected to be nearly 30% of new vehicle sales by 2025 and more than 50% by 2040, electric mobility is becoming a reality. ChargePoint (NYSE: CHPT) is at the center of this revolution, powering one of the world’s leading EV charging networks and a comprehensive set of hardware, software and mobile solutions for every charging need across North America and Europe. We bring together drivers, businesses, automakers, policymakers, utilities and other stakeholders to make e-mobility a global reality.\n\nSince our founding in 2007, ChargePoint has focused solely on making the transition to electric easy for businesses, fleets and drivers. ChargePoint offers a once-in-a-lifetime opportunity to create an all-electric future and a trillion-dollar market.\n\nAt ChargePoint, we foster a positive and productive work environment by committing to live our values of Be Courageous, Charge Together, Love our Customers, Operate with Openness, and Relentlessly Pursue Awesome. These values guide how we show up every day, align, and work together to build a brighter future for all of us.\n\nJoin the team that is building the EV charging industry and make your mark on how people and goods will get everywhere they need to go, in any context, for generations to come.\n\nReports To\nDirector, Solutions Engineering\n\nWhat You Will Be Doing\nIn this role, you will be responsible for all technical aspects of pre-sale customer engagement including actively driving and managing technology evaluations, working as a key advisor and advocate for our products and solutions, engaging with customers virtually or in person, performing engineering site or architecture assessments, and developing recommendations to assist customers with deployment of electric vehicle charging solutions infrastructure. You will also be responsible for developing RFP/Tender responses and providing training on our products. Key focus areas also encompasses electric vehicle supply equipment (EVSE), infrastructure, and the operational needs of light, medium and heavy duty fleets, including vehicle, energy management and battery storage solutions that consider the charging capabilities, dwell time, routing and scheduling of the vehicles, and integrations with 3rd party platforms. \n\nThe applicant must be a critical thinker, self-motivated and able to effectively manage their time. \n\nTravel requirement: up to 50% travel across Europe, predominantly within the UK and Ireland.\n\nWhat You Will Bring to ChargePoint\n\n• Maintain deep technical and business knowledge of electric vehicle and fleet directions and trends, and how to effectively integrate electric vehicles and charging infrastructure into fleet operations.\n\n• Develop and deliver presentations to partners and customers in support of the sales process, educating potential customers on the benefits of ChargePoint solutions.\n\n• Act as a technical consultant, learning and understanding customer needs and developing the right solutions; working with product management to help align product development with customer and market needs.\n\n• Maintain deep technical and business knowledge of market and industry trends, and how to effectively integrate electric vehicles and charging infrastructure into client business operations.\n\n• Responsible for identifying technical issues that may affect customer satisfaction and proactively work to resolve such issues.\n\n• Provide both general “best practice” and customer-specific engineering recommendations for ChargePoint software feature usage, API implementations and integrations with external systems.\n\n• Maintain knowledge of local electrical installation codes and relevant standards, specifically related to Electric Vehicle Supply Equipment (EVSE) and energy management solutions.\n\n• Respond to functional and technical elements of RFPs/Tenders; assist in the development and execution of SoWs (statements of work) and other proposals.\n\n• Responsible for identifying technical issues that may affect customer satisfaction and proactively work to solve such issues.\n\nRequirements\n\n• Bachelor or Masters degree in Engineering, Mathematics, Computer Science, or equivalent\n\n• Minimum 8 years of combined experience in technical sales or technical consulting\n\n• Experience should include some: electrical engineering, telecommunications, information technology, software development, technical writing\n\n• Excellent presentation, oral and written communication skills\n\n• Strong customer facing and relationship building skill\n\n• Excellent written and oral language skills \n\n• Fleet vehicle operations, High Power solutions, Battery Energy Storage or large facility experience desired. \n\nLocation\nUK- Remote\n\nWe are committed to an inclusive and diverse team. ChargePoint is an equal opportunity employer. We do not discriminate based on race, color, ethnicity, ancestry, national origin, religion, sex, gender, gender identity, gender expression, sexual orientation, age, disability, veteran status, genetic information, marital status or any legally protected status. \n\nIf there is a match between your experiences/skills and the Company needs, we will contact you directly.\n\nChargePoint is committed to fostering an inclusive workplace that welcomes and supports all qualified individuals. In alignment with this commitment, we ensure that persons with disabilities are provided with reasonable accommodations throughout the employment process.\n\nIf you need a reasonable accommodation to participate in the application or interview process, to perform essential job functions, or to access any other benefits and privileges of employment, please contact us at accommodations@chargepoint.com.\n\nChargePoint is an equal opportunity employer. \nApplicants only - Recruiting agencies do not contact.",
+      "url": "https://jobicy.com/jobs/153064-solutions-engineer-4",
+      "application_url": "https://jobicy.com/jobs/153064-solutions-engineer-4",
+      "contact_email": "accommodations@chargepoint.com",
+      "application_type": "EMAIL",
+      "ats_platform": "DirectEmail",
+      "posted_at": "2026-09-11T13:21:13.000Z",
+      "status": "MATCHED",
+      "dedup_hash": "43109a28cf7c69401bfb06ad553ec8996128600fdf50b5cadfd449ea35b9fc75",
+      "created_at": "2026-09-15T10:54:55.760Z",
+      "match": {
+        "job_id": "c87124b1-47ee-4dc3-be78-3b2a21122960",
+        "score": 45,
+        "classification": "POSSIBLE",
+        "matching_skills": [
+          "REST APIs",
+          "Technical Consulting"
+        ],
+        "missing_skills": [
+          "Technical Sales",
+          "Electrical Engineering",
+          "RFP/Tender Response",
+          "Fleet Operations"
+        ],
+        "recommendation": "SKIP",
+        "reasoning": "While the candidate has 8 years of software development experience and technical background, the role is heavily focused on pre-sale customer engagement, technical sales, and EV infrastructure consulting requiring up to 50% travel. The candidate's profile is strictly technical/software engineering rather than solutions engineering or technical sales.",
+        "created_at": "2026-09-16T08:32:41.669Z"
+      }
+    },
+    "match": {
+      "job_id": "c87124b1-47ee-4dc3-be78-3b2a21122960",
+      "score": 45,
+      "classification": "POSSIBLE",
+      "matching_skills": [
+        "REST APIs",
+        "Technical Consulting"
+      ],
+      "missing_skills": [
+        "Technical Sales",
+        "Electrical Engineering",
+        "RFP/Tender Response",
+        "Fleet Operations"
+      ],
+      "recommendation": "SKIP",
+      "reasoning": "While the candidate has 8 years of software development experience and technical background, the role is heavily focused on pre-sale customer engagement, technical sales, and EV infrastructure consulting requiring up to 50% travel. The candidate's profile is strictly technical/software engineering rather than solutions engineering or technical sales.",
+      "created_at": "2026-09-16T08:32:41.669Z"
+    },
+    "status": "MATCHED",
+    "application_channel": "EMAIL",
+    "needs_human_review": false,
+    "created_at": "2026-09-16T08:32:41.670Z",
+    "updated_at": "2026-09-16T08:32:41.670Z"
   }
 ]

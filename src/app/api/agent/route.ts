@@ -66,6 +66,15 @@ export async function POST(req: NextRequest) {
         });
         return NextResponse.json({ success: true, autonomous: res });
       }
+      case 'purgeNonEmailJobs': {
+        const res = store.purgeNonEmailJobs();
+        return NextResponse.json({ success: true, ...res });
+      }
+      case 'sweepMarkets': {
+        // Kick off immediate multi-market & field sweep
+        const res = await store.sweepAndReplenishQueue();
+        return NextResponse.json({ success: true, ...res });
+      }
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }

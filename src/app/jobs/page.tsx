@@ -78,6 +78,35 @@ export default function QueueBoardPage() {
   const [togglingAutonomous, setTogglingAutonomous] = useState(false);
   const [togglingEmailOnly, setTogglingEmailOnly] = useState(false);
   const [purgingPortals, setPurgingPortals] = useState(false);
+  const [sweepingMarkets, setSweepingMarkets] = useState(false);
+  const [purgingNonEmail, setPurgingNonEmail] = useState(false);
+
+  const handleSweepMarkets = async () => {
+    try {
+      setSweepingMarkets(true);
+      showMessage('Initiating comprehensive multi-market & field sweep for fresh email jobs...');
+      const res = await AgentApi.sweepMarkets();
+      showMessage(`Sweep completed! Found ${res.newJobsFound || 0} brand-new email jobs. Matched: ${res.highFitMatched || 0}.`);
+      await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+    } catch (err: any) {
+      showMessage(`Sweep failed: ${err.message}`);
+    } finally {
+      setSweepingMarkets(false);
+    }
+  };
+
+  const handlePurgeNonEmailJobs = async () => {
+    try {
+      setPurgingNonEmail(true);
+      const res = await AgentApi.purgeNonEmailJobs();
+      showMessage(`Purged ${res.purged} portal jobs! Database now contains ${res.remaining} 100% email jobs.`);
+      await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+    } catch (err: any) {
+      showMessage(`Purge failed: ${err.message}`);
+    } finally {
+      setPurgingNonEmail(false);
+    }
+  };
 
   const handleToggleEmailOnly = async () => {
     try {
@@ -442,6 +471,28 @@ export default function QueueBoardPage() {
                 ? 'Email Only: ON'
                 : 'All Methods'}
             </span>
+          </button>
+
+          {/* Sweep Markets */}
+          <button
+            onClick={handleSweepMarkets}
+            disabled={sweepingMarkets}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-300 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            title="Scan all major tech fields & international markets for fresh email jobs (with AI fallback)"
+          >
+            <Zap className={`h-3.5 w-3.5 text-amber-300 ${sweepingMarkets ? 'animate-spin' : ''}`} />
+            <span>{sweepingMarkets ? 'Sweeping...' : '⚡ Sweep Markets'}</span>
+          </button>
+
+          {/* Purge Portal Jobs */}
+          <button
+            onClick={handlePurgeNonEmailJobs}
+            disabled={purgingNonEmail}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            title="Purge all non-email portal jobs from the database and queue"
+          >
+            <Trash2 className={`h-3.5 w-3.5 ${purgingNonEmail ? 'animate-spin' : ''}`} />
+            <span>{purgingNonEmail ? 'Purging...' : 'Purge Portals'}</span>
           </button>
 
           {/* Test Gmail */}

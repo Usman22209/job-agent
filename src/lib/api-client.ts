@@ -187,4 +187,14 @@ export const AgentApi = {
     const res = await apiClient.post('/agent', { action: 'setAutonomousConfig', ...config });
     return res.data;
   },
+
+  async purgeNonEmailJobs() {
+    const res = await apiClient.post('/agent', { action: 'purgeNonEmailJobs' });
+    return res.data;
+  },
+
+  async sweepMarkets() {
+    const res = await apiClient.post('/agent', { action: 'sweepMarkets' });
+    return res.data;
+  },
 };

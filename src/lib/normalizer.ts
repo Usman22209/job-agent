@@ -85,20 +85,73 @@ export function normalizeJob(raw: any, source: JobSource): IJob {
 
 export function extractEmail(text: string): string | undefined {
   if (!text) return undefined;
-  const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi;
+  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/gi;
   const matches = text.match(emailRegex);
   if (!matches || matches.length === 0) return undefined;
 
-  const filtered = matches.filter(
-    (email) =>
-      !email.endsWith('.png') &&
-      !email.endsWith('.jpg') &&
-      !email.includes('example.com') &&
-      !email.includes('sentry.io') &&
-      !email.includes('schema.org')
-  );
+  const JUNK_DOMAINS = [
+    'example.com',
+    'sentry.io',
+    'schema.org',
+    'w3.org',
+    'github.com',
+    'google.com',
+    'apple.com',
+    'remoteok.com',
+    'jobicy.com',
+    'remotive.com',
+    'arbeitnow.com',
+    'domain.com',
+    'company.com',
+    'test.com',
+  ];
 
-  return filtered.length > 0 ? filtered[0].toLowerCase() : undefined;
+  const JUNK_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.ico'];
+
+  const cleaned = matches.map((raw) => {
+    let email = raw.trim().toLowerCase();
+    // Strip common HTML entity artifacts (e.g. 3Ccareers@... or %3Ccareers@...)
+    email = email.replace(/^(?:3c|%3c|&lt;|<)+/i, '');
+    email = email.replace(/(?:3e|%3e|&gt;|>)+$/i, '');
+    email = email.replace(/^mailto:/i, '');
+    return email;
+  });
+
+  const filtered = cleaned.filter((email) => {
+    if (!email || !email.includes('@')) return false;
+    if (JUNK_EXTENSIONS.some((ext) => email.endsWith(ext))) return false;
+    const domain = email.split('@')[1];
+    if (!domain || !domain.includes('.')) return false;
+    if (JUNK_DOMAINS.some((d) => domain === d || domain.endsWith('.' + d))) return false;
+    if (email.startsWith('noreply') || email.startsWith('no-reply') || email.startsWith('donotreply')) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) return undefined;
+
+  // Prioritize emails with hiring/recruitment keywords
+  const HIRING_PREFIXES = [
+    'career',
+    'job',
+    'hiring',
+    'talent',
+    'recruit',
+    'apply',
+    'hr',
+    'people',
+    'team',
+    'work',
+    'candidate',
+    'accommodat',
+    'recruitment',
+  ];
+
+  const preferred = filtered.find((email) => {
+    const userPart = email.split('@')[0];
+    return HIRING_PREFIXES.some((p) => userPart.includes(p));
+  });
+
+  return preferred || filtered[0];
 }
 
 export function detectApplicationType(

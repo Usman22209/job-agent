@@ -24,6 +24,7 @@ import { tailorResumeAndCoverLetter } from './resume-tailor';
 import { generateResumePdf } from './pdf-generator';
 import { sendApplicationEmail } from './email';
 import { browserAutoApply } from './browser-agent';
+import { generateAIExpandedSearchKeywords } from './ai/ai-search-expander';
 
 class AgentStore {
   private profile: IMasterProfile;
@@ -59,7 +60,37 @@ class AgentStore {
   private autonomousCooldownTimer: NodeJS.Timeout | null = null;
   private emailOnlyMode: boolean = true;
 
-  // --- Adaptive Multi-Region & Role Discovery Matrix ---
+  // --- AI Keyword & Continuous Discovery State ---
+  private triedAiKeywords: string[] = [];
+
+  // --- Comprehensive Major Tech Fields & Markets ---
+  public readonly MAJOR_FIELDS: string[] = [
+    'react-native',
+    'full-stack',
+    'frontend',
+    'backend',
+    'nodejs',
+    'python',
+    'mobile',
+    'ai',
+    'software-engineer',
+    'javascript',
+    'typescript',
+    'cloud',
+    'devops',
+  ];
+
+  public readonly MAJOR_MARKETS: { name: string; geoCode: string }[] = [
+    { name: 'Worldwide / Anywhere', geoCode: 'anywhere' },
+    { name: 'USA / North America', geoCode: 'usa' },
+    { name: 'Europe & UK (EMEA)', geoCode: 'emea' },
+    { name: 'Latin America (LATAM)', geoCode: 'latam' },
+    { name: 'Asia-Pacific (APAC)', geoCode: 'apac' },
+    { name: 'Canada', geoCode: 'canada' },
+    { name: 'United Kingdom', geoCode: 'uk' },
+  ];
+
+  // --- Adaptive Multi-Region & Role Discovery Matrix (legacy fallback) ---
   private searchPoolIndex: number = 0;
   private searchRegionIndex: number = 0;
 
@@ -87,6 +118,9 @@ class AgentStore {
     this.profile = this.loadInitialProfile();
     this.loadPersistedData();
     this.loadQueueFromDisk();
+    if (this.emailOnlyMode) {
+      this.purgeNonEmailJobs();
+    }
     this.seedInitialJobs();
     this.startBackgroundCronAgent();
   }
@@ -156,6 +190,14 @@ class AgentStore {
   ingestJob(raw: any, source: any): { job: IJob; isNew: boolean } {
     const normalized = normalizeJob(raw, source);
 
+    // In Email-Only Mode, ignore any jobs that do not provide a direct contact email
+    if (this.emailOnlyMode && !normalized.contact_email) {
+      if (normalized.dedup_hash) {
+        this.dedupSet.add(normalized.dedup_hash);
+      }
+      return { job: normalized, isNew: false };
+    }
+
     if (this.dedupSet.has(normalized.dedup_hash || '')) {
       const existing = Array.from(this.jobs.values()).find(
         (j) => j.dedup_hash === normalized.dedup_hash
@@ -221,6 +263,83 @@ class AgentStore {
       }
     }
 
+    return { newJobs, total: this.jobs.size, sourceCounts };
+  }
+
+  async sweepAllMarketsAndFields(customKeywords?: string[]): Promise<{
+    newJobs: IJob[];
+    total: number;
+    sourceCounts: Record<string, number>;
+  }> {
+    const newJobs: IJob[] = [];
+    const sourceCounts: Record<string, number> = {};
+    const scrapePromises: Promise<any[]>[] = [];
+
+    const fieldsToSearch =
+      customKeywords && customKeywords.length > 0 ? customKeywords : this.MAJOR_FIELDS;
+    const marketsToSearch = this.MAJOR_MARKETS;
+
+    console.log(
+      `[Sweep Engine] 🌐 Sweeping ${fieldsToSearch.length} fields across ${marketsToSearch.length} markets for direct email jobs...`
+    );
+
+    // 1. Jobicy (Batch query tags paired with geos)
+    for (let i = 0; i < fieldsToSearch.length; i++) {
+      const field = fieldsToSearch[i];
+      const market = marketsToSearch[i % marketsToSearch.length].geoCode;
+      scrapePromises.push(searchJobicyJobs(field, 35, market));
+    }
+    // General high-yield Jobicy tech queries
+    scrapePromises.push(searchJobicyJobs('', 40, 'anywhere'));
+    scrapePromises.push(searchJobicyJobs('react', 35, 'usa'));
+    scrapePromises.push(searchJobicyJobs('full-stack', 35, 'emea'));
+    scrapePromises.push(searchJobicyJobs('mobile', 35, 'anywhere'));
+
+    // 2. RemoteOK: query top tags
+    const remoteOkTags =
+      customKeywords && customKeywords.length > 0
+        ? customKeywords.slice(0, 8)
+        : ['react', 'javascript', 'node', 'python', 'mobile', 'engineer', 'frontend', 'backend', 'fullstack', 'ai'];
+    for (const tag of remoteOkTags) {
+      scrapePromises.push(searchRemoteOkJobs(tag, 40));
+    }
+
+    // 3. Remotive: active software development jobs
+    scrapePromises.push(searchRemotiveJobs('', 50));
+    if (customKeywords && customKeywords.length > 0) {
+      for (const q of customKeywords.slice(0, 4)) {
+        scrapePromises.push(searchRemotiveJobs(q, 30));
+      }
+    } else {
+      scrapePromises.push(searchRemotiveJobs('React Native', 30));
+      scrapePromises.push(searchRemotiveJobs('Node', 30));
+      scrapePromises.push(searchRemotiveJobs('AI', 30));
+    }
+
+    // 4. Arbeitnow: active engineering jobs feed
+    scrapePromises.push(searchArbeitnowJobs('engineering', 50));
+    scrapePromises.push(searchArbeitnowJobs('react', 50));
+
+    // 5. SerpApi & Adzuna (if configured)
+    scrapePromises.push(searchGoogleJobs('remote full stack developer', 'Worldwide'));
+    scrapePromises.push(searchAdzunaJobs('react developer', 'us'));
+
+    const settled = await Promise.allSettled(scrapePromises);
+    for (const result of settled) {
+      if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+        for (const item of result.value) {
+          const res = this.ingestJob(item, item.source || 'feed');
+          sourceCounts[res.job.source] = (sourceCounts[res.job.source] || 0) + 1;
+          if (res.isNew) {
+            newJobs.push(res.job);
+          }
+        }
+      }
+    }
+
+    console.log(
+      `[Sweep Engine] ✓ Sweep completed. Found ${newJobs.length} brand-new email jobs (Total in DB: ${this.jobs.size}).`
+    );
     return { newJobs, total: this.jobs.size, sourceCounts };
   }
 
@@ -604,6 +723,31 @@ class AgentStore {
     return { removed: portalJobIds.length, remaining: this.applyQueue.length };
   }
 
+  purgeNonEmailJobs(): { purged: number; remaining: number } {
+    let purged = 0;
+    for (const [id, job] of Array.from(this.jobs.entries())) {
+      // Keep only jobs that have a contact email or have already been applied to
+      if (!job.contact_email && job.status !== 'APPLIED') {
+        this.jobs.delete(id);
+        purged++;
+      }
+    }
+
+    const origQueueLen = this.applyQueue.length;
+    this.applyQueue = this.applyQueue.filter((id) => {
+      const j = this.jobs.get(id);
+      return j && Boolean(j.contact_email);
+    });
+
+    if (purged > 0 || this.applyQueue.length !== origQueueLen) {
+      this.saveJobsToDisk();
+      this.saveQueueToDisk();
+      console.log(`[Store] Purged ${purged} non-email jobs from database. Remaining jobs in DB: ${this.jobs.size}, Queue: ${this.applyQueue.length}`);
+    }
+
+    return { purged, remaining: this.jobs.size };
+  }
+
   removeFromQueue(jobId: string): { success: boolean; queueLength: number } {
     const idx = this.applyQueue.indexOf(jobId);
     if (idx === -1) return { success: false, queueLength: this.applyQueue.length };
@@ -826,14 +970,8 @@ class AgentStore {
       console.log('[Agent Queue] All jobs in queue processed.');
 
       if (this.isAutonomousMode) {
-        // Advance to next region & role pool so the next cycle discovers new jobs in other regions/stacks!
-        this.searchRegionIndex = (this.searchRegionIndex + 1) % this.SEARCH_REGIONS.length;
-        if (this.searchRegionIndex === 0) {
-          this.searchPoolIndex = (this.searchPoolIndex + 1) % this.SEARCH_ROLE_POOLS.length;
-        }
-        const nextRegion = this.SEARCH_REGIONS[this.searchRegionIndex % this.SEARCH_REGIONS.length];
-        console.log(`[Autonomous Loop] Queue emptied! Next pass will explore Region: "${nextRegion.name}". Entering ${this.autonomousCooldownMinutes}m cooldown.`);
-        this.scheduleAutonomousCycle();
+        console.log(`[Autonomous Loop] ⚡ Queue is empty! Triggering instant all-market & field sweep for fresh email jobs...`);
+        this.sweepAndReplenishQueue();
       } else {
         this.autonomousState = 'IDLE';
       }
@@ -912,6 +1050,14 @@ class AgentStore {
 
     // Longer delay 12-20 seconds between jobs to allow proper processing & avoid rate limits
     if (this.isAgentRunning && this.applyQueue.length > 0) {
+      // Proactive background prefetch: if queue is running low (<= 2 jobs left), trigger background replenish
+      if (this.applyQueue.length <= 2 && !this.isSchedulerRunning && this.isAutonomousMode) {
+        console.log(`[Autonomous Loop] Queue running low (${this.applyQueue.length} jobs remaining). Initiating background prefetch...`);
+        this.sweepAndReplenishQueue().catch((err) =>
+          console.warn('[Autonomous Loop] Background prefetch warning:', err.message)
+        );
+      }
+
       const delayMs = Math.floor(Math.random() * 8000) + 12000; // 12-20s
       console.log(`[Agent Queue] Waiting ${(delayMs / 1000).toFixed(1)}s before next job... (${this.applyQueue.length} remaining)`);
       this.agentTimer = setTimeout(() => {
@@ -921,20 +1067,22 @@ class AgentStore {
       this.isAgentRunning = false;
       console.log('[Agent Queue] Queue complete.');
       if (this.isAutonomousMode) {
-        this.scheduleAutonomousCycle();
+        console.log(`[Autonomous Loop] ⚡ Queue complete! Triggering instant all-market & field sweep for fresh email jobs...`);
+        this.sweepAndReplenishQueue();
       } else {
         this.autonomousState = 'IDLE';
       }
     }
   }
 
-  // --- Local Cron Agent Pipeline ---
-  async executeLocalAgentPipeline(): Promise<{
+  // --- Auto-Replenishing Discovery & Application Pipeline ---
+  async sweepAndReplenishQueue(): Promise<{
     newJobsFound: number;
     highFitMatched: number;
     applicationsCreated: number;
   }> {
     if (this.isSchedulerRunning) {
+      console.log('[Autonomous Loop] Sweep already running in background.');
       return { newJobsFound: 0, highFitMatched: 0, applicationsCreated: 0 };
     }
 
@@ -949,38 +1097,46 @@ class AgentStore {
     let applicationsCreated = 0;
 
     try {
-      // Pick current search pool & region from our adaptive discovery matrix
-      const currentPool = this.SEARCH_ROLE_POOLS[this.searchPoolIndex % this.SEARCH_ROLE_POOLS.length];
-      const currentRegion = this.SEARCH_REGIONS[this.searchRegionIndex % this.SEARCH_REGIONS.length];
+      console.log('[Autonomous Loop] ⚡ Initiating Comprehensive Multi-Field & Multi-Market Email Discovery Sweep...');
+      const sweepRes = await this.sweepAllMarketsAndFields();
+      let candidates = sweepRes.newJobs;
+      newJobsFound = candidates.length;
 
-      console.log(`[Autonomous Loop] 🌍 Discovery cycle targeting Region: "${currentRegion.name}" with Roles: [${currentPool.join(', ')}]`);
+      // If standard sweep returned NO new jobs, trigger Gemini AI Dynamic Keyword Expansion!
+      if (candidates.length === 0) {
+        console.log('[Autonomous Loop] 🧠 Standard fields returned 0 new jobs. Triggering Gemini AI Dynamic Keyword & Market Expansion...');
+        try {
+          const aiKeywords = await generateAIExpandedSearchKeywords(this.profile, this.triedAiKeywords);
+          this.triedAiKeywords.push(...aiKeywords);
+          if (this.triedAiKeywords.length > 80) {
+            this.triedAiKeywords = this.triedAiKeywords.slice(-50);
+          }
 
-      const discRes = await this.runDiscovery(currentPool, currentRegion.name, currentRegion.geoCode);
-      newJobsFound = discRes.newJobs.length;
-      console.log(`[Autonomous Loop] Scraped ${newJobsFound} new positions in "${currentRegion.name}".`);
-
-      // Rotate region for the next pass
-      this.searchRegionIndex = (this.searchRegionIndex + 1) % this.SEARCH_REGIONS.length;
-      if (this.searchRegionIndex === 0) {
-        this.searchPoolIndex = (this.searchPoolIndex + 1) % this.SEARCH_ROLE_POOLS.length;
+          console.log(`[Autonomous Loop] 🚀 Launching targeted sweep with AI-expanded keywords: [${aiKeywords.join(', ')}]`);
+          const aiSweepRes = await this.sweepAllMarketsAndFields(aiKeywords);
+          candidates = aiSweepRes.newJobs;
+          newJobsFound += candidates.length;
+        } catch (aiErr: any) {
+          console.warn('[Autonomous Loop] AI Keyword Expansion notice:', aiErr.message);
+        }
       }
+
+      console.log(`[Autonomous Loop] Discovery completed: ${newJobsFound} brand-new email positions found.`);
 
       const threshold = Number(process.env.AUTO_TAILOR_THRESHOLD) || 75;
 
-      for (const job of discRes.newJobs) {
+      for (const job of candidates) {
+        // Double check email presence
+        if (this.emailOnlyMode && !job.contact_email) continue;
+
         const match = await this.matchJob(job.id);
         if (match.score >= threshold) {
-          // If email-only mode is active and job has no hiring contact email, skip auto-enqueue
-          if (this.emailOnlyMode && !job.contact_email) {
-            continue;
-          }
           highFitMatched++;
           const app = await this.createApplication(job.id);
           await this.tailorApplication(app.id);
           applicationsCreated++;
           this.totalApplicationsQueued++;
 
-          // Auto-Enqueue high-fit job directly into applyQueue
           if (!this.applyQueue.includes(job.id) && job.status !== 'APPLIED') {
             this.applyQueue.push(job.id);
             job.status = 'MATCHED';
@@ -989,14 +1145,12 @@ class AgentStore {
         }
       }
 
-      // Also auto-enqueue any unapplied matched jobs if queue is empty
+      // Also ensure any unapplied email jobs in database are enqueued
       if (this.applyQueue.length === 0) {
         for (const job of Array.from(this.jobs.values())) {
-          if (this.emailOnlyMode && !job.contact_email) {
-            continue;
-          }
+          if (this.emailOnlyMode && !job.contact_email) continue;
           if (job.status === 'MATCHED' && !this.applyQueue.includes(job.id)) {
-            const existingApp = Array.from(this.applications.values()).find(a => a.job_id === job.id);
+            const existingApp = Array.from(this.applications.values()).find((a) => a.job_id === job.id);
             if (!existingApp || existingApp.status !== 'APPLIED') {
               this.applyQueue.push(job.id);
             }
@@ -1007,18 +1161,20 @@ class AgentStore {
       this.saveJobsToDisk();
       this.saveQueueToDisk();
 
-      // If autonomous mode is enabled, auto-start queue or schedule next cycle
-      if (this.isAutonomousMode) {
-        if (!this.isAgentRunning && this.applyQueue.length > 0) {
-          console.log(`[Autonomous Loop] ${this.applyQueue.length} jobs ready in queue. Auto-launching application worker...`);
+      // If jobs were queued, immediately auto-launch the agent worker if not already running!
+      if (this.applyQueue.length > 0) {
+        console.log(`[Autonomous Loop] ✓ Auto-replenished queue with ${this.applyQueue.length} fresh email jobs! Resuming processing.`);
+        if (!this.isAgentRunning) {
           this.startAgent();
-        } else if (this.applyQueue.length === 0) {
-          console.log('[Autonomous Loop] Discovery completed with no new jobs to apply. Scheduling next discovery cycle...');
+        }
+      } else {
+        console.log(`[Autonomous Loop] All active email jobs applied. Entering ${this.autonomousCooldownMinutes}m cooldown before next sweep.`);
+        if (this.isAutonomousMode) {
           this.scheduleAutonomousCycle();
         }
       }
     } catch (err: any) {
-      console.error('Local cron agent execution error:', err.message);
+      console.error('[Autonomous Loop] Sweep and replenish error:', err.message);
       if (this.isAutonomousMode && !this.isAgentRunning && this.applyQueue.length === 0) {
         this.scheduleAutonomousCycle();
       }
@@ -1036,6 +1192,15 @@ class AgentStore {
     }
 
     return { newJobsFound, highFitMatched, applicationsCreated };
+  }
+
+  // --- Local Cron Agent Pipeline (Delegates to sweepAndReplenishQueue) ---
+  async executeLocalAgentPipeline(): Promise<{
+    newJobsFound: number;
+    highFitMatched: number;
+    applicationsCreated: number;
+  }> {
+    return this.sweepAndReplenishQueue();
   }
 
   getSchedulerStatus(): ISchedulerStatus {
@@ -1295,9 +1460,8 @@ class AgentStore {
   }
 
   private seedInitialJobs() {
-    const targetRoles = this.profile.preferences?.target_roles || ['React Native', 'React', 'Next.js', 'AI Engineer'];
-    this.runDiscovery(targetRoles, 'Remote').catch((err) => {
-      console.warn('Initial live discovery warning:', err.message);
+    this.sweepAndReplenishQueue().catch((err) => {
+      console.warn('Initial multi-market discovery warning:', err.message);
     });
   }
 
