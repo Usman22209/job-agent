@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const action = body.action;
+    const action = body.action || req.nextUrl.searchParams.get('action');
 
     switch (action) {
       case 'start': {
