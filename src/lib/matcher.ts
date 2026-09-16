@@ -160,17 +160,22 @@ function evaluateWithRubric(job: IJob, profile: IMasterProfile): IJobMatch {
     }
   }
 
-  let baseScore = 52;
+  let baseScore = 55;
   const titleLower = job.title.toLowerCase();
   if (titleLower.includes('react native')) baseScore += 28;
   else if (titleLower.includes('next.js') || titleLower.includes('react')) baseScore += 24;
-  else if (titleLower.includes('full stack') || titleLower.includes('frontend')) baseScore += 18;
+  else if (titleLower.includes('full stack') || titleLower.includes('fullstack') || titleLower.includes('full-stack')) baseScore += 22;
+  else if (titleLower.includes('frontend') || titleLower.includes('front end') || titleLower.includes('front-end')) baseScore += 20;
+  else if (titleLower.includes('mobile') || titleLower.includes('android') || titleLower.includes('ios')) baseScore += 20;
+  else if (titleLower.includes('ai') || titleLower.includes('python') || titleLower.includes('machine learning') || titleLower.includes('applied scientist')) baseScore += 20;
+  else if (titleLower.includes('backend') || titleLower.includes('node') || titleLower.includes('api')) baseScore += 18;
+  else if (titleLower.includes('software') || titleLower.includes('engineer') || titleLower.includes('developer')) baseScore += 16;
 
   baseScore += Math.min(24, matchedSkills.length * 5);
-  baseScore -= Math.min(15, missingSkills.length * 4);
+  baseScore -= Math.min(12, missingSkills.length * 3);
   if (job.is_remote) baseScore += 6;
 
-  const score = Math.min(96, Math.max(35, baseScore));
+  const score = Math.min(98, Math.max(40, baseScore));
 
   let classification: MatchClassification = 'SKIP';
   let recommendation: 'APPLY' | 'REVIEW' | 'SKIP' = 'SKIP';

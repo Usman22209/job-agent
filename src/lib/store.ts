@@ -283,17 +283,15 @@ class AgentStore {
       `[Sweep Engine] 🌐 Sweeping ${fieldsToSearch.length} fields across ${marketsToSearch.length} markets for direct email jobs...`
     );
 
-    // 1. Jobicy (Batch query tags paired with geos)
-    for (let i = 0; i < fieldsToSearch.length; i++) {
-      const field = fieldsToSearch[i];
+    // 1. Jobicy (Batch query primary tags paired with markets)
+    const jobicyFields = fieldsToSearch.slice(0, 6);
+    for (let i = 0; i < jobicyFields.length; i++) {
+      const field = jobicyFields[i];
       const market = marketsToSearch[i % marketsToSearch.length].geoCode;
       scrapePromises.push(searchJobicyJobs(field, 35, market));
     }
-    // General high-yield Jobicy tech queries
+    // High-yield Jobicy general query
     scrapePromises.push(searchJobicyJobs('', 40, 'anywhere'));
-    scrapePromises.push(searchJobicyJobs('react', 35, 'usa'));
-    scrapePromises.push(searchJobicyJobs('full-stack', 35, 'emea'));
-    scrapePromises.push(searchJobicyJobs('mobile', 35, 'anywhere'));
 
     // 2. RemoteOK: query top tags
     const remoteOkTags =
@@ -1123,7 +1121,7 @@ class AgentStore {
 
       console.log(`[Autonomous Loop] Discovery completed: ${newJobsFound} brand-new email positions found.`);
 
-      const threshold = Number(process.env.AUTO_TAILOR_THRESHOLD) || 75;
+      const threshold = Number(process.env.AUTO_TAILOR_THRESHOLD) || 70;
 
       for (const job of candidates) {
         // Double check email presence
@@ -1145,14 +1143,16 @@ class AgentStore {
         }
       }
 
-      // Also ensure any unapplied email jobs in database are enqueued
+      // Also ensure any unapplied email jobs in database are enqueued so queue is never empty
       if (this.applyQueue.length === 0) {
         for (const job of Array.from(this.jobs.values())) {
           if (this.emailOnlyMode && !job.contact_email) continue;
-          if (job.status === 'MATCHED' && !this.applyQueue.includes(job.id)) {
+          if (job.status !== 'APPLIED' && !this.applyQueue.includes(job.id)) {
             const existingApp = Array.from(this.applications.values()).find((a) => a.job_id === job.id);
             if (!existingApp || existingApp.status !== 'APPLIED') {
               this.applyQueue.push(job.id);
+              job.status = 'MATCHED';
+              this.jobs.set(job.id, job);
             }
           }
         }
@@ -1460,12 +1460,18 @@ class AgentStore {
   }
 
   private seedInitialJobs() {
+    if (process.env.npm_lifecycle_event === 'build' || process.env.NEXT_PHASE === 'phase-production-build') {
+      return;
+    }
     this.sweepAndReplenishQueue().catch((err) => {
       console.warn('Initial multi-market discovery warning:', err.message);
     });
   }
 
   private startBackgroundCronAgent() {
+    if (process.env.npm_lifecycle_event === 'build' || process.env.NEXT_PHASE === 'phase-production-build') {
+      return;
+    }
     // Run an initial automated discovery pass
     setTimeout(() => {
       this.executeLocalAgentPipeline();
