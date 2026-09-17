@@ -1253,15 +1253,11 @@ class AgentStore {
         const match = await this.matchJob(job.id);
         if (match.score >= threshold) {
           highFitMatched++;
-          const app = await this.createApplication(job.id);
-          await this.tailorApplication(app.id);
-          applicationsCreated++;
-          this.totalApplicationsQueued++;
-
           if (!this.applyQueue.includes(job.id) && job.status !== 'APPLIED') {
             this.applyQueue.push(job.id);
             job.status = 'MATCHED';
             this.jobs.set(job.id, job);
+            this.totalApplicationsQueued++;
           }
         }
       }
