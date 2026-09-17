@@ -4,9 +4,17 @@ import { store } from '@/lib/store';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const query = body.query || body.search;
-    const location = body.location || 'Remote';
-    const autoQueue = body.autoQueue !== false;
+    const query =
+      body.query ||
+      body.search ||
+      req.nextUrl.searchParams.get('query') ||
+      req.nextUrl.searchParams.get('search');
+    const location =
+      body.location || req.nextUrl.searchParams.get('location') || 'Remote';
+    const autoQueue =
+      body.autoQueue !== undefined
+        ? Boolean(body.autoQueue)
+        : req.nextUrl.searchParams.get('autoQueue') !== 'false';
 
     if (query) {
       const result = await store.scrapeLiveJobs(query, location);
