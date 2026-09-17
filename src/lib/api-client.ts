@@ -34,8 +34,8 @@ export const AgentApi = {
     return res.data;
   },
 
-  async scrapeLive(query?: string, location?: string) {
-    const res = await apiClient.post('/jobs/collect', { query, location });
+  async scrapeLive(query?: string, location?: string, autoQueue: boolean = true) {
+    const res = await apiClient.post('/jobs/collect', { query, location, autoQueue });
     return res.data;
   },
 

@@ -252,6 +252,12 @@ class AgentStore {
       scrapePromises.push(searchAdzunaJobs(q, geoCode || 'us'));
     }
 
+    // 7. Hacker News (Who is Hiring startup founder emails)
+    scrapePromises.push(searchHackerNewsJobs(queries[0] || '', 50));
+
+    // 8. We Work Remotely (Remote engineering RSS feeds)
+    scrapePromises.push(searchWeWorkRemotelyJobs(queries[0] || '', 40));
+
     const settled = await Promise.allSettled(scrapePromises);
     for (const result of settled) {
       if (result.status === 'fulfilled' && Array.isArray(result.value)) {
@@ -321,10 +327,10 @@ class AgentStore {
     scrapePromises.push(searchArbeitnowJobs('react', 50));
 
     // 5. Hacker News: Who is Hiring (direct founder/CTO emails)
-    scrapePromises.push(searchHackerNewsJobs('', 100));
+    scrapePromises.push(searchHackerNewsJobs('', 150));
 
     // 6. We Work Remotely: programming RSS feed
-    scrapePromises.push(searchWeWorkRemotelyJobs('', 50));
+    scrapePromises.push(searchWeWorkRemotelyJobs('', 80));
 
     // 7. SerpApi & Adzuna (if configured)
     scrapePromises.push(searchGoogleJobs('remote full stack developer', 'Worldwide'));
@@ -357,8 +363,8 @@ class AgentStore {
     const sourceCounts: Record<string, number> = {};
 
     const scrapePromises = [
-      searchHackerNewsJobs(query, 50),
-      searchWeWorkRemotelyJobs(query, 40),
+      searchHackerNewsJobs(query, 80),
+      searchWeWorkRemotelyJobs(query, 60),
       searchRemotiveJobs(query, 40),
       searchRemoteOkJobs(query, 40),
       searchJobicyJobs(query, 30),

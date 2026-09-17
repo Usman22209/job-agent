@@ -28,7 +28,9 @@ import {
   ChevronUp,
   Terminal,
   ShieldAlert,
-  Trash2
+  Trash2,
+  Sparkles,
+  Globe
 } from 'lucide-react';
 import { AgentApi } from '@/lib/api-client';
 import { IJob, ISchedulerStatus, IAutonomousStatus } from '@/types';
@@ -80,6 +82,36 @@ export default function QueueBoardPage() {
   const [purgingPortals, setPurgingPortals] = useState(false);
   const [sweepingMarkets, setSweepingMarkets] = useState(false);
   const [purgingNonEmail, setPurgingNonEmail] = useState(false);
+  const [liveSearchQuery, setLiveSearchQuery] = useState('');
+  const [liveSearchLocation, setLiveSearchLocation] = useState('Remote');
+  const [autoQueueLiveSearch, setAutoQueueLiveSearch] = useState(true);
+  const [searchingLive, setSearchingLive] = useState(false);
+  const [isLiveSearchOpen, setIsLiveSearchOpen] = useState(true);
+
+  const handleLiveSearch = async (keywordOverride?: string) => {
+    const q = (keywordOverride !== undefined ? keywordOverride : liveSearchQuery).trim();
+    if (!q) {
+      showMessage('Please enter a role or tech stack to search (e.g. "React Native", "AI Engineer").');
+      return;
+    }
+    if (keywordOverride) {
+      setLiveSearchQuery(keywordOverride);
+    }
+    try {
+      setSearchingLive(true);
+      showMessage(`Searching live platforms & Hacker News/WWR for "${q}"...`);
+      const res = await AgentApi.scrapeLive(q, liveSearchLocation, autoQueueLiveSearch);
+      showMessage(
+        res.message ||
+        `Search complete! Found ${res.scrapedThisPass || 0} positions (${res.newJobsCount || 0} new, ${res.queuedCount || 0} queued).`
+      );
+      await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+    } catch (err: any) {
+      showMessage(`Live search failed: ${err.message}`);
+    } finally {
+      setSearchingLive(false);
+    }
+  };
 
   const handleSweepMarkets = async () => {
     try {
@@ -585,6 +617,150 @@ export default function QueueBoardPage() {
           <button onClick={() => setActionMessage(null)} className="hover:underline text-emerald-700 font-semibold ml-2">Dismiss</button>
         </div>
       )}
+
+      {/* Live Custom Search & Auto-Queue Card */}
+      <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-white to-blue-50/40 p-4 sm:p-5 shadow-2xs transition-all flex-shrink-0">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-xs">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-900">
+                  Live Custom Job Search & Enqueue
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
+                  Hacker News • WWR • RemoteOK • Remotive • Jobicy
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Search live tech job boards for custom keywords. Matching direct-email opportunities are automatically added to the queue.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsLiveSearchOpen(!isLiveSearchOpen)}
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-white/80 transition-colors cursor-pointer"
+            title={isLiveSearchOpen ? "Collapse search panel" : "Expand search panel"}
+          >
+            {isLiveSearchOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+        </div>
+
+        {isLiveSearchOpen && (
+          <div className="space-y-3 pt-3 mt-3 border-t border-indigo-100/70 animate-fadeIn">
+            {/* Input Row */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLiveSearch();
+              }}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5"
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
+                <input
+                  type="text"
+                  placeholder="e.g. React Native, AI Engineer, Fullstack, Next.js, Python..."
+                  value={liveSearchQuery}
+                  onChange={(e) => setLiveSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-indigo-200 text-slate-900 placeholder-slate-400 text-xs font-medium focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 shadow-2xs transition-all"
+                />
+              </div>
+
+              <div className="relative w-full sm:w-36">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Location"
+                  value={liveSearchLocation}
+                  onChange={(e) => setLiveSearchLocation(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-xs font-medium focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 shadow-2xs transition-all"
+                />
+              </div>
+
+              <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/80 border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={autoQueueLiveSearch}
+                  onChange={(e) => setAutoQueueLiveSearch(e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 border-slate-300 cursor-pointer"
+                />
+                <span className="whitespace-nowrap">Auto-Enqueue</span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={searchingLive}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-2xs transition-all transform active:scale-95 disabled:opacity-50 cursor-pointer flex-shrink-0"
+              >
+                {searchingLive ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Searching Live...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-3.5 w-3.5 text-amber-300" />
+                    <span>Search & Enqueue</span>
+                  </>
+                )}
+              </button>
+
+              {/* Quick Requeue Button */}
+              {columns.applied.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleRequeueApplied}
+                  disabled={requeuing}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold shadow-2xs transition-all disabled:opacity-50 cursor-pointer flex-shrink-0"
+                  title="Move previously applied jobs back to the active queue for re-sending/testing"
+                >
+                  <RotateCcw className={`h-3 w-3 ${requeuing ? 'animate-spin text-brand-600' : 'text-slate-400'}`} />
+                  <span>{requeuing ? 'Re-queueing...' : `Re-Queue Applied (${columns.applied.length})`}</span>
+                </button>
+              )}
+            </form>
+
+            {/* Quick Pill Suggestions */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              <span className="text-[11px] font-bold text-slate-400 mr-1 flex items-center gap-1">
+                Popular:
+              </span>
+              {[
+                'React Native',
+                'AI Engineer',
+                'Full Stack',
+                'Next.js',
+                'Python',
+                'Frontend',
+                'Backend',
+                'Mobile',
+              ].map((pill) => (
+                <button
+                  key={pill}
+                  type="button"
+                  disabled={searchingLive}
+                  onClick={() => {
+                    setLiveSearchQuery(pill);
+                    handleLiveSearch(pill);
+                  }}
+                  className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-lg border transition-all cursor-pointer ${
+                    liveSearchQuery === pill
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                      : 'bg-white hover:bg-indigo-50 border-slate-200 text-slate-600 hover:text-indigo-700 hover:border-indigo-200'
+                  }`}
+                >
+                  {pill}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Search & Filter Bar */}
       <div className="flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
