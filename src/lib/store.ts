@@ -474,9 +474,17 @@ class AgentStore {
     console.log(`[Tailor] Generating ATS-optimized PDF: ${filename}`);
     const { filePath, relativeUrl } = await generateResumePdf(tailoredResume, filename);
 
-    // Generate a job-specific email draft using the AI cover letter as the body
+    // Generate a job-specific email draft using the tailored cover letter as the body
     const emailSubject = `Application for ${job.title} — ${this.profile.full_name}`;
-    const emailBody = `${coverLetter}\n\n---\nPlease find my tailored resume attached for your review.\n\nBest regards,\n${this.profile.full_name}\n${this.profile.email} | ${this.profile.phone}`;
+    let emailBody = coverLetter;
+    if (!emailBody.toLowerCase().includes('resume attached') && !emailBody.toLowerCase().includes('attached resume')) {
+      const closingIndex = emailBody.search(/\n(Sincerely|Best regards|Regards|Warm regards),/i);
+      if (closingIndex !== -1) {
+        emailBody = emailBody.slice(0, closingIndex) + '\n\nPlease find my tailored resume attached for your review.' + emailBody.slice(closingIndex);
+      } else {
+        emailBody = `${emailBody}\n\nPlease find my tailored resume attached for your review.`;
+      }
+    }
 
     app.tailored_resume_json = tailoredResume;
     app.tailored_resume_pdf_url = relativeUrl;
