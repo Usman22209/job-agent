@@ -60,21 +60,18 @@ ${signLines.join('\n')}`;
   return { subject, body };
 }
 
-export function sanitizeEmailBody(rawBody: string): string {
+export function sanitizeEmailBody(rawBody: string, profile?: IMasterProfile): string {
   if (!rawBody || typeof rawBody !== 'string') return '';
   let body = rawBody.trim();
 
-  // 1. If there is a "---" divider followed by a second sign-off, strip the duplicate block
+  // 1. Strip any markdown divider "---" and everything following it (which was the old double-appended footer)
   const dividerRegex = /\n\s*---\s*\n([\s\S]*)$/;
   const dividerMatch = body.match(dividerRegex);
   if (dividerMatch) {
-    const beforeDivider = body.substring(0, dividerMatch.index).trim();
-    if (/(sincerely|best regards|regards|warm regards),/i.test(beforeDivider)) {
-      body = beforeDivider;
-    }
+    body = body.substring(0, dividerMatch.index).trim();
   }
 
-  // 2. If multiple closing sign-offs exist (e.g. both "Sincerely," and "Best regards,"), keep only the first valid one
+  // 2. If multiple closing sign-offs exist in the text, keep only up to the first one
   const closingRegex = /\n\s*(sincerely|best regards|warm regards|kind regards|with regards|cheers),/gi;
   const closings: RegExpExecArray[] = [];
   let match: RegExpExecArray | null;
@@ -84,11 +81,22 @@ export function sanitizeEmailBody(rawBody: string): string {
   if (closings.length > 1) {
     const secondClosing = closings[1];
     if (secondClosing && secondClosing.index !== undefined) {
-      body = body.substring(0, secondClosing.index).replace(/\n\s*---\s*$/g, '').trim();
+      body = body.substring(0, secondClosing.index).trim();
     }
   }
 
-  // 3. Ensure a single clean resume attachment notice exists before the closing
+  // 3. Ensure a closing exists; if missing, add a clean candidate closing
+  const hasClosing = /(sincerely|best regards|warm regards|kind regards),/i.test(body);
+  if (!hasClosing && profile) {
+    const sign = [
+      'Sincerely,',
+      profile.full_name,
+      [profile.email, profile.phone, profile.location].filter(Boolean).join(' | '),
+    ].filter(Boolean).join('\n');
+    body = `${body}\n\n${sign}`;
+  }
+
+  // 4. Ensure a single clean resume attachment notice exists before the closing
   const hasAttachmentMention = /attached\s+(my\s+)?(tailored\s+)?resume|resume\s+(is\s+)?attached/i.test(body);
   if (!hasAttachmentMention) {
     const closingMatch = body.match(/\n\s*(sincerely|best regards|warm regards|kind regards),/i);
@@ -119,7 +127,7 @@ export async function sendApplicationEmail(
   const { subject: defaultSub, body: defaultBody } = generateEmailDraft(job, profile);
   const subject = overrideSubject || defaultSub;
   const rawBody = overrideBody || defaultBody;
-  const body = sanitizeEmailBody(rawBody);
+  const body = sanitizeEmailBody(rawBody, profile);
 
   const senderEmail = process.env.SENDER_EMAIL || profile.email;
   const senderName = process.env.SENDER_NAME || profile.full_name;

@@ -476,7 +476,7 @@ class AgentStore {
 
     // Generate a job-specific email draft using the tailored cover letter as the body
     const emailSubject = `Application for ${job.title} — ${this.profile.full_name}`;
-    const emailBody = sanitizeEmailBody(coverLetter);
+    const emailBody = sanitizeEmailBody(coverLetter, this.profile);
 
     app.tailored_resume_json = tailoredResume;
     app.tailored_resume_pdf_url = relativeUrl;
@@ -606,8 +606,8 @@ class AgentStore {
     const pdfPath = (app as any).local_pdf_path;
 
     if (overrideSubject) app.email_subject = overrideSubject;
-    if (overrideBody) app.email_body = sanitizeEmailBody(overrideBody);
-    else if (app.email_body) app.email_body = sanitizeEmailBody(app.email_body);
+    if (overrideBody) app.email_body = sanitizeEmailBody(overrideBody, this.profile);
+    else if (app.email_body) app.email_body = sanitizeEmailBody(app.email_body, this.profile);
 
     console.log(`[Email] Preparing personalized email for "${job.title}" at ${job.company}...`);
     console.log(`[Email] Using ${app.email_subject ? 'tailored' : 'default'} email draft. PDF: ${pdfPath ? 'attached' : 'none'}`);

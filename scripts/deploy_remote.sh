@@ -9,6 +9,7 @@ echo "=== 2. UPDATING TALHA INSTANCE (~/job-agent on port 3000) ==="
 cd /home/ubuntu/job-agent
 git checkout -- package-lock.json yarn.lock || true
 git pull origin main
+node scripts/migrate_sanitize_applications.js database/applications.json
 npm run build
 pm2 restart job-agent --update-env
 echo "Talha instance updated and restarted."
