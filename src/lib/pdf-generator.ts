@@ -5,8 +5,8 @@ const PDFDocument = require('pdfkit/js/pdfkit.standalone');
 import { ITailoredResume } from '@/types';
 
 /**
- * Generates an executive, ATS-compliant PDF resume formatted exactly
- * to match Talha Sadiq's professional resume layout and design system.
+ * Generates an executive, ATS-compliant PDF resume formatted
+ * to match modern executive resume layout and design system.
  */
 export async function generateResumePdf(
   resume: ITailoredResume,
@@ -37,12 +37,12 @@ export async function generateResumePdf(
         .fillColor('#000000')
         .fontSize(22)
         .font('Helvetica-Bold')
-        .text(resume.full_name || 'Talha Sadiq', 40, 36);
+        .text(resume.full_name || 'Candidate', 40, 36);
 
       // Headline / Subtitle
       const headline =
         resume.headline ||
-        'AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering';
+        'Software Engineer';
       doc
         .fontSize(10.5)
         .font('Helvetica-Bold')
@@ -50,16 +50,16 @@ export async function generateResumePdf(
         .text(headline);
 
       // Contact Info Line
-      const rawContactLine =
-        resume.contact_line ||
-        'talhasadiq320@gmail.com | +92 345 6601101 | linkedin.com/in/talhagaba | github.com/shtalhagaba | behance.com/shtalhagaba';
+      const rawContactLine = resume.contact_line || '';
       const contactLine = rawContactLine.replace(/%Ï/g, '').replace(/\s*•\s*/g, ' | ');
-      doc
-        .moveDown(0.2)
-        .fontSize(8.5)
-        .font('Helvetica')
-        .fillColor('#4B5563')
-        .text(contactLine);
+      if (contactLine) {
+        doc
+          .moveDown(0.2)
+          .fontSize(8.5)
+          .font('Helvetica')
+          .fillColor('#4B5563')
+          .text(contactLine);
+      }
 
       doc.moveDown(0.6);
 
@@ -74,7 +74,7 @@ export async function generateResumePdf(
       doc.moveDown(0.7);
 
       // 3. SKILLS SECTIONS
-      // If structured skill categories exist, render them with bold prefixes; otherwise format cleanly
+      // If structured skill categories exist, render them with bold prefixes; otherwise format ordered_skills cleanly
       if (resume.skills_categories && resume.skills_categories.length > 0) {
         renderSectionHeader(doc, 'TECHNICAL SKILLS');
         for (const cat of resume.skills_categories) {
@@ -88,95 +88,13 @@ export async function generateResumePdf(
             .text(cat.skills, { lineGap: 2 });
         }
         doc.moveDown(0.7);
-      } else {
-        // Render Default Categories inspired by the base PDF
-        renderSectionHeader(doc, 'AI & AUTOMATION SKILLS');
+      } else if (resume.ordered_skills && resume.ordered_skills.length > 0) {
+        renderSectionHeader(doc, 'CORE COMPETENCIES & TECHNICAL SKILLS');
         doc
           .fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text('Hands-on Experience: ', { continued: true })
           .font('Helvetica')
           .fillColor('#1F2937')
-          .text(
-            'Claude Code, Cursor AI, OpenAI API, Gemini API, MCP (Model Context Protocol) integrations, TensorFlow, ONNX Runtime, n8n, GitHub Actions, FastAPI, prompt engineering, AI-assisted code generation, AI debugging, AI code review, AI workflow automation',
-            { lineGap: 2 }
-          );
-
-        doc
-          .fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text('Currently Learning: ', { continued: true })
-          .font('Helvetica')
-          .fillColor('#1F2937')
-          .text(
-            'Anthropic Claude API, LangChain, LangGraph, CrewAI, Retrieval-Augmented Generation (RAG), vector databases, Ollama, Hugging Face, PyTorch, Make, Zapier, Supabase, Docker (containerized deployment)',
-            { lineGap: 2 }
-          );
-
-        doc.moveDown(0.5);
-        renderSectionHeader(doc, 'TECHNICAL SKILLS');
-        doc
-          .fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text('Full Stack Development: ', { continued: true })
-          .font('Helvetica')
-          .fillColor('#1F2937')
-          .text(
-            'Node.js, Express, FastAPI, Python (Django, FastAPI), Ruby on Rails, Laravel, React, Next.js, TypeScript, JavaScript, GraphQL, REST APIs, microservices',
-            { lineGap: 2 }
-          );
-
-        doc
-          .fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text('Mobile Development: ', { continued: true })
-          .font('Helvetica')
-          .fillColor('#1F2937')
-          .text(
-            'React Native (CLI, Expo), Android (Java, Kotlin), Swift, Redux (Toolkit, Saga, Thunk, Persist), React Hooks, localization',
-            { lineGap: 2 }
-          );
-
-        doc
-          .fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text('Databases & Cloud: ', { continued: true })
-          .font('Helvetica')
-          .fillColor('#1F2937')
-          .text(
-            'MongoDB, Firebase, Realm, SQLite, AWS (CDK, SDK, Cognito), Azure, Docker',
-            { lineGap: 2 }
-          );
-
-        doc
-          .fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text('DevOps & Tools: ', { continued: true })
-          .font('Helvetica')
-          .fillColor('#1F2937')
-          .text(
-            'Git, GitHub (Actions, GitLab, Bitbucket workflows), CI/CD, Fastlane, Postman, Xcode, Android Studio',
-            { lineGap: 2 }
-          );
-
-        doc
-          .fontSize(9)
-          .font('Helvetica-Bold')
-          .fillColor('#000000')
-          .text('Payments & Real-Time: ', { continued: true })
-          .font('Helvetica')
-          .fillColor('#1F2937')
-          .text(
-            'Stripe, Twilio, Agora, Socket.IO, WebRTC, Web3, blockchain, cryptography',
-            { lineGap: 2 }
-          );
-
+          .text(resume.ordered_skills.join(' • '), { lineGap: 2.2 });
         doc.moveDown(0.7);
       }
 
@@ -296,49 +214,46 @@ export async function generateResumePdf(
             .fillColor('#111827')
             .text(` — ${edu.institution}, ${edu.year}`);
 
-          doc
-            .fontSize(8.5)
-            .font('Helvetica')
-            .fillColor('#4B5563')
-            .text(
-              'Coursework: Data Structures, OOP, DBMS, Web Development, Software Engineering, AI, Mobile App Development'
-            );
+          if (edu.details) {
+            doc
+              .fontSize(8.5)
+              .font('Helvetica')
+              .fillColor('#4B5563')
+              .text(edu.details);
+          }
 
           doc.moveDown(0.3);
         }
       }
 
-      // 7. AWARDS & HONORS
-      if (doc.y > 720) doc.addPage();
-      doc.moveDown(0.3);
-      renderSectionHeader(doc, 'AWARDS & HONORS');
-      const awards = resume.awards || [
-        'First Prize, eRozgaar Hackathon 2019, as Team Lead',
-        'Second Position, NASA Space Apps Challenge, as Team Lead',
-        'ASO and Unity 3D workshops, with delivered projects following each',
-      ];
-      for (const award of awards) {
-        if (doc.y > 730) doc.addPage();
-        const startY = doc.y;
-        const cleanAward = award
-          .replace(/%Ï/g, '')
-          .replace(/^([%Ï\s\u2022\u25CF\u25CB\u25AA\u25FE\u00B7\-*•])+\s*/g, '')
-          .trim();
+      // 7. AWARDS & HONORS (rendered only if candidate explicitly has awards)
+      if (resume.awards && resume.awards.length > 0) {
+        if (doc.y > 720) doc.addPage();
+        doc.moveDown(0.3);
+        renderSectionHeader(doc, 'AWARDS & HONORS');
+        for (const award of resume.awards) {
+          if (doc.y > 730) doc.addPage();
+          const startY = doc.y;
+          const cleanAward = award
+            .replace(/%Ï/g, '')
+            .replace(/^([%Ï\s\u2022\u25CF\u25CB\u25AA\u25FE\u00B7\-*•])+\s*/g, '')
+            .trim();
 
-        doc.circle(46, startY + 4.5, 1.6).fill('#1F2937');
+          doc.circle(46, startY + 4.5, 1.6).fill('#1F2937');
 
-        doc
-          .fontSize(8.8)
-          .font('Helvetica')
-          .fillColor('#1F2937')
-          .text(cleanAward, 54, startY, {
-            width: contentWidth - 14,
-            lineGap: 1.5,
-            align: 'left',
-          });
+          doc
+            .fontSize(8.8)
+            .font('Helvetica')
+            .fillColor('#1F2937')
+            .text(cleanAward, 54, startY, {
+              width: contentWidth - 14,
+              lineGap: 1.5,
+              align: 'left',
+            });
 
-        doc.x = 40;
-        doc.moveDown(0.15);
+          doc.x = 40;
+          doc.moveDown(0.15);
+        }
       }
 
       doc.end();

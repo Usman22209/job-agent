@@ -1548,32 +1548,24 @@ class AgentStore {
     }
 
     return {
-      full_name: 'Talha Sadiq',
-      email: 'talhasadiq320@gmail.com',
-      phone: '+92 345 6601101',
-      location: 'Pakistan (Open to Remote Worldwide)',
-      headline: 'AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering',
-      summary: 'Full Stack Developer with 8 years of production experience in React Native, Node.js, and React, now expanding into AI engineering and automation.',
-      skills: [
-        { name: 'React Native', level: 'Expert' },
-        { name: 'Node.js', level: 'Expert' },
-        { name: 'React', level: 'Expert' },
-        { name: 'TypeScript', level: 'Expert' },
-        { name: 'Claude Code & Cursor AI', level: 'Advanced' },
-        { name: 'OpenAI & Gemini API', level: 'Advanced' },
-        { name: 'REST APIs & Microservices', level: 'Expert' },
-      ],
+      full_name: process.env.SENDER_NAME || 'Candidate',
+      email: process.env.SENDER_EMAIL || process.env.SMTP_USER || '',
+      phone: '',
+      location: 'Open to Remote Worldwide',
+      headline: 'Software Engineer',
+      summary: 'Experienced software engineer specializing in scalable systems and modern applications.',
+      skills: [],
       experience: [],
       projects: [],
       education: [],
       preferences: {
-        target_roles: ['Full Stack Developer', 'AI Engineer', 'React Native Developer'],
+        target_roles: ['Software Engineer', 'Full Stack Developer'],
         remote: true,
         target_locations: ['Remote', 'Worldwide'],
       },
       qa_vault: {
-        work_authorization: 'Authorized for international remote contract work',
-        sponsorship_required: 'No for contract / Open to US relocation sponsorship',
+        work_authorization: 'Authorized for remote contract work',
+        sponsorship_required: 'No',
       },
     };
   }

@@ -53,14 +53,21 @@ export default function CustomApplyPage() {
   const [recentApplications, setRecentApplications] = useState<IApplication[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Load recent applications
+  // Profile state
+  const [profile, setProfile] = useState<{ full_name?: string; email?: string } | null>(null);
+
+  // Load recent applications and active profile
   const fetchRecent = async () => {
     try {
       setLoadingHistory(true);
-      const apps = await AgentApi.getCustomApplications();
+      const [apps, prof] = await Promise.all([
+        AgentApi.getCustomApplications().catch(() => []),
+        AgentApi.getProfile().catch(() => null),
+      ]);
       setRecentApplications(apps);
+      if (prof) setProfile(prof);
     } catch (err) {
-      console.warn('Failed to load recent applications:', err);
+      console.warn('Failed to load initial custom apply data:', err);
     } finally {
       setLoadingHistory(false);
     }
@@ -231,13 +238,13 @@ export default function CustomApplyPage() {
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-xs">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-slate-600 font-medium">SMTP Live:</span>
-            <span className="font-mono text-slate-900 font-semibold">talhasadiq320@gmail.com</span>
+            <span className="text-slate-600 font-medium">Active Email:</span>
+            <span className="font-mono text-slate-900 font-semibold">{profile?.email || 'Configured in Settings'}</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-xs">
             <ShieldCheck className="h-4 w-4 text-brand-600" />
-            <span className="text-slate-600 font-medium">Profile:</span>
-            <span className="text-slate-900 font-semibold">Talha Sadiq</span>
+            <span className="text-slate-600 font-medium">Candidate:</span>
+            <span className="text-slate-900 font-semibold">{profile?.full_name || 'Master Profile'}</span>
           </div>
         </div>
       </div>
@@ -729,7 +736,7 @@ export default function CustomApplyPage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-800">Dynamic ATS Optimization</p>
-                    <p className="text-[11px] text-slate-500">Zero-hallucination tailoring based on Talha Sadiq&apos;s master profile.</p>
+                    <p className="text-[11px] text-slate-500">Zero-hallucination tailoring based on candidate&apos;s master profile.</p>
                   </div>
                 </div>
 
@@ -739,7 +746,7 @@ export default function CustomApplyPage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-800">Direct SMTP Delivery</p>
-                    <p className="text-[11px] text-slate-500">PDF attached automatically with a BCC confirmation copy to your inbox.</p>
+                    <p className="text-[11px] text-slate-500">PDF attached automatically with live delivery to hiring team.</p>
                   </div>
                 </div>
               </div>

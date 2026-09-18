@@ -150,12 +150,12 @@ function fallbackExtractProfile(
   const phoneMatch = text.match(/(\+?\d[\d\s-]{8,}\d)/);
 
   return {
-    full_name: 'Talha Sadiq',
-    email: emailMatch ? emailMatch[0] : 'talhasadiq320@gmail.com',
-    phone: phoneMatch ? phoneMatch[0] : '+92 345 6601101',
-    location: 'Pakistan (Open to Remote Worldwide)',
-    headline: 'AI-Powered Full Stack Developer | Mobile, Web & LLM Engineering',
-    summary: 'Full Stack Developer with 8 years of production experience in React Native, Node.js, and React, specializing in AI engineering and automation.',
+    full_name: process.env.SENDER_NAME || 'Candidate',
+    email: emailMatch ? emailMatch[0] : (process.env.SENDER_EMAIL || ''),
+    phone: phoneMatch ? phoneMatch[0] : '',
+    location: 'Open to Remote Worldwide',
+    headline: 'Software Engineer',
+    summary: 'Experienced software engineer specializing in scalable applications and modern development.',
     skills: [
       { name: 'React Native', level: 'Expert' },
       { name: 'Node.js', level: 'Expert' },

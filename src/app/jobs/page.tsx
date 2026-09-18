@@ -242,7 +242,7 @@ export default function QueueBoardPage() {
       const res = await fetch('/api/email/test', { method: 'POST' });
       const data = await res.json();
       showMessage(data.success
-        ? `Gmail SMTP Verified! Test email delivered to ${data.recipient || 'talhasadiq320@gmail.com'}`
+        ? `Gmail SMTP Verified! Test email delivered to ${data.recipient || 'configured email'}`
         : `Gmail test failed: ${data.error}`
       );
     } catch (err: any) {

@@ -59,9 +59,13 @@ function buildFieldMap(profile: IMasterProfile, job: IJob, coverLetter?: string)
   const recentRole = profile.experience?.[0]?.position || profile.headline || 'Software Engineer';
   const recentCompany = profile.experience?.[0]?.company || '';
   const yearsExp = profile.experience?.length > 0 ? `${profile.experience.length * 2}+ years` : '5+ years';
-  const linkedinUrl = 'https://linkedin.com/in/talhagaba';
-  const githubUrl = 'https://github.com/shtalhagaba';
-  const portfolioUrl = 'https://behance.com/shtalhagaba';
+  const linkedinUrl = profile.qa_vault?.linkedin || '';
+  const githubUrl = profile.qa_vault?.github || '';
+  const portfolioUrl = profile.qa_vault?.portfolio || profile.qa_vault?.website || profile.qa_vault?.behance || '';
+
+  const locParts = (profile.location || '').split(',').map(s => s.trim());
+  const city = locParts[0] || '';
+  const country = locParts.length > 1 ? locParts[locParts.length - 1] : '';
 
   return {
     // Name variations
@@ -86,11 +90,11 @@ function buildFieldMap(profile: IMasterProfile, job: IJob, coverLetter?: string)
     'telephone': profile.phone || '',
 
     // Location
-    'location': profile.location || 'Lahore, Pakistan',
-    'city': 'Lahore',
-    'country': 'Pakistan',
-    'address': profile.location || 'Lahore, Pakistan',
-    'current location': profile.location || 'Lahore, Pakistan',
+    'location': profile.location || '',
+    'city': city,
+    'country': country,
+    'address': profile.location || '',
+    'current location': profile.location || '',
 
     // Links
     'linkedin': linkedinUrl,

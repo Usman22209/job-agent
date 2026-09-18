@@ -48,22 +48,53 @@ async function tailorWithGemini(
   };
 }
 
+export function buildContactLine(profile: IMasterProfile): string {
+  const parts: string[] = [];
+  if (profile.email) parts.push(profile.email);
+  if (profile.phone) parts.push(profile.phone);
+  if (profile.location) parts.push(profile.location);
+  if (profile.qa_vault?.linkedin) parts.push(profile.qa_vault.linkedin.replace(/^https?:\/\//, ''));
+  if (profile.qa_vault?.github) parts.push(profile.qa_vault.github.replace(/^https?:\/\//, ''));
+  const portfolio = profile.qa_vault?.portfolio || profile.qa_vault?.website || profile.qa_vault?.behance;
+  if (portfolio) {
+    parts.push(portfolio.replace(/^https?:\/\//, ''));
+  }
+  return parts.join(' | ');
+}
+
+export function buildCandidateSignature(profile: IMasterProfile): string {
+  const lines: string[] = [
+    'Sincerely,',
+    profile.full_name,
+    [profile.email, profile.phone, profile.location].filter(Boolean).join(' | '),
+  ];
+  const links: string[] = [];
+  if (profile.qa_vault?.linkedin) links.push(`LinkedIn: ${profile.qa_vault.linkedin}`);
+  if (profile.qa_vault?.github) links.push(`GitHub: ${profile.qa_vault.github}`);
+  const portfolio = profile.qa_vault?.portfolio || profile.qa_vault?.website || profile.qa_vault?.behance;
+  if (portfolio) {
+    links.push(`Portfolio: ${portfolio}`);
+  }
+  if (links.length > 0) {
+    lines.push(links.join(' | '));
+  }
+  return lines.join('\n');
+}
+
 function buildTailorPrompt(job: IJob, profile: IMasterProfile): string {
+  const contactLine = buildContactLine(profile);
+  const signature = buildCandidateSignature(profile);
+
   return `
 You are an expert ATS Resume Customizer and Career Strategist.
 CRITICAL MANDATE - ZERO HALLUCINATION POLICY:
 You must NEVER invent fake employers, fake job titles, fake degrees, or unlisted technologies.
-Do NOT invent claims like "Worked at Google", "3 years AWS", "Kubernetes architect" if they are not in the candidate's master profile.
-You may ONLY:
-1. Reorder existing skills to highlight what this job posting asks for.
-2. Rewrite the professional summary to directly address the job requirements using true past achievements.
-3. Select and re-prioritize existing projects that demonstrate the relevant skills.
-4. Refine bullet points from the candidate's existing experience to align with ATS keywords without changing facts.
-5. Generate a personalized, compelling cover letter.
+You must use ONLY the candidate's actual name, contact info, experience, projects, skills, and education provided in the Master Profile below.
+NEVER insert third-party links, names, or unlisted credentials.
 
 Candidate Master Profile:
 Name: ${profile.full_name}
-Contact: ${profile.email} | ${profile.phone} | ${profile.location}
+Contact: ${contactLine}
 Headline: ${profile.headline}
 Summary: ${profile.summary}
 Skills: ${JSON.stringify(profile.skills)}
@@ -82,9 +113,15 @@ Respond ONLY in valid JSON matching this schema:
   "tailored_resume": {
     "full_name": "${profile.full_name}",
     "headline": "${profile.headline}",
-    "contact_line": "${profile.email} | ${profile.phone} | linkedin.com/in/talhagaba | github.com/shtalhagaba | behance.com/shtalhagaba",
+    "contact_line": "${contactLine}",
     "summary": "<tailored ATS-targeted summary strictly based on real experience>",
     "ordered_skills": ["<skill1>", "<skill2>", "<skill3>"],
+    "skills_categories": [
+      {
+        "category": "<category name>",
+        "skills": "<comma-separated list of candidate's actual skills in this category>"
+      }
+    ],
     "experience": [
       {
         "company": "<actual company>",
@@ -109,7 +146,7 @@ Respond ONLY in valid JSON matching this schema:
       }
     ]
   },
-  "cover_letter": "<Personalized, professional 3-paragraph cover letter for ${job.title} at ${job.company} from ${profile.full_name}>"
+  "cover_letter": "<Personalized, professional 3-paragraph cover letter for ${job.title} at ${job.company} from ${profile.full_name}. End with candidate's actual signature: \\n${signature}>"
 }
 `;
 }
@@ -155,7 +192,7 @@ function tailorDeterministically(
   const prioritizedSkills: string[] = [];
   const remainingSkills: string[] = [];
 
-  for (const skill of profile.skills) {
+  for (const skill of (profile.skills || [])) {
     if (jobText.includes(skill.name.toLowerCase())) {
       prioritizedSkills.push(skill.name);
     } else {
@@ -165,26 +202,36 @@ function tailorDeterministically(
 
   const orderedSkills = [...prioritizedSkills, ...remainingSkills];
 
-  // 2. Tailor summary
-  const isMobile =
-    jobText.includes('mobile') ||
-    jobText.includes('react native') ||
-    jobText.includes('ios') ||
-    jobText.includes('android');
-  const isFullStack =
-    jobText.includes('full stack') ||
-    jobText.includes('next.js') ||
-    jobText.includes('backend');
+  // 1b. Group into skills_categories from profile.skills
+  const expertSkills = (profile.skills || []).filter(s => s.level === 'Expert').map(s => s.name);
+  const advancedSkills = (profile.skills || []).filter(s => s.level === 'Advanced').map(s => s.name);
+  const otherSkills = (profile.skills || []).filter(s => s.level !== 'Expert' && s.level !== 'Advanced').map(s => s.name);
 
-  let summary = profile.summary;
-  if (isMobile) {
-    summary = `Lead Mobile & Full-Stack Engineer with 5+ years of experience specializing in React Native, TypeScript, Supabase, and high-performance cross-platform architectures. Proven success delivering production applications with real-time updates and seamless API integrations. Target role: ${job.title} at ${job.company}.`;
-  } else if (isFullStack) {
-    summary = `Senior Full-Stack Developer with deep expertise in Next.js, TypeScript, Node.js, and autonomous AI-driven systems. Strong background building mission-critical dashboards, REST/GraphQL APIs, and resilient data pipelines. Enthusiastic about bringing impactful solutions to ${job.company}.`;
+  const skillsCategories: { category: string; skills: string }[] = [];
+  if (expertSkills.length > 0) {
+    skillsCategories.push({ category: 'Core Expertise & Technologies', skills: expertSkills.join(', ') });
+  }
+  if (advancedSkills.length > 0) {
+    skillsCategories.push({ category: 'Frameworks, Tools & Platforms', skills: advancedSkills.join(', ') });
+  }
+  if (otherSkills.length > 0) {
+    skillsCategories.push({ category: 'Additional Technical Proficiencies', skills: otherSkills.join(', ') });
+  }
+  if (skillsCategories.length === 0 && orderedSkills.length > 0) {
+    skillsCategories.push({ category: 'Technical Skills', skills: orderedSkills.join(', ') });
+  }
+
+  // 2. Tailor summary strictly based on candidate's real profile
+  let summary = profile.summary || '';
+  if (!summary || summary.length < 20) {
+    summary = `${profile.headline || 'Experienced Software Engineer'}. Proficient in ${orderedSkills.slice(0, 6).join(', ')}. Target role: ${job.title} at ${job.company}.`;
+  } else {
+    // Clean any previous target role suffix and append current target
+    summary = `${summary.replace(/\s*Target role:.*$/i, '')} Target role: ${job.title} at ${job.company}.`;
   }
 
   // 3. Map experience bullets
-  const experience = profile.experience.map((exp) => ({
+  const experience = (profile.experience || []).map((exp) => ({
     company: exp.company,
     position: exp.position,
     period: `${exp.start_date} - ${exp.end_date}`,
@@ -192,48 +239,51 @@ function tailorDeterministically(
   }));
 
   // 4. Select relevant projects
-  const selectedProjects = profile.projects.map((proj) => ({
+  const selectedProjects = (profile.projects || []).map((proj) => ({
     title: proj.title,
     technologies: proj.technologies,
     description: proj.description,
+    url: proj.url,
   }));
 
   // 5. Map education
-  const education = profile.education.map((edu) => ({
+  const education = (profile.education || []).map((edu) => ({
     degree: edu.degree,
     institution: edu.institution,
     year: edu.graduation_year,
   }));
 
-  // 6. Generate tailored cover letter
+  // 6. Generate tailored cover letter with candidate's actual signature
   const topKeywords =
     prioritizedSkills.slice(0, 4).join(', ') ||
-    'React Native, TypeScript, Next.js, and AI automation';
+    orderedSkills.slice(0, 4).join(', ') ||
+    'modern software development and system architecture';
   const recentExp = profile.experience && profile.experience.length > 0 ? profile.experience[0] : null;
   const expSnippet = recentExp
-    ? `At ${recentExp.company}, where I served as ${recentExp.position}, I led development across core product initiatives, delivering robust architectures, implementing microservices, and integrating cutting-edge AI workflows.`
-    : `Throughout my 8+ years of production engineering, I have focused on architecting resilient, user-centric software.`;
+    ? `At ${recentExp.company}, where I served as ${recentExp.position}, I led development across core product initiatives, delivering robust architectures, implementing reliable services, and driving quality.`
+    : `Throughout my career, I have focused on architecting resilient, user-centric software.`;
+
+  const signature = buildCandidateSignature(profile);
 
   const coverLetter = `Dear Hiring Team at ${job.company},
 
-I am writing to express my strong interest in the ${job.title} role. With extensive hands-on engineering experience developing scalable mobile and web applications—particularly utilizing ${topKeywords}—I am confident in my ability to make an immediate, positive impact on your product roadmap.
+I am writing to express my strong interest in the ${job.title} role. With extensive hands-on engineering experience developing scalable software solutions—particularly utilizing ${topKeywords}—I am confident in my ability to make an immediate, positive impact on your product roadmap.
 
-Throughout my career, I have focused on architecting resilient, high-performance software. ${expSnippet} Additionally, my practical work in AI automation, LLM workflows, and modern cloud platforms enables me to rapidly engineer reliable features and maintain rigorous code quality.
+Throughout my career, I have focused on architecting resilient, high-performance software. ${expSnippet} Additionally, my practical work in modern technologies, automated workflows, and robust engineering practices enables me to rapidly engineer reliable features and maintain rigorous code quality.
 
 ${job.company}'s work resonates strongly with my engineering philosophy. I welcome the opportunity to discuss how my background in ${
-    prioritizedSkills[0] || 'software development'
+    prioritizedSkills[0] || orderedSkills[0] || 'software development'
   } and full-cycle execution aligns with your team's goals. Thank you for your time and consideration.
 
-Sincerely,
-${profile.full_name}
-${profile.email} | ${profile.phone}
-LinkedIn: https://linkedin.com/in/talhagaba | GitHub: https://github.com/shtalhagaba`;
+${signature}`;
 
   const tailoredResume: ITailoredResume = {
     full_name: profile.full_name,
-    contact_line: `${profile.email} | ${profile.phone} | linkedin.com/in/talhagaba | github.com/shtalhagaba | behance.com/shtalhagaba`,
+    headline: profile.headline,
+    contact_line: buildContactLine(profile),
     summary,
     ordered_skills: orderedSkills,
+    skills_categories: skillsCategories,
     experience,
     selected_projects: selectedProjects,
     education,

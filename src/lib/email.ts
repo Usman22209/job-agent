@@ -27,6 +27,26 @@ export function generateEmailDraft(
     ? `Most recently as a ${recentExp.position} at ${recentExp.company}, I focused on engineering scalable applications, building resilient architectures, and integrating modern AI and automation workflows.`
     : `With over 8 years of production software engineering experience, I specialize in architecting high-performance mobile, web, and AI-enabled platforms.`;
 
+  const contactParts: string[] = [];
+  if (profile.email) contactParts.push(profile.email);
+  if (profile.phone) contactParts.push(profile.phone);
+  if (profile.location) contactParts.push(profile.location);
+
+  const links: string[] = [];
+  if (profile.qa_vault?.linkedin) links.push(`LinkedIn: ${profile.qa_vault.linkedin}`);
+  if (profile.qa_vault?.github) links.push(`GitHub: ${profile.qa_vault.github}`);
+  if (profile.qa_vault?.portfolio || profile.qa_vault?.website || profile.qa_vault?.behance) {
+    links.push(`Portfolio: ${profile.qa_vault.portfolio || profile.qa_vault.website || profile.qa_vault.behance}`);
+  }
+
+  const signLines = [
+    'Best regards,',
+    '',
+    profile.full_name,
+    contactParts.join(' | '),
+    links.join(' | '),
+  ].filter((l) => l !== undefined && l !== null);
+
   const body = `Hi ${job.company} Hiring Team,
 
 I am writing to submit my application for the ${job.title} position.
@@ -35,11 +55,7 @@ My technical background is centered on ${topSkills}. ${expSnippet}
 
 I have attached my tailored resume for your review. I would welcome the opportunity to discuss how my hands-on background can support ${job.company}'s upcoming milestones.
 
-Best regards,
-
-${profile.full_name}
-${profile.email} | ${profile.phone}
-LinkedIn: https://linkedin.com/in/talhagaba | GitHub: https://github.com/shtalhagaba`;
+${signLines.join('\n')}`;
 
   return { subject, body };
 }
@@ -96,13 +112,13 @@ export async function sendApplicationEmail(
         attachments,
       };
 
-      // BCC the candidate so a copy is automatically preserved in their personal inbox
-      if (senderEmail && senderEmail !== recipient) {
+      // BCC the candidate only if BCC_SENDER is explicitly set to 'true' (Gmail automatically preserves sent messages in Sent folder)
+      if (process.env.BCC_SENDER === 'true' && senderEmail && senderEmail !== recipient) {
         mailOptions.bcc = senderEmail;
       }
 
       const info = await transporter.sendMail(mailOptions);
-      console.log(`[Email Dispatch] Successfully sent application for "${job.title}" at "${job.company}" to "${recipient}" (BCC: "${senderEmail}"). MessageId: ${info.messageId}`);
+      console.log(`[Email Dispatch] Successfully sent application for "${job.title}" at "${job.company}" to "${recipient}"${mailOptions.bcc ? ` (BCC: "${senderEmail}")` : ''}. MessageId: ${info.messageId}`);
 
       return {
         success: true,
@@ -117,21 +133,21 @@ export async function sendApplicationEmail(
       console.error(`[Email Dispatch] Failed to send email to "${recipient}":`, err.message);
       return {
         success: false,
+        error: err.message,
         recipient,
         subject,
         body,
         mode: 'LIVE_SMTP',
         timestamp: new Date().toISOString(),
-        error: err.message,
       };
     }
   }
 
-  // Sandbox simulation mode
-  console.log(`[Email Dispatch] Simulation mode for "${recipient}" (No valid SMTP configured).`);
+  // Simulation mode
+  console.log(`[Email Dispatch - SIMULATION] Would send application for "${job.title}" to "${recipient}" via SMTP`);
   return {
     success: true,
-    messageId: `sandbox-msg-${Date.now()}`,
+    messageId: `sim_${Date.now()}`,
     recipient,
     subject,
     body,
@@ -140,12 +156,12 @@ export async function sendApplicationEmail(
   };
 }
 
-export async function sendTestEmail(targetRecipient?: string): Promise<{ success: boolean; message: string; messageId?: string }> {
+export async function sendTestEmail(targetRecipient?: string): Promise<{ success: boolean; messageId: string; recipient: string }> {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const user = process.env.SMTP_USER?.replace(/^["']|["']$/g, '');
   const pass = process.env.SMTP_PASS?.replace(/^["']|["']$/g, '')?.replace(/\s+/g, '');
-  const senderEmail = process.env.SENDER_EMAIL?.replace(/^["']|["']$/g, '') || 'talhasadiq320@gmail.com';
-  const senderName = process.env.SENDER_NAME?.replace(/^["']|["']$/g, '') || 'Talha Sadiq';
+  const senderEmail = process.env.SENDER_EMAIL?.replace(/^["']|["']$/g, '') || user || '';
+  const senderName = process.env.SENDER_NAME?.replace(/^["']|["']$/g, '') || 'Applicant';
   const recipient = targetRecipient || senderEmail;
 
   if (!host || !user || !pass || pass === 'your-gmail-app-password') {
@@ -174,7 +190,7 @@ Configuration details:
 • Sender Address: ${senderEmail}
 • Delivery Time: ${new Date().toISOString()}
 
-All job applications sent to employers will automatically BCC this email address so you have a live record in your inbox.
+Job applications sent to hiring teams will be dispatched directly through your configured Gmail account and saved in your Sent folder.
 
 Happy Job Hunting!
 - Job Agent Engine`,
@@ -182,7 +198,7 @@ Happy Job Hunting!
 
   return {
     success: true,
-    message: `Test email successfully sent to ${recipient}!`,
     messageId: info.messageId,
+    recipient,
   };
 }

@@ -29,7 +29,7 @@ export default function SettingsPage() {
   const [openaiKey, setOpenaiKey] = useState('');
   const [serpapiKey, setSerpapiKey] = useState('');
   const [adzunaId, setAdzunaId] = useState('');
-  const [smtpUser, setSmtpUser] = useState('talhasadiq320@gmail.com');
+  const [smtpUser, setSmtpUser] = useState('');
 
   // Autonomous Loop State
   const [autonomousMode, setAutonomousMode] = useState(true);
