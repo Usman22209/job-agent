@@ -12,7 +12,7 @@ import {
   ApplicationStatus,
   JobStatus 
 } from '@/types';
-import { normalizeJob } from './normalizer';
+import { normalizeJob, cleanJobTitle, cleanCompany } from './normalizer';
 import { searchRemotiveJobs } from './providers/remotive';
 import { searchRemoteOkJobs } from './providers/remoteok';
 import { searchArbeitnowJobs } from './providers/arbeitnow';
@@ -24,7 +24,7 @@ import { searchWeWorkRemotelyJobs } from './providers/weworkremotely';
 import { evaluateJobMatch } from './matcher';
 import { tailorResumeAndCoverLetter } from './resume-tailor';
 import { generateResumePdf } from './pdf-generator';
-import { sendApplicationEmail, sanitizeEmailBody } from './email';
+import { sendApplicationEmail, sanitizeEmailBody, sanitizeEmailSubject } from './email';
 import { browserAutoApply } from './browser-agent';
 import { generateAIExpandedSearchKeywords } from './ai/ai-search-expander';
 
@@ -462,6 +462,8 @@ class AgentStore {
     if (!app) throw new Error(`Application ${applicationId} not found`);
 
     const job = app.job || this.jobs.get(app.job_id)!;
+    job.company = cleanCompany(job.company);
+    job.title = cleanJobTitle(job.title, job.company);
 
     console.log(`[Tailor] Starting resume + cover letter tailoring for "${job.title}" at ${job.company}...`);
     const { tailoredResume, coverLetter } = await tailorResumeAndCoverLetter(job, this.profile);
@@ -475,7 +477,11 @@ class AgentStore {
     const { filePath, relativeUrl } = await generateResumePdf(tailoredResume, filename);
 
     // Generate a job-specific email draft using the tailored cover letter as the body
-    const emailSubject = `Application for ${job.title} — ${this.profile.full_name}`;
+    const emailSubject = sanitizeEmailSubject(
+      `Application for ${job.title} — ${this.profile.full_name}`,
+      this.profile,
+      job
+    );
     const emailBody = sanitizeEmailBody(coverLetter, this.profile);
 
     app.tailored_resume_json = tailoredResume;
@@ -519,8 +525,8 @@ class AgentStore {
       throw new Error('Recipient email is required');
     }
 
-    const title = params.title?.trim() || 'Software Engineer';
-    const company = params.company?.trim() || 'Hiring Team';
+    const company = cleanCompany(params.company?.trim() || 'Hiring Team');
+    const title = cleanJobTitle(params.title?.trim() || 'Software Engineer', company);
     const location = params.location?.trim() || 'Remote';
 
     // 1. Create a standalone manual IJob (not queued into autonomous loop)
@@ -565,10 +571,10 @@ class AgentStore {
     const tailoredApp = this.applications.get(app.id)!;
 
     if (params.customSubject) {
-      tailoredApp.email_subject = params.customSubject;
+      tailoredApp.email_subject = sanitizeEmailSubject(params.customSubject, this.profile, job);
     }
     if (params.customBody) {
-      tailoredApp.email_body = params.customBody;
+      tailoredApp.email_body = sanitizeEmailBody(params.customBody, this.profile);
     }
 
     let emailResult: any = null;
@@ -583,11 +589,11 @@ class AgentStore {
     this.saveApplicationsToDisk();
 
     return {
-      application: this.applications.get(app.id)!,
+      application: tailoredApp,
       emailResult,
       coverLetter: tailoredApp.cover_letter,
       emailDraft: {
-        subject: tailoredApp.email_subject || '',
+        subject: tailoredApp.email_subject || `Application for ${title} — ${this.profile.full_name}`,
         body: tailoredApp.email_body || '',
       },
       pdfUrl: tailoredApp.tailored_resume_pdf_url,
@@ -603,9 +609,13 @@ class AgentStore {
     if (!app) throw new Error(`Application ${applicationId} not found`);
 
     const job = app.job || this.jobs.get(app.job_id)!;
+    job.company = cleanCompany(job.company);
+    job.title = cleanJobTitle(job.title, job.company);
     const pdfPath = (app as any).local_pdf_path;
 
-    if (overrideSubject) app.email_subject = overrideSubject;
+    if (overrideSubject) app.email_subject = sanitizeEmailSubject(overrideSubject, this.profile, job);
+    else if (app.email_subject) app.email_subject = sanitizeEmailSubject(app.email_subject, this.profile, job);
+
     if (overrideBody) app.email_body = sanitizeEmailBody(overrideBody, this.profile);
     else if (app.email_body) app.email_body = sanitizeEmailBody(app.email_body, this.profile);
 

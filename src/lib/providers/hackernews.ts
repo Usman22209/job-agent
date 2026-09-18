@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { cleanHtmlText } from '../normalizer';
+import { cleanHtmlText, cleanJobTitle, cleanCompany } from '../normalizer';
 
 /**
  * Scrapes direct startup & YC tech jobs from Hacker News "Ask HN: Who is hiring?" monthly threads.
@@ -92,23 +92,77 @@ export async function searchHackerNewsJobs(query: string = '', limit: number = 1
 
             // Extract Company and Title from first line
             // Standard HN format: "Company Name | Job Title | Location | Remote | ..."
+            // Postings frequently include company URLs in parts[1], e.g. "Enrollment123 | https://e123insurtech.com | Staff Platform Engineer | REMOTE"
             const lines = cleanText.split('\n').map((l) => l.trim()).filter(Boolean);
             const firstLine = lines[0] || '';
-            const parts = firstLine.split('|').map((p) => p.trim());
+            const parts = firstLine.split('|').map((p) => p.trim()).filter(Boolean);
 
-            let company = 'Tech Startup';
-            let title = 'Software Engineer';
+            let rawCompany = 'Tech Startup';
+            let rawTitle = 'Software Engineer';
             let location = 'Remote';
+            let companyUrl = '';
 
-            if (parts.length >= 2) {
-              company = parts[0];
-              title = parts[1];
-              if (parts.length >= 3) {
-                location = parts.slice(2).join(' | ');
+            const isUrl = (str: string) =>
+              /^https?:\/\//i.test(str) ||
+              /^www\./i.test(str) ||
+              /^[a-z0-9-]+\.(com|io|ai|co|org|net|tech|dev|app)/i.test(str);
+
+            const isLocationOrMeta = (str: string) =>
+              /^(remote|onsite|on-site|hybrid|relocation|visa|full-?time|part-?time|contract|intern(ship)?|\$|€|£)/i.test(str) ||
+              /\b(remote|onsite|hybrid|us only|worldwide|anywhere|nyc|san francisco|sf|london|berlin|europe|new york)\b/i.test(str);
+
+            const isJobTitle = (str: string) =>
+              /\b(engineer|developer|architect|lead|cto|designer|manager|fullstack|full-stack|backend|back-end|frontend|front-end|devops|sre|data|ml|ai|mobile|ios|android|product|qa|analyst|specialist|intern|vp|director|head of)\b/i.test(str);
+
+            if (parts.length >= 1) {
+              rawCompany = parts[0];
+
+              const remainingParts = parts.slice(1);
+              const nonUrlParts: string[] = [];
+              const locationParts: string[] = [];
+
+              for (const part of remainingParts) {
+                if (isUrl(part)) {
+                  if (!companyUrl) companyUrl = part.startsWith('http') ? part : `https://${part}`;
+                } else if (isLocationOrMeta(part)) {
+                  locationParts.push(part);
+                } else {
+                  nonUrlParts.push(part);
+                }
               }
-            } else if (parts.length === 1 && firstLine.length < 80) {
-              title = firstLine;
+
+              // 1. Try to find a clear job title from non-URL parts
+              const titleMatch = nonUrlParts.find((p) => isJobTitle(p));
+              if (titleMatch) {
+                rawTitle = titleMatch;
+              } else if (nonUrlParts.length > 0) {
+                rawTitle = nonUrlParts[0];
+              } else {
+                // If all non-company parts were meta/location or URL, check if any meta part contains role keywords
+                const metaTitle = locationParts.find((p) => isJobTitle(p));
+                if (metaTitle) {
+                  rawTitle = metaTitle;
+                } else {
+                  // Fallback: search early lines of description for "hiring a ..." / "looking for a ..."
+                  const roleRegex = /(?:looking for|hiring|seeking)\s+(?:an?\s+)?([A-Za-z0-9\s\/\-+]+?(?:Engineer|Developer|Architect|Designer|Manager|Lead|CTO))/i;
+                  const descMatch = cleanText.match(roleRegex);
+                  if (descMatch && descMatch[1] && descMatch[1].length < 60) {
+                    rawTitle = descMatch[1].trim();
+                  } else {
+                    rawTitle = 'Software Engineer';
+                  }
+                }
+              }
+
+              if (locationParts.length > 0) {
+                location = locationParts.join(' | ');
+              }
+            } else if (firstLine.length < 80 && !isUrl(firstLine)) {
+              rawTitle = firstLine;
             }
+
+            const company = cleanCompany(rawCompany);
+            const title = cleanJobTitle(rawTitle, company);
 
             // Filter by query if provided
             if (query) {

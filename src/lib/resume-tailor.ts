@@ -1,15 +1,23 @@
 import axios from 'axios';
 import { IJob, IMasterProfile, ITailoredResume } from '@/types';
 import { callGeminiWithPersistentRetry } from './ai/gemini';
+import { cleanJobTitle, cleanCompany } from './normalizer';
+import { sanitizeEmailBody } from './email';
 
 export async function tailorResumeAndCoverLetter(
   job: IJob,
   profile: IMasterProfile
 ): Promise<{ tailoredResume: ITailoredResume; coverLetter: string }> {
+  let result: { tailoredResume: ITailoredResume; coverLetter: string };
+
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey && geminiKey !== 'your-gemini-api-key') {
     try {
-      return await tailorWithGemini(job, profile, geminiKey);
+      result = await tailorWithGemini(job, profile, geminiKey);
+      return {
+        tailoredResume: result.tailoredResume,
+        coverLetter: sanitizeEmailBody(result.coverLetter, profile),
+      };
     } catch (err: any) {
       console.warn(`Gemini tailoring failed (${err.message}). Falling back.`);
     }
@@ -18,13 +26,21 @@ export async function tailorResumeAndCoverLetter(
   const apiKey = process.env.OPENAI_API_KEY;
   if (apiKey && apiKey !== 'your-openai-api-key') {
     try {
-      return await tailorWithLLM(job, profile, apiKey);
+      result = await tailorWithLLM(job, profile, apiKey);
+      return {
+        tailoredResume: result.tailoredResume,
+        coverLetter: sanitizeEmailBody(result.coverLetter, profile),
+      };
     } catch (err: any) {
       console.warn(`OpenAI tailoring failed (${err.message}). Using deterministic rule-based tailoring engine.`);
     }
   }
 
-  return tailorDeterministically(job, profile);
+  result = tailorDeterministically(job, profile);
+  return {
+    tailoredResume: result.tailoredResume,
+    coverLetter: sanitizeEmailBody(result.coverLetter, profile),
+  };
 }
 
 async function tailorWithGemini(
@@ -82,6 +98,8 @@ export function buildCandidateSignature(profile: IMasterProfile): string {
 }
 
 function buildTailorPrompt(job: IJob, profile: IMasterProfile): string {
+  const company = cleanCompany(job.company);
+  const title = cleanJobTitle(job.title, company);
   const contactLine = buildContactLine(profile);
   const signature = buildCandidateSignature(profile);
 
@@ -103,8 +121,8 @@ Projects: ${JSON.stringify(profile.projects)}
 Education: ${JSON.stringify(profile.education)}
 
 Target Job Posting:
-Title: ${job.title}
-Company: ${job.company}
+Title: ${title}
+Company: ${company}
 Location: ${job.location}
 Description: ${job.description}
 
@@ -146,7 +164,7 @@ Respond ONLY in valid JSON matching this schema:
       }
     ]
   },
-  "cover_letter": "<Personalized, professional 3-paragraph cover letter for ${job.title} at ${job.company} from ${profile.full_name}. End with candidate's actual signature: \\n${signature}>"
+  "cover_letter": "<Personalized, professional 3-paragraph cover letter for ${title} at ${company} from ${profile.full_name}. End with candidate's actual signature: \\n${signature}>"
 }
 `;
 }
@@ -265,13 +283,16 @@ function tailorDeterministically(
 
   const signature = buildCandidateSignature(profile);
 
-  const coverLetter = `Dear Hiring Team at ${job.company},
+  const company = cleanCompany(job.company);
+  const title = cleanJobTitle(job.title, company);
 
-I am writing to express my strong interest in the ${job.title} role. With extensive hands-on engineering experience developing scalable software solutions—particularly utilizing ${topKeywords}—I am confident in my ability to make an immediate, positive impact on your product roadmap.
+  const coverLetter = `Dear Hiring Team at ${company},
+
+I am writing to express my strong interest in the ${title} role. With extensive hands-on engineering experience developing scalable software solutions—particularly utilizing ${topKeywords}—I am confident in my ability to make an immediate, positive impact on your product roadmap.
 
 Throughout my career, I have focused on architecting resilient, high-performance software. ${expSnippet} Additionally, my practical work in modern technologies, automated workflows, and robust engineering practices enables me to rapidly engineer reliable features and maintain rigorous code quality.
 
-${job.company}'s work resonates strongly with my engineering philosophy. I welcome the opportunity to discuss how my background in ${
+${company}'s work resonates strongly with my engineering philosophy. I welcome the opportunity to discuss how my background in ${
     prioritizedSkills[0] || orderedSkills[0] || 'software development'
   } and full-cycle execution aligns with your team's goals. Thank you for your time and consideration.
 

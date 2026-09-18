@@ -1,6 +1,122 @@
 import crypto from 'crypto';
 import { IJob, ATSPlatform, JobSource } from '@/types';
 
+/**
+ * Decodes all HTML entities including named, decimal, and hex encoded entities.
+ * Examples: &#x2F; -> '/', &#x27; -> "'", &amp; -> '&', &quot; -> '"'
+ */
+export function decodeHtmlEntities(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&mdash;/gi, '—')
+    .replace(/&ndash;/gi, '–')
+    .replace(/&hellip;/gi, '…')
+    .replace(/&copy;/gi, '©')
+    .replace(/&reg;/gi, '®')
+    .replace(/&#x([0-9a-fA-F]+);/gi, (_, hex) => {
+      try {
+        const code = parseInt(hex, 16);
+        return String.fromCharCode(code);
+      } catch {
+        return '';
+      }
+    })
+    .replace(/&#([0-9]+);/g, (_, dec) => {
+      try {
+        const code = parseInt(dec, 10);
+        return String.fromCharCode(code);
+      } catch {
+        return '';
+      }
+    });
+}
+
+/**
+ * Sanitizes company names by decoding HTML entities and stripping parenthetical URLs.
+ */
+export function cleanCompany(rawCompany: string): string {
+  if (!rawCompany) return 'Tech Startup';
+  let company = decodeHtmlEntities(rawCompany).replace(/<[^>]+>/g, '').trim();
+  // Strip parenthetical URLs or domain mentions, e.g. "Acme (https://acme.com)" -> "Acme"
+  company = company.replace(/\s*\((?:https?:\/\/|[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app))[^)]*\)/gi, '').trim();
+  // Strip leading/trailing quotation marks or dashes
+  company = company.replace(/^["'“”‘’\-\|\/:\s]+|["'“”‘’\-\|\/:\s]+$/g, '').trim();
+  return company || 'Tech Startup';
+}
+
+/**
+ * Sanitizes job titles to ensure URLs, raw links, and unescaped entities are NEVER used as titles.
+ * If title is a URL or website (e.g. https://e123insurtech.com), returns a clean professional fallback.
+ */
+export function cleanJobTitle(rawTitle: string, company?: string): string {
+  if (!rawTitle) return 'Software Engineer';
+
+  let title = decodeHtmlEntities(rawTitle).replace(/<[^>]+>/g, '').trim();
+
+  // If title has multiple piped segments (e.g. "Staff Platform Engineer | REMOTE (US) | Full-time")
+  if (title.includes('|')) {
+    const parts = title.split('|').map((p) => p.trim()).filter(Boolean);
+    const isUrlPart = (p: string) =>
+      /^https?:\/\//i.test(p) ||
+      /^www\./i.test(p) ||
+      /^[a-z0-9-]+\.(com|io|ai|co|org|net|tech|dev|app)/i.test(p);
+    const isMetaPart = (p: string) =>
+      /^(remote|onsite|hybrid|full-?time|part-?time|contract|relocation|visa|\$|€|£)/i.test(p);
+    const isRole = (p: string) =>
+      /\b(engineer|developer|architect|lead|cto|designer|manager|fullstack|full-stack|backend|back-end|frontend|front-end|devops|sre|data|ml|ai|mobile|ios|android|product|qa|analyst|specialist)\b/i.test(p);
+
+    // Prioritize part that matches role keywords and is not a URL
+    const rolePart = parts.find((p) => !isUrlPart(p) && isRole(p));
+    if (rolePart) {
+      title = rolePart;
+    } else {
+      const nonMeta = parts.filter((p) => !isUrlPart(p) && !isMetaPart(p) && p.toLowerCase() !== company?.toLowerCase());
+      if (nonMeta.length > 0) {
+        title = nonMeta[0];
+      } else {
+        title = parts[0];
+      }
+    }
+  }
+
+  // Strip prefixes like "Role:", "Position:", "Job Title:", "Hiring:"
+  title = title.replace(/^(?:Role|Position|Job Title|Hiring|We are hiring a?|Looking for a?):\s*/i, '').trim();
+
+  // If title is or starts with a URL or raw domain (e.g. "https://e123insurtech.com" or "e123insurtech.com")
+  const urlCheck =
+    /^(https?:\/\/|www\.)/i.test(title) ||
+    /^[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app)(?:\/.*)?$/i.test(title);
+
+  if (urlCheck) {
+    return 'Software Engineer';
+  }
+
+  // If title contains a URL embedded in parentheses or brackets, remove the URL
+  title = title.replace(/\((?:https?:\/\/|[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app))[^)]*\)/gi, '').trim();
+
+  // Clean edge punctuation: quotes, brackets, pipes, dashes
+  title = title.replace(/^["'“”‘’\-\|\/:\s]+|["'“”‘’\-\|\/:\s]+$/g, '').trim();
+
+  // If the resulting title is identical to the company name, fallback to 'Software Engineer'
+  if (company && title.toLowerCase() === company.toLowerCase()) {
+    return 'Software Engineer';
+  }
+
+  // If title is too short, pure symbols, or abnormally long
+  if (title.length < 2 || title.length > 100) {
+    return 'Software Engineer';
+  }
+
+  return title;
+}
+
 export function cleanHtmlText(text: string): string {
   if (!text) return '';
   let str = text
@@ -10,14 +126,12 @@ export function cleanHtmlText(text: string): string {
     .replace(/<\/p>/gi, '\n\n')
     .replace(/<\/li>/gi, '\n')
     .replace(/<li[^>]*>/gi, '• ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/<[^>]+>/g, ''); // Strip any tags created from unescaped &lt; &gt;
+    .replace(/<[^>]+>/g, '');
+
+  str = decodeHtmlEntities(str);
+
+  // Strip any HTML tags that were previously escaped with &lt; &gt;
+  str = str.replace(/<[^>]+>/g, '');
 
   return str
     .replace(/[ \t]+/g, ' ')
@@ -26,8 +140,8 @@ export function cleanHtmlText(text: string): string {
 }
 
 export function normalizeJob(raw: any, source: JobSource): IJob {
-  const title = (raw.title || raw.job_title || raw.position || 'Untitled Position').trim();
-  const company = (raw.company || raw.company_name || 'Confidential').trim();
+  const company = cleanCompany(raw.company || raw.company_name || 'Confidential');
+  const title = cleanJobTitle(raw.title || raw.job_title || raw.position || 'Software Engineer', company);
   const location = (raw.location || raw.job_location || raw.candidate_required_location || 'Remote').trim();
   const rawDesc = raw.description || raw.snippet || raw.jobDescription || '';
   const description = cleanHtmlText(rawDesc);

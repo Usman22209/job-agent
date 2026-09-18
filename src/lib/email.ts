@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import { IJob, IMasterProfile } from '@/types';
+import { cleanJobTitle, cleanCompany, decodeHtmlEntities } from './normalizer';
 
 export interface EmailDispatchResult {
   success: boolean;
@@ -13,11 +14,40 @@ export interface EmailDispatchResult {
   error?: string;
 }
 
+export function sanitizeEmailSubject(
+  rawSubject: string,
+  profile?: IMasterProfile,
+  job?: IJob
+): string {
+  const company = job ? cleanCompany(job.company) : undefined;
+  const cleanTitle = job ? cleanJobTitle(job.title, company) : 'Software Engineer';
+  const name = profile?.full_name || 'Applicant';
+
+  if (!rawSubject || typeof rawSubject !== 'string') {
+    return `Application for ${cleanTitle} — ${name}`;
+  }
+
+  let sub = decodeHtmlEntities(rawSubject).trim();
+
+  // If the subject contains a URL or domain in place of title (e.g. "Application for https://e123insurtech.com — Agha Ali")
+  if (/https?:\/\/|[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app)/i.test(sub)) {
+    // Replace URL part with clean title
+    sub = sub.replace(/https?:\/\/[^\s—–-]+/gi, cleanTitle);
+    sub = sub.replace(/[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app)/gi, cleanTitle);
+  }
+
+  // Remove any leftover entity artifacts or double dashes
+  sub = sub.replace(/\s+/g, ' ').trim();
+  return sub;
+}
+
 export function generateEmailDraft(
   job: IJob,
   profile: IMasterProfile
 ): { subject: string; body: string } {
-  const subject = `Application for ${job.title} — ${profile.full_name}`;
+  const company = cleanCompany(job.company);
+  const title = cleanJobTitle(job.title, company);
+  const subject = `Application for ${title} — ${profile.full_name}`;
   const topSkills =
     profile.skills?.slice(0, 5).map((s) => s.name).join(', ') ||
     'React Native, Node.js, Next.js, and AI integrations';
@@ -47,13 +77,13 @@ export function generateEmailDraft(
     links.join(' | '),
   ].filter((l) => l !== undefined && l !== null);
 
-  const body = `Hi ${job.company} Hiring Team,
+  const body = `Hi ${company} Hiring Team,
 
-I am writing to submit my application for the ${job.title} position.
+I am writing to submit my application for the ${title} position.
 
 My technical background is centered on ${topSkills}. ${expSnippet}
 
-I have attached my tailored resume for your review. I would welcome the opportunity to discuss how my hands-on background can support ${job.company}'s upcoming milestones.
+I have attached my tailored resume for your review. I would welcome the opportunity to discuss how my hands-on background can support ${company}'s upcoming milestones.
 
 ${signLines.join('\n')}`;
 
@@ -62,16 +92,22 @@ ${signLines.join('\n')}`;
 
 export function sanitizeEmailBody(rawBody: string, profile?: IMasterProfile): string {
   if (!rawBody || typeof rawBody !== 'string') return '';
-  let body = rawBody.trim();
+  let body = decodeHtmlEntities(rawBody).trim();
 
-  // 1. Strip any markdown divider "---" and everything following it (which was the old double-appended footer)
+  // 1. Strip any URL mistakenly embedded in the role / position sentence
+  body = body.replace(/in the https?:\/\/[^\s]+ role/gi, 'in the Software Engineer role');
+  body = body.replace(/in the [a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app) role/gi, 'in the Software Engineer role');
+  body = body.replace(/for the https?:\/\/[^\s]+ position/gi, 'for the Software Engineer position');
+  body = body.replace(/for the [a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app) position/gi, 'for the Software Engineer position');
+
+  // 2. Strip any markdown divider "---" and everything following it (which was the old double-appended footer)
   const dividerRegex = /\n\s*---\s*\n([\s\S]*)$/;
   const dividerMatch = body.match(dividerRegex);
   if (dividerMatch) {
     body = body.substring(0, dividerMatch.index).trim();
   }
 
-  // 2. If multiple closing sign-offs exist in the text, keep only up to the first one
+  // 3. If multiple closing sign-offs exist in the text, keep only up to the first one
   const closingRegex = /\n\s*(sincerely|best regards|warm regards|kind regards|with regards|cheers),/gi;
   const closings: RegExpExecArray[] = [];
   let match: RegExpExecArray | null;
@@ -85,7 +121,7 @@ export function sanitizeEmailBody(rawBody: string, profile?: IMasterProfile): st
     }
   }
 
-  // 3. Ensure a closing exists; if missing, add a clean candidate closing
+  // 4. Ensure a closing exists; if missing, add a clean candidate closing
   const hasClosing = /(sincerely|best regards|warm regards|kind regards),/i.test(body);
   if (!hasClosing && profile) {
     const sign = [
@@ -96,7 +132,7 @@ export function sanitizeEmailBody(rawBody: string, profile?: IMasterProfile): st
     body = `${body}\n\n${sign}`;
   }
 
-  // 4. Ensure a single clean resume attachment notice exists before the closing
+  // 5. Ensure a single clean resume attachment notice exists before the closing
   const hasAttachmentMention = /attached\s+(my\s+)?(tailored\s+)?resume|resume\s+(is\s+)?attached/i.test(body);
   if (!hasAttachmentMention) {
     const closingMatch = body.match(/\n\s*(sincerely|best regards|warm regards|kind regards),/i);
@@ -125,7 +161,7 @@ export async function sendApplicationEmail(
   }
 
   const { subject: defaultSub, body: defaultBody } = generateEmailDraft(job, profile);
-  const subject = overrideSubject || defaultSub;
+  const subject = sanitizeEmailSubject(overrideSubject || defaultSub, profile, job);
   const rawBody = overrideBody || defaultBody;
   const body = sanitizeEmailBody(rawBody, profile);
 
