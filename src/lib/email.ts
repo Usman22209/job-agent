@@ -60,6 +60,48 @@ ${signLines.join('\n')}`;
   return { subject, body };
 }
 
+export function sanitizeEmailBody(rawBody: string): string {
+  if (!rawBody || typeof rawBody !== 'string') return '';
+  let body = rawBody.trim();
+
+  // 1. If there is a "---" divider followed by a second sign-off, strip the duplicate block
+  const dividerRegex = /\n\s*---\s*\n([\s\S]*)$/;
+  const dividerMatch = body.match(dividerRegex);
+  if (dividerMatch) {
+    const beforeDivider = body.substring(0, dividerMatch.index).trim();
+    if (/(sincerely|best regards|regards|warm regards),/i.test(beforeDivider)) {
+      body = beforeDivider;
+    }
+  }
+
+  // 2. If multiple closing sign-offs exist (e.g. both "Sincerely," and "Best regards,"), keep only the first valid one
+  const closingRegex = /\n\s*(sincerely|best regards|warm regards|kind regards|with regards|cheers),/gi;
+  const closings: RegExpExecArray[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = closingRegex.exec(body)) !== null) {
+    closings.push(match);
+  }
+  if (closings.length > 1) {
+    const secondClosing = closings[1];
+    if (secondClosing && secondClosing.index !== undefined) {
+      body = body.substring(0, secondClosing.index).replace(/\n\s*---\s*$/g, '').trim();
+    }
+  }
+
+  // 3. Ensure a single clean resume attachment notice exists before the closing
+  const hasAttachmentMention = /attached\s+(my\s+)?(tailored\s+)?resume|resume\s+(is\s+)?attached/i.test(body);
+  if (!hasAttachmentMention) {
+    const closingMatch = body.match(/\n\s*(sincerely|best regards|warm regards|kind regards),/i);
+    if (closingMatch && closingMatch.index !== undefined) {
+      body = body.substring(0, closingMatch.index).trim() + '\n\nPlease find my tailored resume attached for your review.\n\n' + body.substring(closingMatch.index).trim();
+    } else {
+      body += '\n\nPlease find my tailored resume attached for your review.';
+    }
+  }
+
+  return body;
+}
+
 export async function sendApplicationEmail(
   job: IJob,
   profile: IMasterProfile,
@@ -76,7 +118,8 @@ export async function sendApplicationEmail(
 
   const { subject: defaultSub, body: defaultBody } = generateEmailDraft(job, profile);
   const subject = overrideSubject || defaultSub;
-  const body = overrideBody || defaultBody;
+  const rawBody = overrideBody || defaultBody;
+  const body = sanitizeEmailBody(rawBody);
 
   const senderEmail = process.env.SENDER_EMAIL || profile.email;
   const senderName = process.env.SENDER_NAME || profile.full_name;

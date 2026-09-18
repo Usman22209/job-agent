@@ -24,7 +24,7 @@ import { searchWeWorkRemotelyJobs } from './providers/weworkremotely';
 import { evaluateJobMatch } from './matcher';
 import { tailorResumeAndCoverLetter } from './resume-tailor';
 import { generateResumePdf } from './pdf-generator';
-import { sendApplicationEmail } from './email';
+import { sendApplicationEmail, sanitizeEmailBody } from './email';
 import { browserAutoApply } from './browser-agent';
 import { generateAIExpandedSearchKeywords } from './ai/ai-search-expander';
 
@@ -476,15 +476,7 @@ class AgentStore {
 
     // Generate a job-specific email draft using the tailored cover letter as the body
     const emailSubject = `Application for ${job.title} — ${this.profile.full_name}`;
-    let emailBody = coverLetter;
-    if (!emailBody.toLowerCase().includes('resume attached') && !emailBody.toLowerCase().includes('attached resume')) {
-      const closingIndex = emailBody.search(/\n(Sincerely|Best regards|Regards|Warm regards),/i);
-      if (closingIndex !== -1) {
-        emailBody = emailBody.slice(0, closingIndex) + '\n\nPlease find my tailored resume attached for your review.' + emailBody.slice(closingIndex);
-      } else {
-        emailBody = `${emailBody}\n\nPlease find my tailored resume attached for your review.`;
-      }
-    }
+    const emailBody = sanitizeEmailBody(coverLetter);
 
     app.tailored_resume_json = tailoredResume;
     app.tailored_resume_pdf_url = relativeUrl;
@@ -614,7 +606,8 @@ class AgentStore {
     const pdfPath = (app as any).local_pdf_path;
 
     if (overrideSubject) app.email_subject = overrideSubject;
-    if (overrideBody) app.email_body = overrideBody;
+    if (overrideBody) app.email_body = sanitizeEmailBody(overrideBody);
+    else if (app.email_body) app.email_body = sanitizeEmailBody(app.email_body);
 
     console.log(`[Email] Preparing personalized email for "${job.title}" at ${job.company}...`);
     console.log(`[Email] Using ${app.email_subject ? 'tailored' : 'default'} email draft. PDF: ${pdfPath ? 'attached' : 'none'}`);
