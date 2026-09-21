@@ -36,6 +36,7 @@ export default function SettingsPage() {
   const [dailyLimit, setDailyLimit] = useState(40);
   const [cooldownMinutes, setCooldownMinutes] = useState(5);
   const [emailOnly, setEmailOnly] = useState(true);
+  const [resettingDailyLimit, setResettingDailyLimit] = useState(false);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -88,6 +89,23 @@ export default function SettingsPage() {
       setStatusMessage(`Save failed: ${err.message}`);
     } finally {
       setSaving(false);
+      setTimeout(() => setStatusMessage(null), 4000);
+    }
+  };
+
+  const handleResetDailyLimit = async () => {
+    setResettingDailyLimit(true);
+    try {
+      const res = await AgentApi.resetDailyLimit();
+      setStatusMessage(res.message || "Daily application count reset to 0!");
+      const agentSt = await AgentApi.getAgentStatus();
+      if (agentSt?.autonomous?.daily_limit) {
+        setDailyLimit(agentSt.autonomous.daily_limit);
+      }
+    } catch (err: any) {
+      setStatusMessage(`Reset failed: ${err.message}`);
+    } finally {
+      setResettingDailyLimit(false);
       setTimeout(() => setStatusMessage(null), 4000);
     }
   };
@@ -179,9 +197,19 @@ export default function SettingsPage() {
                 {dailyLimit} / day
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1.5">
-              Limits daily applications to keep Gmail SMTP safe from spam reputation flags. Resets every 24h at midnight.
-            </p>
+            <div className="flex items-center justify-between gap-3 mt-2 flex-wrap">
+              <p className="text-[11px] text-slate-500">
+                Limits daily applications to keep Gmail SMTP safe from spam reputation flags. Resets every 24h at midnight.
+              </p>
+              <button
+                type="button"
+                onClick={handleResetDailyLimit}
+                disabled={resettingDailyLimit}
+                className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+              >
+                {resettingDailyLimit ? 'Resetting...' : 'Reset Today to 0'}
+              </button>
+            </div>
           </div>
 
           <div>

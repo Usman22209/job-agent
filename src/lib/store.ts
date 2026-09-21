@@ -961,6 +961,18 @@ class AgentStore {
     }
   }
 
+  resetDailyApplications(): { success: boolean; applicationsToday: number; message: string } {
+    this.applicationsToday = 0;
+    this.lastDayReset = new Date().toISOString().slice(0, 10);
+    this.saveAutonomousConfigToDisk();
+    console.log(`[Autonomous Loop] Daily application count manually reset to 0.`);
+    if (this.isAutonomousMode && !this.isAgentRunning && this.applyQueue.length > 0) {
+      console.log(`[Autonomous Loop] Auto-resuming agent queue with ${this.applyQueue.length} jobs.`);
+      this.startAgent();
+    }
+    return { success: true, applicationsToday: 0, message: 'Daily application counter reset to 0.' };
+  }
+
   getAutonomousStatus(): IAutonomousStatus {
     this.checkDailyLimitReset();
     const currentPool = this.SEARCH_ROLE_POOLS[this.searchPoolIndex % this.SEARCH_ROLE_POOLS.length];
@@ -1058,6 +1070,13 @@ class AgentStore {
     }
     if (this.applyQueue.length === 0) {
       return { success: false, message: 'Queue is empty. Add jobs to the queue first.' };
+    }
+    this.checkDailyLimitReset();
+    if (this.applicationsToday >= this.dailyApplicationLimit) {
+      return {
+        success: false,
+        message: `Daily application limit reached (${this.applicationsToday}/${this.dailyApplicationLimit}). Click "Reset to 0" or adjust limit in Settings to apply.`,
+      };
     }
     this.isAgentRunning = true;
     if (this.isAutonomousMode) {

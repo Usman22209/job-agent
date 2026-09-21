@@ -54,6 +54,10 @@ export async function POST(req: NextRequest) {
         store.reloadFromDisk();
         return NextResponse.json({ success: true, message: 'Store reloaded from disk' });
       }
+      case 'resetDailyLimit': {
+        const res = store.resetDailyApplications();
+        return NextResponse.json(res);
+      }
       case 'toggleAutonomous': {
         const res = store.toggleAutonomousMode(Boolean(body.enabled));
         return NextResponse.json({ success: true, autonomous: res });

@@ -82,6 +82,7 @@ export default function QueueBoardPage() {
   const [purgingPortals, setPurgingPortals] = useState(false);
   const [sweepingMarkets, setSweepingMarkets] = useState(false);
   const [purgingNonEmail, setPurgingNonEmail] = useState(false);
+  const [resettingDailyLimit, setResettingDailyLimit] = useState(false);
   const [liveSearchQuery, setLiveSearchQuery] = useState('');
   const [liveSearchLocation, setLiveSearchLocation] = useState('Remote');
   const [autoQueueLiveSearch, setAutoQueueLiveSearch] = useState(true);
@@ -345,6 +346,19 @@ export default function QueueBoardPage() {
     }
   };
 
+  const handleResetDailyLimit = async () => {
+    try {
+      setResettingDailyLimit(true);
+      const res = await AgentApi.resetDailyLimit();
+      showMessage(res.message || "Daily application limit reset to 0/40. Applications unlocked!");
+      await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+    } catch (err: any) {
+      showMessage(`Failed to reset daily limit: ${err.message}`);
+    } finally {
+      setResettingDailyLimit(false);
+    }
+  };
+
   // --- Filtering & Grouping ---
 
   const filteredJobs = useMemo(() => {
@@ -537,10 +551,17 @@ export default function QueueBoardPage() {
             <span>{testingEmail ? 'Sending...' : 'Test Gmail'}</span>
           </button>
 
-          {/* Refresh */}
+          {/* Refresh & Sync */}
           <button
-            onClick={() => { fetchJobs(); fetchAgentStatus(); }}
-            className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-all shadow-2xs"
+            onClick={async () => {
+              try {
+                await AgentApi.reloadStore();
+              } catch (e) {}
+              await Promise.all([fetchJobs(true), fetchAgentStatus()]);
+              showMessage('Queue board refreshed and synced from disk.');
+            }}
+            className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-all shadow-2xs cursor-pointer"
+            title="Refresh jobs & sync from server disk"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-brand-600' : ''}`} />
           </button>
@@ -565,8 +586,16 @@ export default function QueueBoardPage() {
                 {agentStatus.autonomous.state === 'COOLDOWN' && `Queue complete. Safe cooldown before next discovery pass (${agentStatus.autonomous.next_cycle_at ? `waking up at ${new Date(agentStatus.autonomous.next_cycle_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : `${agentStatus.autonomous.cooldown_minutes}m`})`}
                 {agentStatus.autonomous.state === 'IDLE' && 'Standing by for continuous loop trigger.'}
               </span>
-              <span className="text-indigo-600/80 font-mono text-[11px]">
+              <span className="text-indigo-600/80 font-mono text-[11px] flex items-center gap-1.5 flex-wrap">
                 • Today: {agentStatus.autonomous.applications_today}/{agentStatus.autonomous.daily_limit} applied
+                <button
+                  onClick={handleResetDailyLimit}
+                  disabled={resettingDailyLimit}
+                  className="ml-1.5 px-2 py-0.5 rounded-md bg-white hover:bg-indigo-100 text-indigo-700 font-semibold cursor-pointer border border-indigo-300 shadow-2xs transition-all text-[10px] disabled:opacity-50"
+                  title="Reset today's application count to 0 and resume applying"
+                >
+                  {resettingDailyLimit ? 'Resetting...' : 'Reset to 0'}
+                </button>
               </span>
               {agentStatus.autonomous.current_region && (
                 <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-indigo-200">

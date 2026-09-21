@@ -215,6 +215,11 @@ export const AgentApi = {
     return res.data;
   },
 
+  async resetDailyLimit() {
+    const res = await apiClient.post('/agent', { action: 'resetDailyLimit' });
+    return res.data;
+  },
+
   async toggleAutonomous(enabled: boolean) {
     const res = await apiClient.post('/agent', { action: 'toggleAutonomous', enabled });
     return res.data;
