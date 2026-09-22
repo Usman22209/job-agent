@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { cleanHtmlText, cleanJobTitle, cleanCompany } from '../normalizer';
+import { cleanHtmlText, cleanJobTitle, cleanCompany, extractEmail } from '../normalizer';
 
 /**
  * Scrapes direct startup & YC tech jobs from Hacker News "Ask HN: Who is hiring?" monthly threads.
@@ -41,7 +41,6 @@ export async function searchHackerNewsJobs(query: string = '', limit: number = 1
     );
 
     const jobs: any[] = [];
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
     const seenEmails = new Set<string>();
 
     for (const story of stories) {
@@ -69,23 +68,9 @@ export async function searchHackerNewsJobs(query: string = '', limit: number = 1
 
             const cleanText = cleanHtmlText(rawText);
 
-            // Extract email address
-            const emailMatch = cleanText.match(emailRegex);
-            if (!emailMatch) continue; // In email-only mode, only keep postings with direct hiring emails!
-
-            const contactEmail = emailMatch[0].toLowerCase();
-            // Filter out common false positives
-            if (
-              contactEmail.includes('example.com') ||
-              contactEmail.includes('github.com') ||
-              contactEmail.includes('ycombinator.com') ||
-              contactEmail.includes('sentry.io') ||
-              contactEmail.includes('w3.org') ||
-              contactEmail.endsWith('.png') ||
-              contactEmail.endsWith('.jpg')
-            ) {
-              continue;
-            }
+            // Extract sanitized email address
+            const contactEmail = extractEmail(cleanText);
+            if (!contactEmail) continue; // In email-only mode, only keep postings with direct hiring emails!
 
             if (seenEmails.has(contactEmail)) continue;
             seenEmails.add(contactEmail);

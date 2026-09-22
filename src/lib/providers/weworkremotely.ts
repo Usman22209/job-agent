@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { cleanHtmlText } from '../normalizer';
+import { cleanHtmlText, extractEmail } from '../normalizer';
 
 const WWR_FEEDS = [
   'https://weworkremotely.com/categories/remote-programming-jobs.rss',
@@ -18,7 +18,6 @@ export async function searchWeWorkRemotelyJobs(query: string = '', limit: number
   try {
     const jobs: any[] = [];
     const seenLinks = new Set<string>();
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 
     const feedPromises = WWR_FEEDS.map((url) =>
       axios
@@ -72,8 +71,7 @@ export async function searchWeWorkRemotelyJobs(query: string = '', limit: number
         }
 
         // Check if description has direct email
-        const emailMatch = cleanDescription.match(emailRegex);
-        const contactEmail = emailMatch ? emailMatch[0].toLowerCase() : undefined;
+        const contactEmail = extractEmail(cleanDescription);
 
         jobs.push({
           source: 'weworkremotely',

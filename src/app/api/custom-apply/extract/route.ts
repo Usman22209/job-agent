@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callGeminiWithPersistentRetry } from '@/lib/ai/gemini';
+import { extractEmail, sanitizeContactEmail } from '@/lib/normalizer';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,9 +11,8 @@ export async function POST(req: NextRequest) {
 
     const trimmed = text.trim();
 
-    // 1. Regex email detection
-    const emailMatch = trimmed.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-    const detectedEmail = emailMatch ? emailMatch[0] : '';
+    // 1. Email detection with automatic normalization and glued-TLD sanitization
+    const detectedEmail = extractEmail(trimmed) || '';
 
     let extracted = {
       title: '',
@@ -53,6 +53,9 @@ Extract and respond ONLY with valid JSON matching this schema:
         if (parsed.email && !extracted.email) extracted.email = parsed.email;
         if (parsed.location) extracted.location = parsed.location;
 
+        if (extracted.email) {
+          extracted.email = sanitizeContactEmail(extracted.email) || '';
+        }
         return NextResponse.json(extracted);
       } catch (e: any) {
         console.warn('[Extract API] Gemini extract failed, using regex fallback:', e.message);
@@ -70,6 +73,9 @@ Extract and respond ONLY with valid JSON matching this schema:
       }
     }
 
+    if (extracted.email) {
+      extracted.email = sanitizeContactEmail(extracted.email) || '';
+    }
     return NextResponse.json(extracted);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

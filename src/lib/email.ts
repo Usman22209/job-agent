@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import { IJob, IMasterProfile } from '@/types';
-import { cleanJobTitle, cleanCompany, decodeHtmlEntities } from './normalizer';
+import { cleanJobTitle, cleanCompany, decodeHtmlEntities, sanitizeContactEmail } from './normalizer';
 
 export interface EmailDispatchResult {
   success: boolean;
@@ -153,12 +153,14 @@ export async function sendApplicationEmail(
   overrideSubject?: string,
   overrideBody?: string
 ): Promise<EmailDispatchResult> {
-  const recipient = job.contact_email;
+  const rawRecipient = job.contact_email;
+  const recipient = sanitizeContactEmail(rawRecipient);
   if (!recipient) {
     throw new Error(
-      `Cannot send email application: Job "${job.title}" at "${job.company}" does not have a hiring contact email.`
+      `Cannot send email application: Job "${job.title}" at "${job.company}" does not have a valid hiring contact email (raw: "${rawRecipient}").`
     );
   }
+  job.contact_email = recipient;
 
   const { subject: defaultSub, body: defaultBody } = generateEmailDraft(job, profile);
   const subject = sanitizeEmailSubject(overrideSubject || defaultSub, profile, job);

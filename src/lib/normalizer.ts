@@ -126,12 +126,12 @@ export function cleanHtmlText(text: string): string {
     .replace(/<\/p>/gi, '\n\n')
     .replace(/<\/li>/gi, '\n')
     .replace(/<li[^>]*>/gi, '• ')
-    .replace(/<[^>]+>/g, '');
+    .replace(/<[^>]+>/g, ' '); // Replace tags with space so adjacent text and emails never merge
 
   str = decodeHtmlEntities(str);
 
   // Strip any HTML tags that were previously escaped with &lt; &gt;
-  str = str.replace(/<[^>]+>/g, '');
+  str = str.replace(/<[^>]+>/g, ' ');
 
   return str
     .replace(/[ \t]+/g, ' ')
@@ -158,13 +158,14 @@ export function normalizeJob(raw: any, source: JobSource): IJob {
     description.toLowerCase().includes('work from anywhere');
 
   // Extract Contact Email from description or fields
-  let contactEmail = raw.contact_email || extractEmail(rawDesc) || extractEmail(description);
-  if (!contactEmail && applicationUrl && applicationUrl.toLowerCase().startsWith('mailto:')) {
-    contactEmail = applicationUrl.replace(/^mailto:/i, '').split('?')[0].trim().toLowerCase();
+  let rawContact = raw.contact_email || extractEmail(rawDesc) || extractEmail(description);
+  if (!rawContact && applicationUrl && applicationUrl.toLowerCase().startsWith('mailto:')) {
+    rawContact = applicationUrl;
   }
-  if (!contactEmail && url && url.toLowerCase().startsWith('mailto:')) {
-    contactEmail = url.replace(/^mailto:/i, '').split('?')[0].trim().toLowerCase();
+  if (!rawContact && url && url.toLowerCase().startsWith('mailto:')) {
+    rawContact = url;
   }
+  const contactEmail = sanitizeContactEmail(rawContact);
 
   // Detect ATS Platform and Application Type
   const { platform, type } = detectApplicationType(applicationUrl, url, contactEmail);
@@ -197,51 +198,85 @@ export function normalizeJob(raw: any, source: JobSource): IJob {
   };
 }
 
+// Set of recognized ICANN top-level domains & common extensions
+const KNOWN_VALID_TLDS = new Set([
+  'com', 'org', 'net', 'edu', 'gov', 'mil', 'int',
+  'io', 'ai', 'co', 'tech', 'dev', 'app', 'xyz', 'me', 'us', 'uk', 'ca', 'de', 'fr', 'in', 'au', 'eu',
+  'nl', 'se', 'ch', 'es', 'it', 'br', 'ru', 'jp', 'pl', 'nz', 'be', 'ae', 'sg', 'hk', 'ie', 'no', 'fi',
+  'dk', 'at', 'cz', 'pt', 'ro', 'za', 'gr', 'il', 'tr', 'cl', 'mx', 'ar', 'co.uk', 'com.au', 'co.nz',
+  'org.uk', 'gov.uk', 'ac.uk', 'com.br', 'com.do', 'co.in', 'gen.in', 'firm.in', 'net.in', 'org.in',
+  'one', 'ly', 'gg', 'cc', 'to', 'fm', 'sh', 'so', 'vc', 'is', 'pro', 'design', 'agency', 'careers',
+  'group', 'cloud', 'digital', 'global', 'systems', 'consulting', 'software', 'network', 'media', 'world',
+  'link', 'fyi', 'care', 'health', 'law', 'run', 'space', 'bio', 'partners', 'business', 'technology',
+  'solutions', 'company', 'center', 'team', 'ventures', 'capital', 'finance', 'fund', 'exchange', 'market',
+  'services', 'management', 'enterprises', 'holdings', 'industries', 'estate', 'properties', 'energy',
+  'studio', 'works', 'life', 'live', 'today', 'news', 'press', 'info', 'biz', 'mobi', 'name', 'tv', 'ws'
+]);
+
+// Common base TLDs where trailing text erroneously gets glued (e.g. .comproduct -> .com + product)
+// MUST BE SORTED BY LENGTH DESCENDING so longer TLDs (e.g. 'care', 'com') match before prefixes (e.g. 'ca', 'co')
+const BASE_GLUED_TLDS = [
+  'co.uk', 'com.au', 'co.nz', 'org.uk', 'gov.uk', 'ac.uk', 'com.br', 'com.do', 'co.in',
+  'care', 'tech', 'info', 'health', 'space',
+  'com', 'org', 'net', 'edu', 'gov', 'app', 'dev', 'xyz', 'law', 'run', 'bio', 'biz',
+  'io', 'ai', 'co', 'me', 'us', 'uk', 'de', 'ca', 'fr', 'in', 'au', 'eu'
+];
+
+export function sanitizeContactEmail(raw: string | undefined | null): string | undefined {
+  if (!raw || typeof raw !== 'string') return undefined;
+  let cleaned = decodeHtmlEntities(raw).trim();
+  cleaned = cleaned.replace(/^(?:mailto:|<|&lt;|%3c|3c|["'“”‘’(\[\{:;\s])+/i, '');
+  cleaned = cleaned.replace(/(?:>|&gt;|%3e|3e|["'“”‘’\)\]\}:;,\s\.])+$/i, '');
+
+  const atParts = cleaned.split('@');
+  if (atParts.length !== 2) return undefined;
+  const user = atParts[0].trim().toLowerCase();
+  let domain = atParts[1].trim().toLowerCase();
+  domain = domain.split('/')[0].split('?')[0].replace(/[\),;:\s.]+$/, '');
+
+  const lastDot = domain.lastIndexOf('.');
+  if (lastDot === -1) return undefined;
+
+  let tld = domain.slice(lastDot + 1);
+  if (!KNOWN_VALID_TLDS.has(tld)) {
+    // Check if it starts with a known base TLD glued with a word (e.g. 'comproduct' -> 'com')
+    const matchedBase = BASE_GLUED_TLDS.find(b => !b.includes('.') && tld.startsWith(b) && tld.length > b.length);
+    if (matchedBase) {
+      domain = domain.slice(0, lastDot + 1) + matchedBase;
+    } else {
+      return undefined;
+    }
+  }
+
+  const JUNK_DOMAINS = [
+    'example.com', 'sentry.io', 'schema.org', 'w3.org', 'github.com',
+    'google.com', 'apple.com', 'remoteok.com', 'jobicy.com', 'remotive.com',
+    'arbeitnow.com', 'domain.com', 'company.com', 'test.com', 'ycombinator.com'
+  ];
+  if (JUNK_DOMAINS.some(d => domain === d || domain.endsWith('.' + d))) return undefined;
+
+  const JUNK_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.ico'];
+  if (JUNK_EXTENSIONS.some(ext => domain.endsWith(ext))) return undefined;
+
+  if (user.startsWith('noreply') || user.startsWith('no-reply') || user.startsWith('donotreply')) return undefined;
+  if (!/^[a-z0-9._%+-]+$/i.test(user)) return undefined;
+
+  return `${user}@${domain}`;
+}
+
 export function extractEmail(text: string): string | undefined {
   if (!text) return undefined;
   const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/gi;
   const matches = text.match(emailRegex);
   if (!matches || matches.length === 0) return undefined;
 
-  const JUNK_DOMAINS = [
-    'example.com',
-    'sentry.io',
-    'schema.org',
-    'w3.org',
-    'github.com',
-    'google.com',
-    'apple.com',
-    'remoteok.com',
-    'jobicy.com',
-    'remotive.com',
-    'arbeitnow.com',
-    'domain.com',
-    'company.com',
-    'test.com',
-  ];
+  const sanitized = matches
+    .map((m) => sanitizeContactEmail(m))
+    .filter((e): e is string => Boolean(e));
 
-  const JUNK_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.ico'];
+  if (sanitized.length === 0) return undefined;
 
-  const cleaned = matches.map((raw) => {
-    let email = raw.trim().toLowerCase();
-    // Strip common HTML entity artifacts (e.g. 3Ccareers@... or %3Ccareers@...)
-    email = email.replace(/^(?:3c|%3c|&lt;|<)+/i, '');
-    email = email.replace(/(?:3e|%3e|&gt;|>)+$/i, '');
-    email = email.replace(/^mailto:/i, '');
-    return email;
-  });
-
-  const filtered = cleaned.filter((email) => {
-    if (!email || !email.includes('@')) return false;
-    if (JUNK_EXTENSIONS.some((ext) => email.endsWith(ext))) return false;
-    const domain = email.split('@')[1];
-    if (!domain || !domain.includes('.')) return false;
-    if (JUNK_DOMAINS.some((d) => domain === d || domain.endsWith('.' + d))) return false;
-    if (email.startsWith('noreply') || email.startsWith('no-reply') || email.startsWith('donotreply')) return false;
-    return true;
-  });
-
-  if (filtered.length === 0) return undefined;
+  const unique = Array.from(new Set(sanitized));
 
   // Prioritize emails with hiring/recruitment keywords
   const HIRING_PREFIXES = [
@@ -258,14 +293,17 @@ export function extractEmail(text: string): string | undefined {
     'candidate',
     'accommodat',
     'recruitment',
+    'contact',
+    'hello',
+    'founder',
   ];
 
-  const preferred = filtered.find((email) => {
-    const userPart = email.split('@')[0];
-    return HIRING_PREFIXES.some((p) => userPart.includes(p));
+  const priority = unique.find((email) => {
+    const user = email.split('@')[0].toLowerCase();
+    return HIRING_PREFIXES.some((p) => user.startsWith(p));
   });
 
-  return preferred || filtered[0];
+  return priority || unique[0];
 }
 
 export function detectApplicationType(

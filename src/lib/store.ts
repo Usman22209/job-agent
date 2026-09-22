@@ -12,7 +12,7 @@ import {
   ApplicationStatus,
   JobStatus 
 } from '@/types';
-import { normalizeJob, cleanJobTitle, cleanCompany } from './normalizer';
+import { normalizeJob, cleanJobTitle, cleanCompany, sanitizeContactEmail } from './normalizer';
 import { searchRemotiveJobs } from './providers/remotive';
 import { searchRemoteOkJobs } from './providers/remoteok';
 import { searchArbeitnowJobs } from './providers/arbeitnow';
@@ -1441,10 +1441,26 @@ class AgentStore {
     try {
       const jobsPath = path.resolve(process.cwd(), 'database/jobs.json');
       if (fs.existsSync(jobsPath)) {
+        let changed = false;
         const savedJobs: IJob[] = JSON.parse(fs.readFileSync(jobsPath, 'utf8'));
         for (const j of savedJobs) {
+          if (j.contact_email) {
+            const sanitized = sanitizeContactEmail(j.contact_email);
+            if (sanitized !== j.contact_email) {
+              j.contact_email = sanitized;
+              changed = true;
+            }
+          }
           this.jobs.set(j.id, j);
           if (j.dedup_hash) this.dedupSet.add(j.dedup_hash);
+        }
+        if (changed) {
+          try {
+            fs.writeFileSync(jobsPath, JSON.stringify(Array.from(this.jobs.values()), null, 2), 'utf8');
+            console.log(`[Store Persistence] 🧼 Sanitized corrupted contact emails in jobs.json`);
+          } catch (writeErr: any) {
+            console.warn('[Store Persistence] Failed to rewrite cleaned jobs.json:', writeErr.message);
+          }
         }
         console.log(`[Store Persistence] Loaded ${this.jobs.size} jobs from disk.`);
       }
@@ -1455,8 +1471,16 @@ class AgentStore {
     try {
       const appsPath = path.resolve(process.cwd(), 'database/applications.json');
       if (fs.existsSync(appsPath)) {
+        let changedApps = false;
         const savedApps: IApplication[] = JSON.parse(fs.readFileSync(appsPath, 'utf8'));
         for (const app of savedApps) {
+          if (app.job && app.job.contact_email) {
+            const sanitized = sanitizeContactEmail(app.job.contact_email);
+            if (sanitized !== app.job.contact_email) {
+              app.job.contact_email = sanitized;
+              changedApps = true;
+            }
+          }
           this.applications.set(app.id, app);
           if (app.job) {
             this.jobs.set(app.job.id, {
@@ -1470,6 +1494,14 @@ class AgentStore {
               j.status = 'APPLIED';
               this.jobs.set(app.job_id, j);
             }
+          }
+        }
+        if (changedApps) {
+          try {
+            fs.writeFileSync(appsPath, JSON.stringify(Array.from(this.applications.values()), null, 2), 'utf8');
+            console.log(`[Store Persistence] 🧼 Sanitized corrupted contact emails in applications.json`);
+          } catch (writeErr: any) {
+            console.warn('[Store Persistence] Failed to rewrite cleaned applications.json:', writeErr.message);
           }
         }
         console.log(`[Store Persistence] Loaded ${this.applications.size} applications from disk.`);
