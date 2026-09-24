@@ -21,7 +21,7 @@ export function sanitizeEmailSubject(
 ): string {
   const company = job ? cleanCompany(job.company) : undefined;
   const cleanTitle = job ? cleanJobTitle(job.title, company) : 'Software Engineer';
-  const name = profile?.full_name || 'Applicant';
+  const name = (process.env.SENDER_NAME?.replace(/^["']|["']$/g, '') || profile?.full_name || 'Applicant').trim();
 
   if (!rawSubject || typeof rawSubject !== 'string') {
     return `Application for ${cleanTitle} — ${name}`;
@@ -34,6 +34,15 @@ export function sanitizeEmailSubject(
     // Replace URL part with clean title
     sub = sub.replace(/https?:\/\/[^\s—–-]+/gi, cleanTitle);
     sub = sub.replace(/[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app)/gi, cleanTitle);
+  }
+
+  // Ensure the candidate name at the end of the subject matches the active candidate name
+  if (name && name !== 'Applicant') {
+    if (/[—–-]\s*[A-Za-z\s.']+$/i.test(sub)) {
+      sub = sub.replace(/[—–-]\s*[A-Za-z\s.']+$/i, `— ${name}`);
+    } else {
+      sub = `${sub} — ${name}`;
+    }
   }
 
   // Remove any leftover entity artifacts or double dashes
@@ -94,6 +103,21 @@ export function sanitizeEmailBody(rawBody: string, profile?: IMasterProfile): st
   if (!rawBody || typeof rawBody !== 'string') return '';
   let body = decodeHtmlEntities(rawBody).trim();
 
+  const candidateName = (process.env.SENDER_NAME?.replace(/^["']|["']$/g, '') || profile?.full_name || '').trim();
+  const candidateEmail = (process.env.SENDER_EMAIL?.replace(/^["']|["']$/g, '') || process.env.SMTP_USER?.replace(/^["']|["']$/g, '') || profile?.email || '').trim();
+
+  // If candidate is Agha Ali (or anyone other than Talha Sadiq), replace any stale Talha Sadiq signatures
+  if (candidateName && candidateName.toLowerCase() !== 'talha sadiq') {
+    body = body.replace(/Talha\s+Sadiq/gi, candidateName);
+    if (candidateEmail) {
+      body = body.replace(/talhasadiq320@gmail\.com/gi, candidateEmail);
+    }
+    body = body.replace(/\+92\s*345\s*6601101/g, profile?.phone || '');
+    body = body.replace(/linkedin\.com\/in\/talhagaba/gi, profile?.qa_vault?.linkedin || '');
+    body = body.replace(/github\.com\/shtalhagaba/gi, profile?.qa_vault?.github || '');
+    body = body.replace(/behance\.com\/shtalhagaba/gi, '');
+  }
+
   // 1. Strip any URL mistakenly embedded in the role / position sentence
   body = body.replace(/in the https?:\/\/[^\s]+ role/gi, 'in the Software Engineer role');
   body = body.replace(/in the [a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app) role/gi, 'in the Software Engineer role');
@@ -123,11 +147,11 @@ export function sanitizeEmailBody(rawBody: string, profile?: IMasterProfile): st
 
   // 4. Ensure a closing exists; if missing, add a clean candidate closing
   const hasClosing = /(sincerely|best regards|warm regards|kind regards),/i.test(body);
-  if (!hasClosing && profile) {
+  if (!hasClosing && candidateName) {
     const sign = [
       'Sincerely,',
-      profile.full_name,
-      [profile.email, profile.phone, profile.location].filter(Boolean).join(' | '),
+      candidateName,
+      [candidateEmail, profile?.phone, profile?.location].filter(Boolean).join(' | '),
     ].filter(Boolean).join('\n');
     body = `${body}\n\n${sign}`;
   }
@@ -173,7 +197,7 @@ export async function sendApplicationEmail(
   const attachments = [];
   if (pdfPath && fs.existsSync(pdfPath)) {
     attachments.push({
-      filename: `${profile.full_name.replace(/\s+/g, '_')}_Resume.pdf`,
+      filename: `${senderName.replace(/\s+/g, '_')}_Resume.pdf`,
       path: pdfPath,
     });
   }

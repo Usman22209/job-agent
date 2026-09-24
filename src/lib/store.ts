@@ -132,11 +132,39 @@ class AgentStore {
     return this.profile;
   }
 
+  private getProfileStoragePath(): string {
+    const customPath = process.env.MASTER_PROFILE_PATH?.replace(/^["']|["']$/g, '')?.trim();
+    if (customPath && fs.existsSync(customPath)) {
+      return customPath;
+    }
+    return path.resolve(process.cwd(), 'database/master_profile.json');
+  }
+
+  private syncProfileWithEnv(prof: IMasterProfile): IMasterProfile {
+    const envSenderName = process.env.SENDER_NAME?.replace(/^["']|["']$/g, '')?.trim();
+    const envSenderEmail = (process.env.SENDER_EMAIL?.replace(/^["']|["']$/g, '') || process.env.SMTP_USER?.replace(/^["']|["']$/g, ''))?.trim();
+
+    if (envSenderName && prof.full_name !== envSenderName) {
+      console.warn(`[Profile Safety] Synchronizing candidate full_name from "${prof.full_name}" to SENDER_NAME: "${envSenderName}"`);
+      prof.full_name = envSenderName;
+    }
+    if (envSenderEmail && prof.email !== envSenderEmail) {
+      console.warn(`[Profile Safety] Synchronizing candidate email from "${prof.email}" to SENDER_EMAIL: "${envSenderEmail}"`);
+      prof.email = envSenderEmail;
+    }
+    return prof;
+  }
+
   updateProfile(updates: Partial<IMasterProfile>): IMasterProfile {
     this.profile = { ...this.profile, ...updates };
+    this.syncProfileWithEnv(this.profile);
     try {
-      const p = path.resolve(process.cwd(), 'database/seeds/master_profile.json');
+      const p = this.getProfileStoragePath();
       fs.writeFileSync(p, JSON.stringify(this.profile, null, 2), 'utf8');
+      const seedP = path.resolve(process.cwd(), 'database/seeds/master_profile.json');
+      if (fs.existsSync(seedP) && seedP !== p) {
+        fs.writeFileSync(seedP, JSON.stringify(this.profile, null, 2), 'utf8');
+      }
     } catch (err: any) {
       console.warn('Could not persist profile to disk:', err.message);
     }
@@ -611,10 +639,24 @@ class AgentStore {
     const job = app.job || this.jobs.get(app.job_id)!;
     job.company = cleanCompany(job.company);
     job.title = cleanJobTitle(job.title, job.company);
-    const pdfPath = (app as any).local_pdf_path;
+    let pdfPath = (app as any).local_pdf_path;
+
+    const currentCandidate = (process.env.SENDER_NAME?.replace(/^["']|["']$/g, '') || this.profile.full_name).trim();
+    const candidateSlug = currentCandidate.toLowerCase().replace(/\s+/g, '_');
+    const isMismatchedResume = Boolean(pdfPath && !pdfPath.toLowerCase().includes(candidateSlug));
+
+    if (!pdfPath || !fs.existsSync(pdfPath) || isMismatchedResume) {
+      console.log(`[Email Safety] Application resume is missing or belongs to a different candidate (${pdfPath}). Auto re-tailoring for ${currentCandidate}...`);
+      await this.tailorApplication(applicationId);
+      const reloaded = this.applications.get(applicationId)!;
+      pdfPath = (reloaded as any).local_pdf_path;
+      app.email_subject = reloaded.email_subject;
+      app.email_body = reloaded.email_body;
+    }
 
     if (overrideSubject) app.email_subject = sanitizeEmailSubject(overrideSubject, this.profile, job);
     else if (app.email_subject) app.email_subject = sanitizeEmailSubject(app.email_subject, this.profile, job);
+    else app.email_subject = sanitizeEmailSubject(`Application for ${job.title} — ${currentCandidate}`, this.profile, job);
 
     if (overrideBody) app.email_body = sanitizeEmailBody(overrideBody, this.profile);
     else if (app.email_body) app.email_body = sanitizeEmailBody(app.email_body, this.profile);
@@ -1481,6 +1523,35 @@ class AgentStore {
               changedApps = true;
             }
           }
+
+          // Synchronize candidate identity for pending/ready applications
+          const activeCandidate = (process.env.SENDER_NAME?.replace(/^["']|["']$/g, '') || this.profile.full_name).trim();
+          if (activeCandidate && app.status !== 'APPLIED') {
+            if (app.email_subject) {
+              const cleanSub = sanitizeEmailSubject(app.email_subject, this.profile, app.job);
+              if (cleanSub !== app.email_subject) {
+                app.email_subject = cleanSub;
+                changedApps = true;
+              }
+            }
+            if (app.email_body) {
+              const cleanBody = sanitizeEmailBody(app.email_body, this.profile);
+              if (cleanBody !== app.email_body) {
+                app.email_body = cleanBody;
+                changedApps = true;
+              }
+            }
+            const localPdf = (app as any).local_pdf_path;
+            const candidateSlug = activeCandidate.toLowerCase().replace(/\s+/g, '_');
+            if (localPdf && !localPdf.toLowerCase().includes(candidateSlug)) {
+              delete (app as any).local_pdf_path;
+              app.tailored_resume_pdf_url = undefined;
+              app.cover_letter = undefined;
+              app.status = 'MATCHED';
+              changedApps = true;
+            }
+          }
+
           this.applications.set(app.id, app);
           if (app.job) {
             this.jobs.set(app.job.id, {
@@ -1601,17 +1672,35 @@ class AgentStore {
 
   private loadInitialProfile(): IMasterProfile {
     try {
+      // 1. Check custom path from environment variable
+      const customPath = process.env.MASTER_PROFILE_PATH?.replace(/^["']|["']$/g, '')?.trim();
+      if (customPath && fs.existsSync(customPath)) {
+        console.log(`[Store Persistence] Loading candidate profile from MASTER_PROFILE_PATH: ${customPath}`);
+        const prof: IMasterProfile = JSON.parse(fs.readFileSync(customPath, 'utf8'));
+        return this.syncProfileWithEnv(prof);
+      }
+
+      // 2. Check local unversioned database/master_profile.json
+      const localPath = path.resolve(process.cwd(), 'database/master_profile.json');
+      if (fs.existsSync(localPath)) {
+        console.log(`[Store Persistence] Loading candidate profile from ${localPath}`);
+        const prof: IMasterProfile = JSON.parse(fs.readFileSync(localPath, 'utf8'));
+        return this.syncProfileWithEnv(prof);
+      }
+
+      // 3. Fallback to repository seed: database/seeds/master_profile.json
       const p = path.resolve(process.cwd(), 'database/seeds/master_profile.json');
       if (fs.existsSync(p)) {
-        return JSON.parse(fs.readFileSync(p, 'utf8'));
+        const prof: IMasterProfile = JSON.parse(fs.readFileSync(p, 'utf8'));
+        return this.syncProfileWithEnv(prof);
       }
     } catch (err: any) {
       console.warn('Seed profile read error:', err.message);
     }
 
-    return {
-      full_name: process.env.SENDER_NAME || 'Candidate',
-      email: process.env.SENDER_EMAIL || process.env.SMTP_USER || '',
+    const fallback: IMasterProfile = {
+      full_name: process.env.SENDER_NAME?.replace(/^["']|["']$/g, '')?.trim() || 'Candidate',
+      email: (process.env.SENDER_EMAIL || process.env.SMTP_USER || '')?.replace(/^["']|["']$/g, '')?.trim(),
       phone: '',
       location: 'Open to Remote Worldwide',
       headline: 'Software Engineer',
@@ -1630,6 +1719,7 @@ class AgentStore {
         sponsorship_required: 'No',
       },
     };
+    return fallback;
   }
 
   private seedInitialJobs() {

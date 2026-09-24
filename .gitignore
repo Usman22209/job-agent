@@ -28,6 +28,8 @@ pnpm-debug.log*
 generated_resumes/
 storage/
 database/sessions/
+database/master_profile.json
+database/master_profile_*.json
 *.pdf
 public/screenshots/*.png
 !public/screenshots/.gitkeep
