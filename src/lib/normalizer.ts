@@ -43,11 +43,50 @@ export function decodeHtmlEntities(text: string): string {
  */
 export function cleanCompany(rawCompany: string): string {
   if (!rawCompany) return 'Tech Startup';
-  let company = decodeHtmlEntities(rawCompany).replace(/<[^>]+>/g, '').trim();
-  // Strip parenthetical URLs or domain mentions, e.g. "Acme (https://acme.com)" -> "Acme"
-  company = company.replace(/\s*\((?:https?:\/\/|[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app))[^)]*\)/gi, '').trim();
-  // Strip leading/trailing quotation marks or dashes
-  company = company.replace(/^["'“”‘’\-\|\/:\s]+|["'“”‘’\-\|\/:\s]+$/g, '').trim();
+  let company = decodeHtmlEntities(rawCompany).replace(/<[^>]+>/g, ' ').trim();
+
+  // 1. Strip parenthetical URLs or domain mentions, including with inner whitespace
+  // e.g. "Adyen ( https://www.adyen.com/ )" -> "Adyen", "Klutch AI ( https://klutch.ai/ )" -> "Klutch AI"
+  company = company.replace(/\s*\(\s*(?:https?:\/\/|[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app|gg|run))[^)]*\)/gi, '').trim();
+
+  // 2. Strip standalone URLs, e.g. "Snout https://snout.com" -> "Snout", "Playit - https://playit.gg" -> "Playit"
+  company = company.replace(/https?:\/\/[^\s)]+/gi, '').trim();
+  company = company.replace(/www\.[^\s)]+/gi, '').trim();
+  company = company.replace(/\b[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app|gg|run)(?:\/[^\s)]*)?\b/gi, '').trim();
+
+  // 3. Replace slashes and backslashes with " & " or space to prevent Linux filesystem path breakage (e.g. "Namecoach/Euphonia" -> "Namecoach & Euphonia")
+  company = company.replace(/[\/\\]+/g, ' & ').trim();
+
+  // 4. Strip non-company prose or sentence fragments
+  // If the company string looks like an email introduction, resume excerpt, or long paragraph
+  if (
+    company.length > 40 ||
+    /^(hi[!.]|hello[!.]|we('re| are)|i('m| am)|location:|remote:|hiring:)/i.test(company) ||
+    company.includes('. ') ||
+    company.includes('! ')
+  ) {
+    // Try to find a company name after "at ", "of ", or before "is hiring"
+    const match = company.match(/(?:at|of)\s+([A-Z][A-Za-z0-9\s&]{2,30}?)(?:\.|\s+is|\s+are|,|\!|$)/);
+    if (match && match[1] && match[1].trim().length >= 2) {
+      company = match[1].trim();
+    } else {
+      const words = company.split(/\s+/).slice(0, 3).join(' ');
+      if (words.length <= 25 && !/^(hi|hello|we|i|location|remote)/i.test(words)) {
+        company = words;
+      } else {
+        company = 'Tech Startup';
+      }
+    }
+  }
+
+  // 5. Strip leading/trailing quotation marks, dashes, brackets, colons, pipes, parens
+  company = company.replace(/^["'“”‘’\-\|\/:\s()\[\]{}]+|["'“”‘’\-\|\/:\s()\[\]{}]+$/g, '').trim();
+
+  // 6. Hard length cap (max 35 chars)
+  if (company.length > 35) {
+    company = company.slice(0, 35).trim().replace(/^["'“”‘’\-\|\/:\s()\[\]{}]+|["'“”‘’\-\|\/:\s()\[\]{}]+$/g, '');
+  }
+
   return company || 'Tech Startup';
 }
 
@@ -58,7 +97,7 @@ export function cleanCompany(rawCompany: string): string {
 export function cleanJobTitle(rawTitle: string, company?: string): string {
   if (!rawTitle) return 'Software Engineer';
 
-  let title = decodeHtmlEntities(rawTitle).replace(/<[^>]+>/g, '').trim();
+  let title = decodeHtmlEntities(rawTitle).replace(/<[^>]+>/g, ' ').trim();
 
   // If title has multiple piped segments (e.g. "Staff Platform Engineer | REMOTE (US) | Full-time")
   if (title.includes('|')) {
@@ -89,6 +128,11 @@ export function cleanJobTitle(rawTitle: string, company?: string): string {
   // Strip prefixes like "Role:", "Position:", "Job Title:", "Hiring:"
   title = title.replace(/^(?:Role|Position|Job Title|Hiring|We are hiring a?|Looking for a?):\s*/i, '').trim();
 
+  // If title contains an email or URL, strip it
+  title = title.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, '').trim();
+  title = title.replace(/https?:\/\/[^\s)]+/gi, '').trim();
+  title = title.replace(/www\.[^\s)]+/gi, '').trim();
+
   // If title is or starts with a URL or raw domain (e.g. "https://e123insurtech.com" or "e123insurtech.com")
   const urlCheck =
     /^(https?:\/\/|www\.)/i.test(title) ||
@@ -101,8 +145,13 @@ export function cleanJobTitle(rawTitle: string, company?: string): string {
   // If title contains a URL embedded in parentheses or brackets, remove the URL
   title = title.replace(/\((?:https?:\/\/|[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app))[^)]*\)/gi, '').trim();
 
+  // If title contains paragraph text (sentences with periods or exclamation marks), keep only first part
+  if (title.includes('. ') || title.includes('! ')) {
+    title = title.split(/[.!]\s+/)[0].trim();
+  }
+
   // Clean edge punctuation: quotes, brackets, pipes, dashes
-  title = title.replace(/^["'“”‘’\-\|\/:\s]+|["'“”‘’\-\|\/:\s]+$/g, '').trim();
+  title = title.replace(/^["'“”‘’\-\|\/:\s()\[\]{}]+|["'“”‘’\-\|\/:\s()\[\]{}]+$/g, '').trim();
 
   // If the resulting title is identical to the company name, fallback to 'Software Engineer'
   if (company && title.toLowerCase() === company.toLowerCase()) {
@@ -110,7 +159,12 @@ export function cleanJobTitle(rawTitle: string, company?: string): string {
   }
 
   // If title is too short, pure symbols, or abnormally long
-  if (title.length < 2 || title.length > 100) {
+  if (title.length < 2 || title.length > 60) {
+    // If long, try to find role substring
+    const roleMatch = title.match(/\b(Senior\s+|Staff\s+|Principal\s+|Lead\s+)?(Software Engineer|Full Stack Developer|Frontend Developer|Backend Developer|Mobile Engineer|React Native Developer|AI Engineer|DevOps Engineer|Data Engineer)\b/i);
+    if (roleMatch) {
+      return roleMatch[0].trim();
+    }
     return 'Software Engineer';
   }
 

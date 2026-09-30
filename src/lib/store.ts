@@ -496,10 +496,15 @@ class AgentStore {
     console.log(`[Tailor] Starting resume + cover letter tailoring for "${job.title}" at ${job.company}...`);
     const { tailoredResume, coverLetter } = await tailorResumeAndCoverLetter(job, this.profile);
 
-    const filename = `Resume_${this.profile.full_name.replace(/\s+/g, '_')}_${job.company.replace(
-      /\s+/g,
-      '_'
-    )}_${Date.now()}.pdf`;
+    const safeCandidate = (process.env.SENDER_NAME || this.profile.full_name || 'Candidate')
+      .replace(/[^a-zA-Z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 20);
+    const safeCompany = cleanCompany(job.company)
+      .replace(/[^a-zA-Z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 25);
+    const filename = `Resume_${safeCandidate || 'Candidate'}_${safeCompany || 'Company'}_${Date.now()}.pdf`;
 
     console.log(`[Tailor] Generating ATS-optimized PDF: ${filename}`);
     const { filePath, relativeUrl } = await generateResumePdf(tailoredResume, filename);

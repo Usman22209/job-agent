@@ -17,7 +17,18 @@ export async function generateResumePdf(
     fs.mkdirSync(publicDir, { recursive: true });
   }
 
-  const filePath = path.join(publicDir, filename);
+  const ext = path.extname(filename) || '.pdf';
+  const rawBase = path.basename(filename, ext);
+  // Guarantee 100% filesystem-safe: only letters, digits, hyphen, underscore, capped strictly
+  const safeBase = rawBase
+    .replace(/https?:\/\/[^\s]+/gi, '')
+    .replace(/[^a-zA-Z0-9_-]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 60);
+  const safeFilename = `${safeBase || 'Resume'}${ext}`;
+
+  const filePath = path.join(publicDir, safeFilename);
 
   return new Promise((resolve, reject) => {
     try {
@@ -261,7 +272,7 @@ export async function generateResumePdf(
       stream.on('finish', () => {
         resolve({
           filePath,
-          relativeUrl: `/resumes/${filename}`,
+          relativeUrl: `/resumes/${safeFilename}`,
         });
       });
 

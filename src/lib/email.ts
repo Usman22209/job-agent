@@ -196,8 +196,9 @@ export async function sendApplicationEmail(
 
   const attachments = [];
   if (pdfPath && fs.existsSync(pdfPath)) {
+    const safeSender = senderName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
     attachments.push({
-      filename: `${senderName.replace(/\s+/g, '_')}_Resume.pdf`,
+      filename: `${safeSender || 'Candidate'}_Resume.pdf`,
       path: pdfPath,
     });
   }
