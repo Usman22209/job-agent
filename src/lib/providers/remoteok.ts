@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { cleanHtmlText } from '../normalizer';
+import { cleanHtmlText, isNonTechRole } from '../normalizer';
 
 export async function searchRemoteOkJobs(query: string = '', limit: number = 40): Promise<any[]> {
   try {
@@ -17,13 +17,19 @@ export async function searchRemoteOkJobs(query: string = '', limit: number = 40)
     // RemoteOK returns an array where first item is legal/notice object
     const rawJobs = Array.isArray(response.data) ? response.data.slice(1) : [];
 
-    let filtered = rawJobs;
+    // Reject non-tech roles (radiologists, doctors, nurses, accountants, etc.)
+    let filtered = rawJobs.filter((item: any) => {
+      const position = item.position || '';
+      return !isNonTechRole(position);
+    });
+
     if (query) {
       const q = query.toLowerCase();
-      filtered = rawJobs.filter((item: any) => {
-        const titleMatch = item.position?.toLowerCase().includes(q);
-        const tagsMatch = Array.isArray(item.tags) && item.tags.some((t: string) => t.toLowerCase().includes(q));
-        const descMatch = item.description?.toLowerCase().includes(q);
+      const qRegex = new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      filtered = filtered.filter((item: any) => {
+        const titleMatch = item.position && qRegex.test(item.position);
+        const tagsMatch = Array.isArray(item.tags) && item.tags.some((t: string) => t.toLowerCase() === q || t.toLowerCase().includes(q));
+        const descMatch = item.description && qRegex.test(item.description);
         return titleMatch || tagsMatch || descMatch;
       });
     }

@@ -171,6 +171,44 @@ export function cleanJobTitle(rawTitle: string, company?: string): string {
   return title;
 }
 
+/**
+ * Checks whether a job title belongs to an explicitly non-tech domain (medical, veterinary, radiology, etc.)
+ */
+export function isNonTechRole(title: string): boolean {
+  if (!title) return false;
+  const nonTechRegex = /\b(radiologist|physician|practitioner|doctor|veterinar\w*|nurse|nursing|dentist|dental|therapist|therapy|surgeon|pharmac\w*|medical|clinical|healthcare|radiology|paramedic|optometrist|chiropractor|attorney|lawyer|paralegal|accounting|auditor|realtor|mechanic|cook|chef|barista|driver)\b/i;
+  return nonTechRegex.test(title);
+}
+
+/**
+ * Strips anti-bot honeypot instructions and tracking watermarks injected by job boards (e.g. RemoteOK)
+ * Examples:
+ * "Please mention the word **ADVOCATED** and tag RMTU0LjU3... when applying to show you read the job post completely (#RMT...)."
+ */
+export function stripAntiBotWatermarks(text: string): string {
+  if (!text) return '';
+  let str = text;
+
+  // 1. Remove entire honeypot sentences / paragraphs
+  str = str.replace(
+    /Please mention the word\s+[*_]*[A-Za-z0-9_-]+[*_]*\s+and tag\s+[A-Za-z0-9+/=]+\s+when applying[^\n.]*(?:\.|\n|$)/gi,
+    ''
+  );
+  str = str.replace(
+    /Please mention the word\s+[*_]*[A-Za-z0-9_-]+[*_]*\s+when applying[^\n.]*(?:\.|\n|$)/gi,
+    ''
+  );
+  str = str.replace(
+    /This is a beta feature to avoid spam applicants\.?\s*Companies can search these words to find applicants that read this and see they're human\.?/gi,
+    ''
+  );
+
+  // 2. Remove parenthesized or standalone tracking tokens like (#RMTQwLjIzOC4yNDQuMjIz) or #RMT...
+  str = str.replace(/\(?#?R[A-Za-z0-9+/=]{14,}\)?/g, '');
+
+  return str.trim();
+}
+
 export function cleanHtmlText(text: string): string {
   if (!text) return '';
   let str = text
@@ -186,6 +224,9 @@ export function cleanHtmlText(text: string): string {
 
   // Strip any HTML tags that were previously escaped with &lt; &gt;
   str = str.replace(/<[^>]+>/g, ' ');
+
+  // Strip anti-bot honeypots / tracking watermarks
+  str = stripAntiBotWatermarks(str);
 
   return str
     .replace(/[ \t]+/g, ' ')

@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import { IJob, IMasterProfile } from '@/types';
-import { cleanJobTitle, cleanCompany, decodeHtmlEntities, sanitizeContactEmail } from './normalizer';
+import { cleanJobTitle, cleanCompany, decodeHtmlEntities, sanitizeContactEmail, stripAntiBotWatermarks } from './normalizer';
 
 export interface EmailDispatchResult {
   success: boolean;
@@ -117,6 +117,11 @@ export function sanitizeEmailBody(rawBody: string, profile?: IMasterProfile): st
     body = body.replace(/github\.com\/shtalhagaba/gi, profile?.qa_vault?.github || '');
     body = body.replace(/behance\.com\/shtalhagaba/gi, '');
   }
+
+  // 0. Strip anti-bot honeypots / tracking watermarks
+  body = stripAntiBotWatermarks(body);
+  body = body.replace(/\b(?:I\s+(?:fully\s+)?)?(?:ADVOCATED|BECKON|PERSPICACIOUS|METICULOUS)\s*(?:\([^)]*#?R[A-Za-z0-9+/=]+[^)]*\))?/gi, '');
+  body = body.replace(/\(?#?R[A-Za-z0-9+/=]{14,}\)?/g, '');
 
   // 1. Strip any URL mistakenly embedded in the role / position sentence
   body = body.replace(/in the https?:\/\/[^\s]+ role/gi, 'in the Software Engineer role');

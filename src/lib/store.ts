@@ -12,7 +12,7 @@ import {
   ApplicationStatus,
   JobStatus 
 } from '@/types';
-import { normalizeJob, cleanJobTitle, cleanCompany, sanitizeContactEmail } from './normalizer';
+import { normalizeJob, cleanJobTitle, cleanCompany, sanitizeContactEmail, isNonTechRole } from './normalizer';
 import { searchRemotiveJobs } from './providers/remotive';
 import { searchRemoteOkJobs } from './providers/remoteok';
 import { searchArbeitnowJobs } from './providers/arbeitnow';
@@ -739,6 +739,21 @@ class AgentStore {
       match = await this.matchJob(jobId);
     }
 
+    // 1b. Reject non-tech or low-fit jobs
+    if (isNonTechRole(job.title) || match.classification === 'SKIP' || match.score < 50) {
+      console.log(`[Store] ⏭ Skipping application for "${job.title}" at ${job.company}: Incompatible role or low match score (${match.score}).`);
+      job.status = 'DISCOVERED';
+      this.jobs.set(job.id, job);
+      this.saveJobsToDisk();
+      return {
+        success: false,
+        method: Boolean(job.contact_email) ? 'EMAIL' : 'WEB_PORTAL',
+        application: ({} as any),
+        applyUrl: job.application_url || job.url,
+        message: `Skipped: "${job.title}" is incompatible or below fit threshold (${match.score}% fit - ${match.reasoning}).`,
+      };
+    }
+
     // 2. Find existing or create new application
     let app = Array.from(this.applications.values()).find((a) => a.job_id === jobId);
     if (!app) {
@@ -1339,11 +1354,14 @@ class AgentStore {
         }
       }
 
-      // Also ensure any unapplied email jobs in database are enqueued so queue is never empty
+      // Also ensure any unapplied, qualified email jobs in database are enqueued
       if (this.applyQueue.length === 0) {
         for (const job of Array.from(this.jobs.values())) {
           if (this.emailOnlyMode && !job.contact_email) continue;
+          if (isNonTechRole(job.title)) continue;
           if (job.status !== 'APPLIED' && !this.applyQueue.includes(job.id)) {
+            const match = job.match || this.matches.get(job.id);
+            if (match && (match.score < threshold || match.classification === 'SKIP')) continue;
             const existingApp = Array.from(this.applications.values()).find((a) => a.job_id === job.id);
             if (!existingApp || existingApp.status !== 'APPLIED') {
               this.applyQueue.push(job.id);

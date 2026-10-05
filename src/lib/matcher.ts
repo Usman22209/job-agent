@@ -1,8 +1,23 @@
 import axios from 'axios';
 import { IJob, IMasterProfile, IJobMatch, MatchClassification } from '@/types';
 import { callGeminiWithPersistentRetry } from './ai/gemini';
+import { isNonTechRole } from './normalizer';
 
 export async function evaluateJobMatch(job: IJob, profile: IMasterProfile): Promise<IJobMatch> {
+  // Immediate rejection for non-tech roles (medical, veterinary, radiologist, nursing, etc.)
+  if (isNonTechRole(job.title)) {
+    return {
+      job_id: job.id,
+      score: 0,
+      classification: 'SKIP',
+      matching_skills: [],
+      missing_skills: [],
+      recommendation: 'SKIP',
+      reasoning: `Role "${job.title}" is in a non-technical domain and is incompatible with software engineering profile.`,
+      created_at: new Date().toISOString(),
+    };
+  }
+
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey && geminiKey !== 'your-gemini-api-key') {
     try {
@@ -27,6 +42,9 @@ export async function evaluateJobMatch(job: IJob, profile: IMasterProfile): Prom
 async function evaluateWithGemini(job: IJob, profile: IMasterProfile, apiKey: string): Promise<IJobMatch> {
   const prompt = `You are an expert technical recruiter and AI Job Matching Agent.
 Evaluate the candidate's master profile against the job posting.
+
+CRITICAL MANDATE:
+If the job is outside the candidate's software/technical field (e.g. medical, veterinary, healthcare, radiology, nursing, accounting, legal), you MUST assign a score of 0, classification "SKIP", and recommendation "SKIP".
 
 Candidate Profile:
 Name: ${profile.full_name}
@@ -160,20 +178,36 @@ function evaluateWithRubric(job: IJob, profile: IMasterProfile): IJobMatch {
     }
   }
 
-  let baseScore = 55;
+  let baseScore = 40;
   const titleLower = job.title.toLowerCase();
-  if (titleLower.includes('react native')) baseScore += 28;
-  else if (titleLower.includes('next.js') || titleLower.includes('react')) baseScore += 24;
-  else if (titleLower.includes('full stack') || titleLower.includes('fullstack') || titleLower.includes('full-stack')) baseScore += 22;
-  else if (titleLower.includes('frontend') || titleLower.includes('front end') || titleLower.includes('front-end')) baseScore += 20;
-  else if (titleLower.includes('mobile') || titleLower.includes('android') || titleLower.includes('ios')) baseScore += 20;
-  else if (titleLower.includes('ai') || titleLower.includes('python') || titleLower.includes('machine learning') || titleLower.includes('applied scientist')) baseScore += 20;
-  else if (titleLower.includes('backend') || titleLower.includes('node') || titleLower.includes('api')) baseScore += 18;
-  else if (titleLower.includes('software') || titleLower.includes('engineer') || titleLower.includes('developer')) baseScore += 16;
+  const isTechTitle = /\b(engineer|developer|architect|programmer|coder|tech|cto|lead|fullstack|full-stack|frontend|front-end|backend|back-end|devops|data|software|ai|ml|mobile|web|ios|android)\b/i.test(titleLower);
+
+  // Reject non-tech roles or positions with zero tech affinity
+  if (isNonTechRole(job.title) || (!isTechTitle && matchedSkills.length < 2)) {
+    return {
+      job_id: job.id,
+      score: 0,
+      classification: 'SKIP',
+      matching_skills: matchedSkills,
+      missing_skills: missingSkills,
+      recommendation: 'SKIP',
+      reasoning: `Role "${job.title}" is outside candidate engineering profile.`,
+      created_at: new Date().toISOString(),
+    };
+  }
+
+  if (titleLower.includes('react native')) baseScore += 35;
+  else if (titleLower.includes('next.js') || titleLower.includes('react')) baseScore += 30;
+  else if (titleLower.includes('full stack') || titleLower.includes('fullstack') || titleLower.includes('full-stack')) baseScore += 26;
+  else if (titleLower.includes('frontend') || titleLower.includes('front end') || titleLower.includes('front-end')) baseScore += 24;
+  else if (titleLower.includes('mobile') || titleLower.includes('android') || titleLower.includes('ios')) baseScore += 24;
+  else if (titleLower.includes('ai') || titleLower.includes('python') || titleLower.includes('machine learning') || titleLower.includes('applied scientist')) baseScore += 24;
+  else if (titleLower.includes('backend') || titleLower.includes('node') || titleLower.includes('api')) baseScore += 22;
+  else if (titleLower.includes('software') || titleLower.includes('engineer') || titleLower.includes('developer')) baseScore += 20;
 
   baseScore += Math.min(24, matchedSkills.length * 5);
-  baseScore -= Math.min(12, missingSkills.length * 3);
-  if (job.is_remote) baseScore += 6;
+  baseScore -= Math.min(15, missingSkills.length * 3);
+  if (job.is_remote) baseScore += 5;
 
   const score = Math.min(98, Math.max(40, baseScore));
 
