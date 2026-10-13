@@ -52,7 +52,14 @@ export function cleanCompany(rawCompany: string): string {
   // 2. Strip standalone URLs, e.g. "Snout https://snout.com" -> "Snout", "Playit - https://playit.gg" -> "Playit"
   company = company.replace(/https?:\/\/[^\s)]+/gi, '').trim();
   company = company.replace(/www\.[^\s)]+/gi, '').trim();
-  company = company.replace(/\b[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app|gg|run)(?:\/[^\s)]*)?\b/gi, '').trim();
+  const withoutDomain = company.replace(/\b[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app|gg|run)(?:\/[^\s)]*)?\b/gi, '').trim();
+  if (withoutDomain.length >= 2) {
+    company = withoutDomain;
+  } else if (/^[a-z0-9-]+\.(?:com|io|ai|co|org|net|tech|dev|app|gg|run)$/i.test(company)) {
+    // If the entire company name is a branded domain like "lemon.io" or "socket.io", preserve brand name
+    const brand = company.split('.')[0];
+    company = brand.charAt(0).toUpperCase() + brand.slice(1);
+  }
 
   // 3. Replace slashes and backslashes with " & " or space to prevent Linux filesystem path breakage (e.g. "Namecoach/Euphonia" -> "Namecoach & Euphonia")
   company = company.replace(/[\/\\]+/g, ' & ').trim();
@@ -408,10 +415,10 @@ export function detectApplicationType(
 ): { platform: ATSPlatform; type: 'EMAIL' | 'ATS' | 'WEB_FORM' | 'UNKNOWN' } {
   const combined = `${appUrl} ${origUrl}`.toLowerCase();
 
-  if (combined.includes('boards.greenhouse.io') || combined.includes('gh_jid')) {
+  if (combined.includes('greenhouse.io') || combined.includes('gh_jid')) {
     return { platform: 'Greenhouse', type: 'ATS' };
   }
-  if (combined.includes('jobs.lever.co')) {
+  if (combined.includes('lever.co')) {
     return { platform: 'Lever', type: 'ATS' };
   }
   if (combined.includes('myworkdayjobs.com') || combined.includes('workday')) {

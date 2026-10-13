@@ -21,6 +21,9 @@ import { searchGoogleJobs } from './providers/serpapi';
 import { searchAdzunaJobs } from './providers/adzuna';
 import { searchHackerNewsJobs } from './providers/hackernews';
 import { searchWeWorkRemotelyJobs } from './providers/weworkremotely';
+import { searchJoobleJobs } from './providers/jooble';
+import { searchHimalayasJobs } from './providers/himalayas';
+import { searchGreenhouseJobs } from './providers/greenhouse';
 import { evaluateJobMatch } from './matcher';
 import { tailorResumeAndCoverLetter } from './resume-tailor';
 import { generateResumePdf } from './pdf-generator';
@@ -286,6 +289,19 @@ class AgentStore {
     // 8. We Work Remotely (Remote engineering RSS feeds)
     scrapePromises.push(searchWeWorkRemotelyJobs(queries[0] || '', 40));
 
+    // 9. Jooble (Official API key)
+    for (const q of queries.slice(0, 2)) {
+      scrapePromises.push(searchJoobleJobs(q, location, 30));
+    }
+
+    // 10. Himalayas (Public open remote API)
+    for (const q of queries.slice(0, 2)) {
+      scrapePromises.push(searchHimalayasJobs(q, 25));
+    }
+
+    // 11. Greenhouse (Direct company ATS open boards)
+    scrapePromises.push(searchGreenhouseJobs(queries[0] || 'developer', 25));
+
     const settled = await Promise.allSettled(scrapePromises);
     for (const result of settled) {
       if (result.status === 'fulfilled' && Array.isArray(result.value)) {
@@ -364,6 +380,17 @@ class AgentStore {
     scrapePromises.push(searchGoogleJobs('remote full stack developer', 'Worldwide'));
     scrapePromises.push(searchAdzunaJobs('react developer', 'us'));
 
+    // 8. Jooble (Official API key)
+    scrapePromises.push(searchJoobleJobs('full stack developer', 'Remote', 50));
+    scrapePromises.push(searchJoobleJobs('software engineer', 'Remote', 50));
+
+    // 9. Himalayas (Public open remote API)
+    scrapePromises.push(searchHimalayasJobs('developer', 35));
+    scrapePromises.push(searchHimalayasJobs('engineer', 35));
+
+    // 10. Greenhouse (Direct company ATS open boards)
+    scrapePromises.push(searchGreenhouseJobs('engineer', 30));
+
     const settled = await Promise.allSettled(scrapePromises);
     for (const result of settled) {
       if (result.status === 'fulfilled' && Array.isArray(result.value)) {
@@ -399,6 +426,9 @@ class AgentStore {
       searchArbeitnowJobs(query, 40),
       searchGoogleJobs(query, location),
       searchAdzunaJobs(query, 'us'),
+      searchJoobleJobs(query, location, 40),
+      searchHimalayasJobs(query, 30),
+      searchGreenhouseJobs(query, 25),
     ];
 
     const settled = await Promise.allSettled(scrapePromises);

@@ -55,6 +55,11 @@ function getSourceBadgeStyle(source: string) {
     case 'jobicy': return 'bg-rose-50 text-rose-700 border-rose-200';
     case 'serpapi': return 'bg-blue-50 text-blue-700 border-blue-200';
     case 'adzuna': return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'jooble': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    case 'himalayas': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'greenhouse': return 'bg-lime-50 text-lime-800 border-lime-300';
+    case 'weworkremotely': return 'bg-orange-50 text-orange-700 border-orange-200';
+    case 'hackernews': return 'bg-orange-50 text-orange-800 border-orange-300';
     default: return 'bg-slate-50 text-slate-600 border-slate-200';
   }
 }
@@ -660,7 +665,7 @@ export default function QueueBoardPage() {
                   Live Custom Job Search & Enqueue
                 </h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
-                  Hacker News • WWR • RemoteOK • Remotive • Jobicy
+                  Jooble • Himalayas • Greenhouse • HN • WWR • RemoteOK • Remotive • Jobicy
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 mt-0.5">
@@ -820,11 +825,16 @@ export default function QueueBoardPage() {
             className="px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 shadow-2xs font-medium"
           >
             <option value="all">All Platforms</option>
+            <option value="jooble">Jooble</option>
+            <option value="himalayas">Himalayas</option>
+            <option value="greenhouse">Greenhouse ATS</option>
             <option value="remotive">Remotive</option>
             <option value="remoteok">RemoteOK</option>
             <option value="arbeitnow">Arbeitnow</option>
             <option value="jobicy">Jobicy</option>
             <option value="serpapi">Google Jobs</option>
+            <option value="weworkremotely">WeWorkRemotely</option>
+            <option value="hackernews">Hacker News</option>
           </select>
         </div>
       </div>
